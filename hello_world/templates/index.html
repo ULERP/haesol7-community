@@ -1,33 +1,213 @@
-{% load django_browser_reload %}
-{% load static %}
+{% extends 'base.html' %}
 
-<!doctype html>
-<html lang="en">
+{% block title %}{{ title }}{% endblock %}
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="GitHub Codespaces ♥️ Django">
-    <meta name="author" content="GitHub Codespaces">
-    <meta name="generator" content="GitHub Codespaces">
-    <meta name="theme-color" content="#000000">
-    <title>{% block title %}{{ title }} | GitHub Codespaces ♥️ Django{% endblock %}</title>
-    
-    <link rel="stylesheet" href="{% static 'main.css' %}">
-</head>
-
-<body>
-    <div class="App">
-        <header class="App-header">
-            <img src="{% static 'Octocat.png' %}" class="App-logo" alt="logo" />
-            <p>
-                GitHub Codespaces <span class="heart">♥️</span> Django
-            </p>
-            <p class="small">
-                Edit <code>hello_world/templates/index.html</code> and see changes live!
-            </p>
-        </header>
+{% block content %}
+<div class="py-4">
+    <div class="d-flex flex-column flex-md-row align-items-start justify-content-between gap-3 mb-4">
+        <div>
+            <p class="text-uppercase text-success fw-semibold mb-2">해솔마을7단지 커뮤니티</p>
+            <h1 class="display-6 fw-bold">내 이웃과 함께 만드는 안전하고 따뜻한 동네</h1>
+            <p class="text-muted fs-5">활동 현황, 배지, 이웃 온기 점수를 한눈에 확인하고 최근 피드와 모임까지 바로 확인하세요.</p>
+        </div>
+        <div class="text-end">
+            <a href="/post/create/" class="btn btn-success btn-lg px-4">활동 인증 제출</a>
+        </div>
     </div>
-</body>
 
-</html>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">활동 현황</h5>
+                    <p class="text-muted mb-3">지금까지 해솔7에서 활성화된 지킴이 활동</p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h2 class="fw-bold mb-0">{{ activities_count }}</h2>
+                            <p class="mb-0 text-secondary">활동 카테고리</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-success fs-6">승인 활동 {{ approved_activities_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">배지</h5>
+                    <p class="text-muted mb-3">현재 활성화된 커뮤니티 배지와 나의 획득 배지</p>
+                    <h2 class="fw-bold mb-2">{{ badges_count }}</h2>
+                    <p class="mb-0 text-secondary">활성 배지</p>
+                    {% if user_badge_count is not None %}
+                    <p class="mt-3 mb-0"><strong>{{ user_badge_count }}</strong>개 획득 배지</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">이웃 온기 점수</h5>
+                    <p class="text-muted mb-3">우리 동네가 서로에게 얼마나 따뜻한지 나타내는 지표</p>
+                    {% if user_manners_score is not None %}
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="display-5 fw-bold text-success">{{ user_manners_score|floatformat:1 }}</div>
+                        <div>
+                            <p class="mb-1">내 점수</p>
+                            <div class="progress" style="height: 8px">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ user_manners_score }}%;" aria-valuenow="{{ user_manners_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="display-5 fw-bold text-success">—</div>
+                    <p class="text-secondary">로그인 후 개인 점수를 확인하세요.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row gy-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom-0 d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="mb-1">최근 활동 피드</h5>
+                        <p class="text-muted mb-0">최근 해솔7 주민들이 남긴 활동 인증 기록</p>
+                    </div>
+                    <span class="badge bg-success">최신 {{ recent_activities|length }}개</span>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for activity in recent_activities %}
+                        <div class="list-group-item px-4 py-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2 mb-2">
+                                        <div>
+                                            <h6 class="mb-1">{{ activity.activity.name }}</h6>
+                                            <small class="text-muted">{{ activity.user.username }} · {{ activity.duration_hours }}시간 · {{ activity.points_earned }}P</small>
+                                        </div>
+                                        <span class="badge {% if activity.status == 'approved' %}bg-success{% elif activity.status == 'pending' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                            {{ activity.get_status_display }}
+                                        </span>
+                                    </div>
+                                    <p class="mb-2 text-secondary">{{ activity.title }}</p>
+                                    <small class="text-muted">{{ activity.submitted_at|date:'Y.m.d H:i' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item px-4 py-4 text-center text-secondary">
+                            아직 등록된 활동이 없습니다. 첫 활동을 남겨보세요!
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom-0 d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="mb-1">최근 게시글</h5>
+                        <p class="text-muted mb-0">커뮤니티에 등록된 최신 글을 확인해보세요.</p>
+                    </div>
+                    <span class="badge bg-success">최신 {{ recent_posts|length }}개</span>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% if recent_posts %}
+                        {% for post in recent_posts %}
+                            <a href="/post/{{ post.id }}/" class="list-group-item list-group-item-action px-4 py-3">
+                                <div class="d-flex align-items-center justify-content-between gap-3">
+                                    <div>
+                                        <strong>{{ post.title }}</strong>
+                                        <p class="mb-1 text-secondary">{{ post.board.name }} · {{ post.user.username }} · {{ post.created_at|date:'m월 d일 H:i' }}</p>
+                                    </div>
+                                    <span class="badge bg-secondary">{{ post.comment_count }} 코멘트</span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item px-4 py-4 text-center text-secondary">
+                            아직 등록된 게시글이 없습니다. 새로운 글을 작성해보세요.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0">
+                    <h5 class="mb-1">내 최근 인증</h5>
+                    <p class="text-muted mb-0">본인의 최근 활동 내역</p>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% if user_recent_proofs %}
+                        {% for proof in user_recent_proofs %}
+                            <div class="list-group-item px-4 py-3">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <strong>{{ proof.activity.name }}</strong>
+                                        <p class="mb-1 text-secondary">{{ proof.duration_hours }}시간 · {{ proof.points_earned }}P</p>
+                                    </div>
+                                    <span class="badge {% if proof.status == 'approved' %}bg-success{% elif proof.status == 'pending' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                        {{ proof.get_status_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item px-4 py-4 text-center text-secondary">
+                            로그인 후 내 활동 인증을 확인할 수 있습니다.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">모임 목록</h5>
+                    <p class="text-muted mb-3">해솔7 주민들과 함께할 예정인 번개 모임</p>
+                    {% for meetup in upcoming_meetups %}
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="mb-0">{{ meetup.title }}</h6>
+                                <span class="badge bg-success">{{ meetup.get_status_display }}</span>
+                            </div>
+                            <p class="mb-1 text-secondary">{{ meetup.location }} · {{ meetup.scheduled_at|date:'m월 d일 H시 i분' }}</p>
+                            <p class="mb-1">{{ meetup.description|truncatechars:80 }}</p>
+                            <small class="text-muted">참여 {{ meetup.participants.count }} / {{ meetup.max_participants|default:'무제한' }}</small>
+                        </div>
+                    {% empty %}
+                        <div class="text-center py-4 text-secondary">진행 중인 모임이 없습니다. 새로운 모임을 만들어보세요.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">핵심 통계</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 pb-2">
+                            활성 모임
+                            <span class="badge bg-success rounded-pill">{{ groups_count }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 pb-2">
+                            활성 활동
+                            <span class="badge bg-success rounded-pill">{{ activities_count }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 pb-0">
+                            활성 배지
+                            <span class="badge bg-success rounded-pill">{{ badges_count }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

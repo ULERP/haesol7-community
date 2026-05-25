@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}새 글 작성 | 해솔7 커뮤니티{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-success mt-3">
+            <div class="card-header bg-success text-white fw-bold">
+                <i class="fas fa-edit me-2"></i>새 글 작성
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action=".">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">게시판</label>
+                        <select class="form-select" name="board_id" required>
+                            <option value="">-- 게시판 선택 --</option>
+                            {% for b in boards %}
+                                <option value="{{ b.id }}" {% if selected_board and selected_board.id == b.id %}selected{% endif %}>{{ b.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">제목</label>
+                        <input class="form-control" name="title" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">말머리</label>
+                        <input class="form-control" name="tag" list="tags-list" />
+                        <datalist id="tags-list">
+                            {% for t in tags %}
+                                <option value="{{ t }}" />
+                            {% endfor %}
+                        </datalist>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">내용</label>
+                        <textarea class="form-control" name="content" rows="6" required></textarea>
+                    </div>
+
+                    {% if selected_board and selected_board.board_type == 'trade' %}
+                    <hr />
+                    <h6>거래 정보</h6>
+                    <div class="mb-3">
+                        <label class="form-label">가격(숫자)</label>
+                        <input class="form-control" name="trade_price" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">상태</label>
+                        <select class="form-select" name="trade_status">
+                            <option value="available">판매중</option>
+                            <option value="reserved">예약중</option>
+                            <option value="sold">판매완료</option>
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if selected_board and selected_board.board_type == 'event' %}
+                    <hr />
+                    <h6>이벤트 정보</h6>
+                    <div class="mb-3">
+                        <label class="form-label">시작일시 (ISO 형식)</label>
+                        <input class="form-control" name="event_start" placeholder="2026-05-22T18:00:00" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">종료일시 (ISO 형식)</label>
+                        <input class="form-control" name="event_end" placeholder="2026-05-22T20:00:00" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">장소</label>
+                        <input class="form-control" name="event_location" />
+                    </div>
+                    {% endif %}
+
+                    <hr />
+                    <h6>옵션: 투표 생성</h6>
+                    <div class="mb-3">
+                        <label class="form-label">질문</label>
+                        <input class="form-control" name="poll_question" placeholder="투표 질문을 입력하세요 (선택)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">옵션 (콤마로 구분)</label>
+                        <input class="form-control" name="poll_options" placeholder="옵션1, 옵션2, 옵션3" />
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end border-top pt-3">
+                        <a href="{% url 'post_list' %}?board_id={{ selected_board.id if selected_board else '' }}" class="btn btn-outline-secondary me-md-2">취소</a>
+                        <button type="submit" class="btn btn-success">작성하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

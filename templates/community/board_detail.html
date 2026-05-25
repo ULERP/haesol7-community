@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}{{ board.name }}{% endblock %}
+{% block content %}
+<h3><i class="{{ board.icon }} me-2 text-success"></i>{{ board.name }}</h3>
+<p class="text-muted">{{ board.description }}</p>
+<div class="list-group mt-3">
+{% for post in posts %}
+<a href="/post/{{ post.id }}/" class="list-group-item list-group-item-action">
+<div class="d-flex justify-content-between">
+<span>{% if post.tag %}<span class="badge bg-success me-2">{{ post.tag }}</span>{% endif %}{{ post.title }}</span>
+<small class="text-muted">{{ post.created_at|date:"m/d" }}</small></div></a>
+{% empty %}<div class="list-group-item text-muted">게시글이 없습니다.</div>
+{% endfor %}</div>
+<a href="/" class="btn btn-outline-secondary mt-3">← 목록으로</a>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}회원가입{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white text-center py-3">
+          <h5 class="mb-0 fw-bold"><i class="fas fa-user-plus me-2"></i>해솔7지킴이 회원가입</h5>
+        </div>
+        <div class="card-body p-4">
+          <p class="text-muted small text-center mb-4">해솔마을7단지 입주민만 가입 가능합니다.<br>가입 후 관리자 승인이 필요합니다.</p>
+          {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+          {% endif %}
+          <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">아이디 <span class="text-danger">*</span></label>
+                <input type="text" name="username" class="form-control" placeholder="아이디" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">이름 <span class="text-danger">*</span></label>
+                <input type="text" name="real_name" class="form-control" placeholder="홍길동" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">동 <span class="text-danger">*</span></label>
+                <input type="text" name="dong" class="form-control" placeholder="예: 101" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">호수 <span class="text-danger">*</span></label>
+                <input type="text" name="ho" class="form-control" placeholder="예: 1234" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">연락처</label>
+                <input type="text" name="phone" class="form-control" placeholder="010-0000-0000">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">이메일</label>
+                <input type="email" name="email" class="form-control" placeholder="이메일 (선택)">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">비밀번호 <span class="text-danger">*</span></label>
+                <input type="password" name="password1" class="form-control" placeholder="비밀번호" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">비밀번호 확인 <span class="text-danger">*</span></label>
+                <input type="password" name="password2" class="form-control" placeholder="비밀번호 확인" required>
+              </div>
+            </div>
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-success btn-lg fw-bold">가입 신청하기</button>
+            </div>
+          </form>
+          <hr>
+          <div class="text-center">
+            <span class="text-muted small">이미 회원이신가요?</span>
+            <a href="/accounts/login/" class="text-success fw-semibold ms-2">로그인</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

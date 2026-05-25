@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<div class="card">
+<div class="card-header d-flex justify-content-between align-items-center">
+<h4 class="mb-0">{% if post.tag %}<span class="badge bg-success me-2">{{ post.tag }}</span>{% endif %}{{ post.title }}</h4>
+<small class="text-muted">{{ post.created_at|date:"Y.m.d" }} 조회 {{ post.view_count }}</small></div>
+<div class="card-body"><p style="white-space:pre-wrap">{{ post.content }}</p></div></div>
+<a href="/board/{{ post.board.id }}/" class="btn btn-outline-secondary mt-3">← 게시판으로</a>
+{% endblock %}

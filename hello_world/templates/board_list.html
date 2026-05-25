@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}게시판 목록{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h3 class="fw-bold mb-4"><i class="fas fa-clipboard-list text-success me-2"></i>게시판 목록</h3>
+  <div class="row g-3">
+    {% for board in boards %}
+    <div class="col-md-6 col-lg-4">
+      <a href="{% url 'board_detail' board.id %}" class="text-decoration-none">
+        <div class="card h-100 shadow-sm border-0">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+              <i class="{{ board.icon }} fa-lg text-success me-3"></i>
+              <h5 class="card-title mb-0 fw-bold">{{ board.name }}</h5>
+            </div>
+            <p class="card-text text-muted small">{{ board.description }}</p>
+            {% if board.allowed_tags %}
+            <div class="mt-2">
+              {% for tag in board.get_tags_list %}
+              <span class="badge bg-light text-success border border-success me-1">{{ tag }}</span>
+              {% endfor %}
+            </div>
+            {% endif %}
+            <div class="mt-3 text-muted small">
+              <i class="fas fa-file-alt me-1"></i>게시글 {{ board.posts.count }}개
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">
+        게시판이 없습니다. <a href="/admin/core/board/add/">관리자에서 추가해주세요.</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

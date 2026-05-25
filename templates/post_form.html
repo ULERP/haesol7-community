@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-success">
+            <div class="card-header bg-success text-white fw-bold">
+                <i class="fas fa-edit me-2"></i>{{ title }}
+            </div>
+            <div class="card-body">
+                <form method="POST" action=".">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="activity" class="form-label fw-bold">1. 참여한 활동 선택</label>
+                        <select class="form-select" id="activity" name="activity" required>
+                            <option value="">-- 활동을 선택해주세요 --</option>
+                            {% for act in activities %}
+                                <option value="{{ act.id }}">{{ act.name }} (시간당 {{ act.points_per_hour }}p)</option>
+                            {% empty %}
+                                <option value="" disabled>등록된 활성화 활동이 없습니다.</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="duration" class="form-label fw-bold">2. 봉사/활동 시간</label>
+                        <input type="number" class="form-control" id="duration" name="duration_hours" min="1" max="24" value="1" required>
+                        <div class="form-text">활동하신 시간을 시간 단위로 입력해주세요.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label fw-bold">3. 활동 내용 및 인증 설명</label>
+                        <textarea class="form-control" id="description" name="description" rows="5" placeholder="해솔7 단지를 위해 어떤 활동을 하셨는지 적어주세요." required></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/" class="btn btn-secondary me-md-2">취소</a>
+                        <button type="submit" class="btn btn-success px-4">인증 제출하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

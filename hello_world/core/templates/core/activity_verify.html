@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>활동 인증</title>
+</head>
+<body>
+    <h1>활동 인증 제출</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">제출하기</button>
+    </form>
+</body>
+</html>
