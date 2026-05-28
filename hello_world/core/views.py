@@ -427,3 +427,120 @@ def volunteer_join(request, pk):
                 meetup.participants.add(request.user)
                 messages.success(request, '참가 신청이 완료됐습니다!')
     return redirect('volunteer_detail', pk=pk)
+
+
+# ============================================================================
+# 검색
+# ============================================================================
+def search(request):
+    query = request.GET.get('q', '').strip()
+    results = []
+    if query:
+        results = Post.objects.filter(
+            is_active=True
+        ).filter(
+            models.Q(title__icontains=query) |
+            models.Q(content__icontains=query) |
+            models.Q(tag__icontains=query)
+        ).order_by('-created_at')
+    return render(request, 'search.html', {
+        'query': query,
+        'results': results,
+        'count': len(results) if results else 0,
+    })
+
+
+# ============================================================================
+# 검색
+# ============================================================================
+from django.db.models import Q
+
+def search(request):
+    query = request.GET.get('q', '').strip()
+    results = []
+    if query:
+        results = Post.objects.filter(
+            is_active=True
+        ).filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query) |
+            Q(tag__icontains=query)
+        ).order_by('-created_at')
+    return render(request, 'search.html', {
+        'query': query,
+        'results': results,
+        'count': results.count() if query else 0,
+    })
+
+
+# ============================================================================
+# 검색
+# ============================================================================
+from django.db.models import Q
+
+def search(request):
+    query = request.GET.get('q', '').strip()
+    results = []
+    if query:
+        results = Post.objects.filter(
+            is_active=True
+        ).filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query) |
+            Q(tag__icontains=query)
+        ).order_by('-created_at')
+    return render(request, 'search.html', {
+        'query': query,
+        'results': results,
+        'count': results.count() if query else 0,
+    })
+
+
+# ============================================================================
+# 알림 시스템
+# ============================================================================
+@login_required
+def notification_list(request):
+    from .models import Notification
+    notifications = Notification.objects.filter(
+        recipient=request.user
+    ).order_by('-created_at')[:50]
+    # 읽음 처리
+    notifications.filter(is_read=False).update(is_read=True)
+    return render(request, 'notification_list.html', {
+        'notifications': notifications,
+    })
+
+def notification_count(request):
+    from .models import Notification
+    if request.user.is_authenticated:
+        count = Notification.objects.filter(
+            recipient=request.user, is_read=False
+        ).count()
+    else:
+        count = 0
+    return JsonResponse({'count': count})
+
+
+# ============================================================================
+# 알림 시스템
+# ============================================================================
+@login_required
+def notification_list(request):
+    from .models import Notification
+    notis = Notification.objects.filter(
+        recipient=request.user
+    ).order_by('-created_at')[:50]
+    Notification.objects.filter(
+        recipient=request.user, is_read=False
+    ).update(is_read=True)
+    return render(request, 'notification_list.html', {'notifications': notis})
+
+def notification_count(request):
+    from .models import Notification
+    count = 0
+    if request.user.is_authenticated:
+        count = Notification.objects.filter(
+            recipient=request.user, is_read=False
+        ).count()
+    return JsonResponse({'count': count})

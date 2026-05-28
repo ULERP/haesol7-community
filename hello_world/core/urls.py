@@ -39,5 +39,8 @@ urlpatterns = [
     path('volunteer/<int:pk>/join/', views.volunteer_join, name='volunteer_join'),
 
     # API
+    path('search/', views.search, name='search'),
+    path('notifications/', views.notification_list, name='notification_list'),
+    path('notifications/count/', views.notification_count, name='notification_count'),
     path('api/', include(router.urls)),
 ]
