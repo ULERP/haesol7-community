@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}{{ meetup.title }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white py-3">
+          <h5 class="mb-0 fw-bold"><i class="fas fa-hands-helping me-2"></i>{{ meetup.title }}</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3 mb-4">
+            <div class="col-6">
+              <div class="bg-light rounded p-3 text-center">
+                <div class="text-muted small mb-1"><i class="fas fa-calendar me-1"></i>일시</div>
+                <div class="fw-bold">{{ meetup.scheduled_at|date:"m.d H:i" }}</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-3 text-center">
+                <div class="text-muted small mb-1"><i class="fas fa-map-marker-alt me-1"></i>장소</div>
+                <div class="fw-bold">{{ meetup.location|default:"미정" }}</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-3 text-center">
+                <div class="text-muted small mb-1"><i class="fas fa-users me-1"></i>참가 인원</div>
+                <div class="fw-bold">
+                  {{ participant_count }}
+                  {% if meetup.max_participants %} / {{ meetup.max_participants }}명{% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-light rounded p-3 text-center">
+                <div class="text-muted small mb-1"><i class="fas fa-clock me-1"></i>소요시간</div>
+                <div class="fw-bold">{{ meetup.duration_minutes }}분</div>
+              </div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <h6 class="fw-bold">활동 내용</h6>
+            <p style="white-space:pre-wrap">{{ meetup.description }}</p>
+          </div>
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'volunteer_join' meetup.pk %}">
+            {% csrf_token %}
+            {% if is_joined %}
+            <button type="submit" class="btn btn-outline-danger w-100 py-3">
+              <i class="fas fa-times me-2"></i>참가 신청 취소
+            </button>
+            {% else %}
+            <button type="submit" class="btn btn-success w-100 py-3 fw-bold">
+              <i class="fas fa-check me-2"></i>참가 신청하기
+            </button>
+            {% endif %}
+          </form>
+          {% else %}
+          <a href="/accounts/login/" class="btn btn-outline-success w-100 py-3">
+            로그인 후 참가 신청 가능합니다
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="mt-3">
+        <a href="{% url 'volunteer_calendar' %}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-1"></i>달력으로
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

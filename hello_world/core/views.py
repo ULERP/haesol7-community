@@ -371,3 +371,59 @@ def profile_edit(request):
         messages.success(request, '프로필이 수정됐습니다.')
         return redirect('mypage')
     return render(request, 'profile_edit.html', {'user': user})
+
+
+# ============================================================================
+# 봉사활동 달력
+# ============================================================================
+def volunteer_calendar(request):
+    from .models import Meetup
+    meetups = Meetup.objects.filter(
+        status__in=['recruiting', 'confirmed']
+    ).values('id', 'title', 'scheduled_at', 'location', 'status', 'max_participants')
+    
+    import json
+    from django.utils import timezone
+    
+    events = []
+    for m in meetups:
+        events.append({
+            'id': m['id'],
+            'title': m['title'],
+            'start': m['scheduled_at'].isoformat() if m['scheduled_at'] else '',
+            'location': m['location'],
+            'status': m['status'],
+            'url': f'/volunteer/{m["id"]}/',
+        })
+    
+    return render(request, 'volunteer_calendar.html', {
+        'events_json': json.dumps(events, ensure_ascii=False),
+    })
+
+def volunteer_detail(request, pk):
+    from .models import Meetup
+    meetup = get_object_or_404(Meetup, pk=pk)
+    is_joined = False
+    if request.user.is_authenticated:
+        is_joined = meetup.participants.filter(pk=request.user.pk).exists()
+    return render(request, 'volunteer_detail.html', {
+        'meetup': meetup,
+        'is_joined': is_joined,
+        'participant_count': meetup.participants.count(),
+    })
+
+@login_required
+def volunteer_join(request, pk):
+    from .models import Meetup
+    meetup = get_object_or_404(Meetup, pk=pk)
+    if request.method == 'POST':
+        if meetup.participants.filter(pk=request.user.pk).exists():
+            meetup.participants.remove(request.user)
+            messages.info(request, '참가 신청이 취소됐습니다.')
+        else:
+            if meetup.max_participants and meetup.participants.count() >= meetup.max_participants:
+                messages.error(request, '참가 인원이 마감됐습니다.')
+            else:
+                meetup.participants.add(request.user)
+                messages.success(request, '참가 신청이 완료됐습니다!')
+    return redirect('volunteer_detail', pk=pk)

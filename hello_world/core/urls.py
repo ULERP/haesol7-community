@@ -34,6 +34,9 @@ urlpatterns = [
     path('activity/',        views.activity_list,         name='activity_list'),
     path('activity/submit/', views.activity_proof_submit, name='activity_proof_submit'),
     path('activity/list/',   views.activity_proof_list,   name='activity_proof_list'),
+    path('volunteer/',           views.volunteer_calendar, name='volunteer_calendar'),
+    path('volunteer/<int:pk>/',  views.volunteer_detail,   name='volunteer_detail'),
+    path('volunteer/<int:pk>/join/', views.volunteer_join, name='volunteer_join'),
 
     # API
     path('api/', include(router.urls)),
