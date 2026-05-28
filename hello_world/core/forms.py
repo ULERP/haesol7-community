@@ -57,3 +57,37 @@ class ActivityForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
             'duration_hours': forms.NumberInput(attrs={'class': 'form-control'}),
         }
+
+class ActivityProofForm(forms.ModelForm):
+    class Meta:
+        model = ActivityProof
+        fields = ['activity', 'title', 'description', 'proof_image', 'duration_hours']
+        widgets = {
+            'activity': forms.Select(attrs={'class': 'form-select form-select-lg'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '활동 제목을 입력하세요'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': '활동 내용을 상세히 입력해주세요.'}),
+            'proof_image': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+            'duration_hours': forms.NumberInput(attrs={'class': 'form-control', 'min': '0.5', 'max': '24', 'step': '0.5'}),
+        }
+        labels = {
+            'activity': '활동 종류',
+            'title': '활동 제목',
+            'description': '활동 내용',
+            'proof_image': '인증 사진',
+            'duration_hours': '활동 시간 (시간)',
+        }
+
+
+class PostImageForm(forms.ModelForm):
+    class Meta:
+        from hello_world.core.models import PostImage
+        model = PostImage
+        fields = ["image"]
+        widgets = {
+            "image": forms.ClearableFileInput(attrs={
+                "class": "form-control",
+                "accept": "image/*",
+                
+            })
+        }
+        labels = {"image": "이미지 첨부"}

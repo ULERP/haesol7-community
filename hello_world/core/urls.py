@@ -15,6 +15,7 @@ urlpatterns = [
     path('accounts/login/',  views.custom_login, name='login'),
     path('accounts/signup/', views.signup,        name='signup'),
     path('mypage/',          views.mypage,         name='mypage'),
+    path('mypage/edit/',     views.profile_edit,   name='profile_edit'),
 
     # 게시판
     path('boards/',                              views.board_list,       name='board_list'),

@@ -11,7 +11,7 @@
           </h5>
         </div>
         <div class="card-body p-4">
-          <form method="post">
+          <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
             <!-- 말머리 -->
@@ -94,7 +94,15 @@
             </div>
             {% endif %}
 
-            <!-- 익명 여부 -->
+            <!-- 이미지 첨부 -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">
+                <i class="fas fa-image text-success me-1"></i>이미지 첨부 (선택)
+              </label>
+              <input type="file" name="images" class="form-control" accept="image/*" multiple>
+              <div class="form-text">여러 장 선택 가능합니다.</div>
+            </div>
+
             <div class="form-check mt-3">
               {{ post_form.is_anonymous }}
               <label class="form-check-label">익명으로 작성</label>

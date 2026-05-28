@@ -200,6 +200,11 @@ def post_write(request, board_id):
                 extra = extra_form.save(commit=False)
                 extra.post = post
                 extra.save()
+            # 이미지 첨부 처리
+            images = request.FILES.getlist('images')
+            from .models import PostImage
+            for i, image in enumerate(images):
+                PostImage.objects.create(post=post, image=image, order=i)
             return redirect('post_detail', pk=post.pk)
     else:
         post_form  = PostForm(board=board)
@@ -331,3 +336,38 @@ class GroupViewSet(viewsets.ModelViewSet):
 class MeetupViewSet(viewsets.ModelViewSet):
     queryset         = Meetup.objects.all()
     serializer_class = MeetupSerializer
+
+
+# ============================================================================
+# 프로필 수정
+# ============================================================================
+@login_required
+def profile_edit(request):
+    user = request.user
+    if request.method == 'POST':
+        user.first_name    = request.POST.get('first_name', '')
+        user.unit_number   = request.POST.get('unit_number', '')
+        user.phone_number  = request.POST.get('phone_number', '')
+        user.introduction  = request.POST.get('introduction', '')
+        if request.FILES.get('profile_image'):
+            user.profile_image = request.FILES['profile_image']
+        user.save()
+        messages.success(request, '프로필이 수정됐습니다!')
+        return redirect('mypage')
+    return render(request, 'profile_edit.html', {'user': user})
+
+
+@login_required
+def profile_edit(request):
+    user = request.user
+    if request.method == 'POST':
+        user.first_name   = request.POST.get('first_name', '')
+        user.unit_number  = request.POST.get('unit_number', '')
+        user.phone_number = request.POST.get('phone_number', '')
+        user.introduction = request.POST.get('introduction', '')
+        if request.FILES.get('profile_image'):
+            user.profile_image = request.FILES['profile_image']
+        user.save()
+        messages.success(request, '프로필이 수정됐습니다.')
+        return redirect('mypage')
+    return render(request, 'profile_edit.html', {'user': user})

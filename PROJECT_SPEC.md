@@ -602,3 +602,56 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     location = models.CharField(max_length=200)
+# ============================================================================
+# 업데이트 이력 (2026.05.26)
+# ============================================================================
+
+## 3. 추가된 모델
+
+### MemberGrade (회원 등급)
+- 6단계 등급: 입주민, 봉사활동대원, 특별활동대원, 적극활동대원, 분과장, 총무이사
+- 관리자 페이지에서 추가/수정/삭제 가능
+- 자동 등업 조건: required_activities, required_points
+- 게시판 기본 권한: can_read_all, can_write, can_comment
+
+### BoardGradePermission (게시판 등급 권한)
+- 게시판별 등급 특수 권한 설정
+- can_read, can_write, can_comment 개별 설정 가능
+- 특수 등급만 열람 가능한 게시판 구현 가능
+
+### Board (게시판)
+- board_type: notice/free/volunteer/archive/event/suggestion/gallery/trade/qna
+- write_permission: all/member/staff/admin
+- allowed_tags: 쉼표 구분 말머리 목록
+- 관리자 페이지에서 순서/활성화 관리
+
+### Post (게시글)
+- board ForeignKey, tag 말머리, is_pinned 상단고정
+- is_anonymous 익명, view_count, like_count
+
+### Comment (댓글)
+- parent ForeignKey (대댓글 지원)
+- is_anonymous 익명 댓글
+
+### PostLike (좋아요)
+- post + user unique_together
+
+## 4. 구현된 기능 목록
+- 회원가입/로그인/로그아웃
+- 마이페이지 (프로필, 마일리지, 온기점수, 내 게시글/댓글)
+- 게시판 목록/상세/말머리 필터
+- 게시글 CRUD (작성/수정/삭제/상세)
+- 댓글/대댓글
+- 좋아요
+- 등급별 게시판 권한 체크
+- 활동 인증 제출/목록
+- 활동 인증 관리자 승인 (포인트 자동 적립)
+
+## 5. 남은 작업
+- 게시글 이미지 첨부
+- 페이지네이션
+- 봉사활동 달력/일정
+- 회원 프로필 수정
+- 알림 시스템
+- RAG 챗봇 (관리 규약 안내)
+- PythonAnywhere 배포
