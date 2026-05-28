@@ -544,3 +544,88 @@ def notification_count(request):
             recipient=request.user, is_read=False
         ).count()
     return JsonResponse({'count': count})
+
+
+# ============================================================================
+# RAG 챗봇 (관리 규약 안내)
+# ============================================================================
+@login_required
+def chatbot(request):
+    from .models import ChatHistory, ManagementDocument
+    chat_history = ChatHistory.objects.filter(
+        user=request.user
+    ).order_by('-created_at')[:10]
+    return render(request, 'chatbot.html', {'chat_history': chat_history})
+
+@login_required
+def chatbot_ask(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    
+    import json
+    data = json.loads(request.body)
+    question = data.get('question', '').strip()
+    
+    if not question:
+        return JsonResponse({'error': '질문을 입력하세요'}, status=400)
+
+    from .models import ChatHistory, ManagementDocument
+    
+    # 관련 문서 검색
+    docs = ManagementDocument.objects.filter(
+        is_active=True
+    ).filter(
+        Q(title__icontains=question) |
+        Q(content__icontains=question) |
+        Q(category__icontains=question)
+    )[:3]
+    
+    doc_context = ''
+    referenced = []
+    for doc in docs:
+        doc_context += f'\n[{doc.category}] {doc.title}:\n{doc.content[:500]}\n'
+        referenced.append({'title': doc.title, 'category': doc.category})
+    
+    # Claude API 호출
+    import requests as req
+    
+    system_prompt = f'''당신은 해솔마을7단지 아파트 관리 안내 도우미입니다.
+주민들의 질문에 친근하고 따뜻한 말투로 답변해주세요.
+아래 관리 규약 문서를 참고하여 답변하세요.
+
+{doc_context if doc_context else '관련 문서가 없습니다. 일반적인 아파트 생활 상식으로 답변해주세요.'}'''
+
+    try:
+        response = req.post(
+            'https://api.anthropic.com/v1/messages',
+            headers={'Content-Type': 'application/json'},
+            json={
+                'model': 'claude-sonnet-4-20250514',
+                'max_tokens': 1000,
+                'system': system_prompt,
+                'messages': [{'role': 'user', 'content': question}]
+            },
+            timeout=30
+        )
+        result = response.json()
+        answer = result['content'][0]['text']
+        confidence = 0.9 if docs else 0.5
+    except Exception as e:
+        answer = '죄송합니다. 현재 답변을 생성할 수 없습니다. 관리사무소에 문의해주세요.'
+        confidence = 0.0
+        referenced = []
+
+    # 대화 기록 저장
+    ChatHistory.objects.create(
+        user=request.user,
+        question=question,
+        answer=answer,
+        referenced_documents=referenced,
+        confidence_score=confidence,
+    )
+
+    return JsonResponse({
+        'answer': answer,
+        'referenced': referenced,
+        'confidence': confidence,
+    })

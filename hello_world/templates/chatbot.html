@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}관리 규약 안내 챗봇{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white py-3">
+          <h5 class="mb-0 fw-bold">
+            <i class="fas fa-robot me-2"></i>해솔7 관리 안내 도우미
+          </h5>
+          <small class="opacity-75">주차, 펫 매너, 공동시설 이용 등 궁금한 것을 물어보세요!</small>
+        </div>
+        <div class="card-body p-0">
+          <div id="chat-messages" style="height:450px;overflow-y:auto;padding:1rem;">
+            <div class="text-center text-muted py-4">
+              <i class="fas fa-robot fa-3x text-success mb-3 d-block"></i>
+              <p>안녕하세요! 해솔마을7단지 관리 안내 도우미입니다.<br>
+              궁금한 점을 편하게 질문해주세요 😊</p>
+            </div>
+            {% for chat in chat_history reversed %}
+            <div class="d-flex justify-content-end mb-3">
+              <div class="bg-success text-white rounded p-3" style="max-width:75%">
+                {{ chat.question }}
+              </div>
+            </div>
+            <div class="d-flex mb-3">
+              <div class="bg-light rounded p-3" style="max-width:75%">
+                {{ chat.answer|linebreaks }}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="border-top p-3">
+            <div class="input-group">
+              <input type="text" id="question-input" class="form-control"
+                placeholder="질문을 입력하세요... (예: 주차 규정이 어떻게 되나요?)"
+                onkeypress="if(event.key==='Enter') sendQuestion()">
+              <button class="btn btn-success" onclick="sendQuestion()" id="send-btn">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+            </div>
+            <div class="mt-2 d-flex gap-2 flex-wrap">
+              <button class="btn btn-outline-secondary btn-sm" onclick="setQuestion('주차 등록은 어떻게 하나요?')">주차 등록</button>
+              <button class="btn btn-outline-secondary btn-sm" onclick="setQuestion('반려동물 관련 규정이 있나요?')">반려동물 규정</button>
+              <button class="btn btn-outline-secondary btn-sm" onclick="setQuestion('공동시설 이용 방법을 알려주세요')">공동시설</button>
+              <button class="btn btn-outline-secondary btn-sm" onclick="setQuestion('층간소음 신고는 어떻게 하나요?')">층간소음</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function setQuestion(q) {
+  document.getElementById('question-input').value = q;
+  document.getElementById('question-input').focus();
+}
+
+function addMessage(text, isUser) {
+  const div = document.createElement('div');
+  div.className = isUser ? 'd-flex justify-content-end mb-3' : 'd-flex mb-3';
+  const bubble = document.createElement('div');
+  bubble.className = isUser ? 'bg-success text-white rounded p-3' : 'bg-light rounded p-3';
+  bubble.style.maxWidth = '75%';
+  bubble.style.whiteSpace = 'pre-wrap';
+  bubble.textContent = text;
+  div.appendChild(bubble);
+  document.getElementById('chat-messages').appendChild(div);
+  document.getElementById('chat-messages').scrollTop = 999999;
+}
+
+function sendQuestion() {
+  const input = document.getElementById('question-input');
+  const question = input.value.trim();
+  if (!question) return;
+
+  addMessage(question, true);
+  input.value = '';
+  document.getElementById('send-btn').disabled = true;
+
+  const loading = document.createElement('div');
+  loading.className = 'd-flex mb-3';
+  loading.id = 'loading-msg';
+  loading.innerHTML = '<div class="bg-light rounded p-3"><i class="fas fa-spinner fa-spin me-2"></i>답변 생성 중...</div>';
+  document.getElementById('chat-messages').appendChild(loading);
+  document.getElementById('chat-messages').scrollTop = 999999;
+
+  fetch('/chatbot/ask/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({question: question})
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('loading-msg').remove();
+    addMessage(data.answer, false);
+    document.getElementById('send-btn').disabled = false;
+  })
+  .catch(() => {
+    document.getElementById('loading-msg').remove();
+    addMessage('오류가 발생했습니다. 다시 시도해주세요.', false);
+    document.getElementById('send-btn').disabled = false;
+  });
+}
+</script>
+{% endblock %}

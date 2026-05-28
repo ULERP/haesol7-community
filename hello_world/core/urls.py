@@ -40,6 +40,8 @@ urlpatterns = [
 
     # API
     path('search/', views.search, name='search'),
+    path('chatbot/', views.chatbot, name='chatbot'),
+    path('chatbot/ask/', views.chatbot_ask, name='chatbot_ask'),
     path('notifications/', views.notification_list, name='notification_list'),
     path('notifications/count/', views.notification_count, name='notification_count'),
     path('api/', include(router.urls)),

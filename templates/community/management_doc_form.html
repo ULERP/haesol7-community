@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}문서 수정{% else %}문서 등록{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 760px;">
+  <h4 class="mb-4 fw-bold">
+    <i class="fas fa-file-alt me-2 text-primary"></i>
+    {% if form.instance.pk %}관리 문서 수정{% else %}관리 문서 등록{% endif %}
+  </h4>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-4">
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">카테고리 <span class="text-danger">*</span></label>
+          <input type="text" name="category" class="form-control" placeholder="예: 주차, 펫, 소음, 생활규칙" value="{{ form.category.value|default:'' }}" required>
+          <div class="form-text">기존 카테고리와 동일하게 입력하면 같은 분류로 묶입니다.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">제목 <span class="text-danger">*</span></label>
+          <input type="text" name="title" class="form-control" placeholder="문서 제목을 입력하세요" value="{{ form.title.value|default:'' }}" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-semibold">내용 <span class="text-danger">*</span></label>
+          <textarea name="content" class="form-control" rows="16" placeholder="관리 규약 또는 안내 내용을 입력하세요..." required>{{ form.content.value|default:'' }}</textarea>
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+          <a href="{% url 'management_doc_list' %}" class="btn btn-outline-secondary">취소</a>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save me-1"></i>저장
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

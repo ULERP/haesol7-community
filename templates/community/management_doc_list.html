@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}관리 문서 게시판{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-file-alt me-2 text-primary"></i>관리 문서 게시판</h2>
+    {% if user.is_staff %}
+    <a href="{% url 'management_doc_create' %}" class="btn btn-primary">
+      <i class="fas fa-plus me-1"></i> 문서 등록
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- 검색 & 카테고리 필터 -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label small text-muted">카테고리</label>
+          <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">전체 카테고리</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small text-muted">검색</label>
+          <div class="input-group input-group-sm">
+            <input type="text" name="q" class="form-control" placeholder="제목 또는 내용 검색..." value="{{ q }}">
+            <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
+          </div>
+        </div>
+        {% if selected_category or q %}
+        <div class="col-md-2">
+          <a href="{% url 'management_doc_list' %}" class="btn btn-outline-secondary btn-sm w-100">초기화</a>
+        </div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <!-- 문서 목록 -->
+  {% if documents %}
+  <div class="row row-cols-1 row-cols-md-2 g-3">
+    {% for doc in documents %}
+    <div class="col">
+      <div class="card h-100 shadow-sm border-0 hover-shadow">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="badge bg-primary-subtle text-primary rounded-pill">{{ doc.category }}</span>
+            <small class="text-muted">{{ doc.updated_at|date:"Y.m.d" }}</small>
+          </div>
+          <h6 class="card-title fw-bold mb-2">
+            <a href="{% url 'management_doc_detail' doc.pk %}" class="text-decoration-none text-dark stretched-link">
+              {{ doc.title }}
+            </a>
+          </h6>
+          <p class="card-text text-muted small">{{ doc.content|truncatechars:80 }}</p>
+        </div>
+        {% if user.is_staff %}
+        <div class="card-footer bg-transparent border-0 d-flex gap-2">
+          <a href="{% url 'management_doc_edit' doc.pk %}" class="btn btn-outline-secondary btn-sm">수정</a>
+          <a href="{% url 'management_doc_delete' doc.pk %}" class="btn btn-outline-danger btn-sm">삭제</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- 페이지네이션 -->
+  {% if is_paginated %}
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&category={{ selected_category }}&q={{ q }}">이전</a></li>
+      {% endif %}
+      {% for num in page_obj.paginator.page_range %}
+      <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+        <a class="page-link" href="?page={{ num }}&category={{ selected_category }}&q={{ q }}">{{ num }}</a>
+      </li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&category={{ selected_category }}&q={{ q }}">다음</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
+  {% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="fas fa-folder-open fa-3x mb-3"></i>
+    <p>등록된 문서가 없습니다.</p>
+    {% if user.is_staff %}
+    <a href="{% url 'management_doc_create' %}" class="btn btn-primary btn-sm">첫 문서 등록하기</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
