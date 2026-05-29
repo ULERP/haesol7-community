@@ -1,4 +1,5 @@
-{% extends 'base.html' %}
+{% extends 'base_3panel.html' %}
+{% block menu_surveys %}active{% endblock %}
 {% block title %}{{ survey.title }}{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -24,8 +25,8 @@
 .section-divider { padding:14px 0 4px; border-top:2px solid #e4e6ea; margin-bottom:4px; }
 </style>
 {% endblock %}
-{% block content %}
-<div class="container py-4" style="max-width:680px;">
+{% block panel_content %}
+<div style="max-width:999px;display:none;"><div style="max-width:680px;">
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="/surveys/">설문조사</a></li>
@@ -66,7 +67,7 @@
   {% else %}
   {% if not user.is_authenticated %}
   <div class="alert alert-warning border-0 text-center">
-    <i class="fas fa-lock me-2"></i><a href="/login/" class="fw-bold">로그인</a>하고 설문에 참여하세요
+    <i class="fas fa-lock me-2"></i><a href="/accounts/login/" class="fw-bold">로그인</a>하고 설문에 참여하세요
   </div>
   {% else %}
   <form method="post" action="/surveys/{{ survey.pk }}/respond/" id="survey-form">

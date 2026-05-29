@@ -1,7 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'base_3panel.html' %}
 {% block title %}1:1 채팅{% endblock %}
-{% block content %}
-<div class="container py-4" style="max-width:600px;">
+{% block panel_content %}
   <h4 class="mb-4 fw-bold"><i class="fas fa-envelope me-2 text-primary"></i>1:1 채팅</h4>
   {% if partners %}
   <div class="list-group shadow-sm">
@@ -28,5 +27,4 @@
     <small>게시글 작성자 프로필에서 채팅을 시작할 수 있어요.</small>
   </div>
   {% endif %}
-</div>
 {% endblock %}

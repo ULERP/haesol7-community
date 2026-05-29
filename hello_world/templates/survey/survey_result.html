@@ -1,4 +1,5 @@
-{% extends 'base.html' %}
+{% extends 'base_3panel.html' %}
+{% block menu_surveys %}active{% endblock %}
 {% block title %}{{ survey.title }} — 결과{% endblock %}
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -23,8 +24,8 @@
 .chart-toggle button.active { background:var(--g); color:#fff; border-color:var(--g); }
 </style>
 {% endblock %}
-{% block content %}
-<div class="container py-4" style="max-width:800px;">
+{% block panel_content %}
+<div style="max-width:999px;display:none;"><div style="max-width:800px;">
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="/surveys/">설문조사</a></li>

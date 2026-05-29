@@ -1,4 +1,5 @@
-{% extends 'base.html' %}
+{% extends 'base_3panel.html' %}
+{% block menu_surveys %}active{% endblock %}
 {% block title %}설문 만들기{% endblock %}
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -21,8 +22,8 @@
 .add-q-btn:hover { background:var(--gl); border-style:solid; }
 </style>
 {% endblock %}
-{% block content %}
-<div class="container py-4" style="max-width:780px;">
+{% block panel_content %}
+<div style="max-width:999px;display:none;"><div style="max-width:780px;">
   <div class="d-flex align-items-center gap-3 mb-4">
     <a href="/surveys/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i></a>
     <div>

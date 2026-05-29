@@ -734,23 +734,7 @@ def management_doc_detail(request, pk):
 from .models import DirectMessage, PublicChat, GroupChat, Group, CustomUser
 
 def public_chat(request):
-    from .models import ManagementDocument, Post, Board, Group
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-    try:
-        notice_board = Board.objects.filter(board_type="notice", is_active=True).first()
-        notice_posts = Post.objects.filter(board=notice_board, is_active=True).order_by("-created_at")[:3] if notice_board else []
-    except: notice_posts = []
-    try: recent_docs = ManagementDocument.objects.filter(is_active=True).order_by("-updated_at")[:3]
-    except: recent_docs = []
-    try: online_users = User.objects.filter(is_active=True).order_by("-last_login")[:8]
-    except: online_users = []
-    try: my_groups = Group.objects.filter(members=request.user, is_active=True)[:5] if request.user.is_authenticated else []
-    except: my_groups = []
-    return render(request, "chat/public_chat.html", {
-        "notice_posts": notice_posts, "recent_docs": recent_docs,
-        "online_users": online_users, "my_groups": my_groups,
-    })
+    return redirect('index')
 
 def public_chat_messages(request):
     import json

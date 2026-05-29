@@ -1,5 +1,5 @@
 {% extends 'chat_base.html' %}
-{% block title %}오픈채팅 — 해솔7{% endblock %}
+{% block title %}전체채팅 — 해솔7{% endblock %}
 {% block nav_public %}active{% endblock %}
 {% block tab_chat %}active{% endblock %}
 {% block left_title %}입주민{% endblock %}
@@ -41,7 +41,7 @@
     <div class="tab-dd-menu" id="tabDdMenu">
       <button class="tab-opt active" id="tabOpt-public">
         <div class="tab-opt-icon" style="background:#e8f5ee;color:var(--g);"><i class="fas fa-globe"></i></div>
-        <div><div style="font-weight:600;">전체 채팅</div><div style="font-size:0.72rem;color:#999;">단지 전체 오픈채팅</div></div>
+        <div><div style="font-weight:600;">전체 채팅</div><div style="font-size:0.72rem;color:#999;">단지 전체 전체채팅</div></div>
       </button>
       <button class="tab-opt" id="tabOpt-dm">
         <div class="tab-opt-icon" style="background:#e8f0fe;color:#4285f4;"><i class="fas fa-envelope"></i></div>
@@ -58,7 +58,7 @@
 
 <div class="msg-area" id="chat-box">
   {% if not user.is_authenticated %}
-  <div class="empty"><div class="empty-icon">🔒</div><div class="empty-title">로그인이 필요해요</div><div class="empty-desc"><a href="/login/" style="color:var(--g);font-weight:600;">로그인하고 채팅 참여하기</a></div></div>
+  <div class="empty"><div class="empty-icon">🔒</div><div class="empty-title">로그인이 필요해요</div><div class="empty-desc"><a href="/accounts/login/" style="color:var(--g);font-weight:600;">로그인하고 채팅 참여하기</a></div></div>
   {% else %}
   <div style="text-align:center;color:#bbb;font-size:0.8rem;padding:20px;"><i class="fas fa-circle-notch fa-spin" style="display:block;margin-bottom:6px;"></i>불러오는 중...</div>
   {% endif %}
@@ -245,7 +245,7 @@ loadPolls();
 setInterval(loadPolls, 10000);
 
 initTabDropdown([
-  { id:'public', icon:'fa-globe',    label:'전체 채팅',  desc:'단지 전체 오픈채팅', fn: null },
+  { id:'public', icon:'fa-globe',    label:'전체 채팅',  desc:'단지 전체 전체채팅', fn: null },
   { id:'dm',     icon:'fa-envelope', label:'1:1 쪽지',   desc:'이웃과 개인 대화',   url:'/chat/dm/list/' },
   { id:'group',  icon:'fa-users',    label:'소모임 채팅', desc:'소모임 대화방',      url:'/groups/' },
 ]);

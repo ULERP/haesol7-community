@@ -20,7 +20,7 @@
       background: var(--g); display: flex; align-items: center;
       padding: 0 14px; gap: 8px; z-index: 200; box-shadow: 0 1px 4px rgba(0,0,0,.2);
     }
-    .nav-brand { color: #fff; font-weight: 700; font-size: 1rem; text-decoration: none; flex-shrink: 0; }
+    .nav-brand { color: #fff; font-weight: 700; font-size: 1.1rem; text-decoration: none; flex-shrink: 0; }
     .nav-links { display: flex; gap: 2px; align-items: center; flex: 1; overflow-x: auto; scrollbar-width: none; }
     .nav-links::-webkit-scrollbar { display: none; }
     .nav-btn { color: rgba(255,255,255,.85); text-decoration: none; font-size: 0.78rem; padding: 5px 9px; border-radius: 8px; white-space: nowrap; transition: background .15s; border: none; background: none; cursor: pointer; }
@@ -223,7 +223,7 @@
     <a href="/" class="nav-brand"><i class="fas fa-home me-1"></i>해솔7</a>
     <div class="nav-links">
       <a href="/" class="nav-btn {% block nav_home %}{% endblock %}"><i class="fas fa-home me-1"></i>홈</a>
-      <a href="/chat/public/" class="nav-btn highlight {% block nav_public %}{% endblock %}"><i class="fas fa-comments me-1"></i>오픈채팅</a>
+      <a href="/chat/public/" class="nav-btn highlight {% block nav_public %}{% endblock %}"><i class="fas fa-comments me-1"></i>전체채팅</a>
       <a href="/chat/dm/list/" class="nav-btn {% block nav_dm %}{% endblock %}"><i class="fas fa-envelope me-1"></i>쪽지</a>
       <a href="/groups/" class="nav-btn {% block nav_groups %}{% endblock %}"><i class="fas fa-users me-1"></i>소모임</a>
       <a href="/boards/" class="nav-btn {% block nav_boards %}{% endblock %}"><i class="fas fa-clipboard me-1"></i>게시판</a>
@@ -245,7 +245,7 @@
       <a href="/admin/" class="nav-icon-btn"><i class="fas fa-cog"></i></a>
       {% endif %}
       {% else %}
-      <a href="/login/" class="nav-btn">로그인</a>
+      <a href="/accounts/login/" class="nav-btn">로그인</a>
       {% endif %}
       <!-- 모바일: 오른쪽 슬라이드 열기 -->
       <button class="nav-btn d-md-none" onclick="openSlide('right')" style="padding:6px 8px;">
@@ -348,6 +348,22 @@
           if (t.url) location.href = t.url;
           else if (t.fn) t.fn();
         });
+      });
+    }
+
+    function setupImageInput(inputId, previewWrapId, previewId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      input.addEventListener('change', function() {
+        if (!this.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = document.getElementById(previewId);
+          const wrap = document.getElementById(previewWrapId);
+          if (img) img.src = e.target.result;
+          if (wrap) wrap.style.display = 'flex';
+        };
+        reader.readAsDataURL(this.files[0]);
       });
     }
 
@@ -570,220 +586,6 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   </div>
 </div>
 
-<script>
-// 투표 관련 전역 함수
-function addPollOption() {
-  const container = document.getElementById('poll-options');
-  const count = container.querySelectorAll('.poll-opt').length + 1;
-  const inp = document.createElement('input');
-  inp.type = 'text';
-  inp.className = 'form-control form-control-sm mb-1 poll-opt';
-  inp.placeholder = `선택지 ${count}`;
-  container.appendChild(inp);
-}
-
-async function submitPoll() {
-  const question = document.getElementById('poll-question').value.trim();
-  const options = [...document.querySelectorAll('.poll-opt')].map(i => i.value.trim()).filter(Boolean);
-  if (!question || options.length < 2) {
-    alert('질문과 선택지 2개 이상을 입력해주세요!');
-    return;
-  }
-  const chatType = window.CHAT_TYPE || 'public';
-  const groupId = window.CHAT_GROUP_ID || null;
-  const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || window.CSRF || '';
-  try {
-    const r = await fetch('/chat/poll/create/', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','X-CSRFToken': csrf},
-      body: JSON.stringify({question, options, chat_type: chatType, group_id: groupId})
-    });
-    const d = await r.json();
-    if (d.status === 'ok') {
-      bootstrap.Modal.getInstance(document.getElementById('pollModal'))?.hide();
-      document.getElementById('poll-question').value = '';
-      document.querySelectorAll('.poll-opt').forEach((el,i) => { if(i>1) el.remove(); else el.value=''; });
-      if (typeof fetchMsgs === 'function') fetchMsgs();
-      loadPolls();
-    }
-  } catch(e) { alert('오류가 발생했어요'); }
-}
-
-async function votePoll(pollId, option) {
-  const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || window.CSRF || '';
-  const r = await fetch(`/chat/poll/${pollId}/vote/`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','X-CSRFToken': csrf},
-    body: JSON.stringify({option})
-  });
-  const d = await r.json();
-  if (d.status === 'ok') loadPolls();
-}
-
-async function loadPolls() {
-  const chatType = window.CHAT_TYPE || 'public';
-  const groupId = window.CHAT_GROUP_ID || '';
-  const url = `/chat/polls/?type=${chatType}${groupId ? '&group_id='+groupId : ''}`;
-  try {
-    const r = await fetch(url);
-    const d = await r.json();
-    renderPolls(d.polls);
-  } catch(e) {}
-}
-
-function renderPolls(polls) {
-  let container = document.getElementById('polls-container');
-  if (!container) return;
-  if (!polls || polls.length === 0) {
-    container.innerHTML = '<div class="text-muted small text-center py-3">진행 중인 투표가 없어요</div>';
-    return;
-  }
-  container.innerHTML = polls.map(p => `
-    <div class="p-3 mb-2 rounded" style="background:#f8f9fa;border:1px solid #e4e6ea;">
-      <div class="fw-bold small mb-2">📊 ${esc(p.question)}</div>
-      ${p.results.map(r => `
-        <div class="mb-1">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="small">${esc(r.option)} ${p.my_vote === r.option ? '✓' : ''}</span>
-            <span class="small text-muted">${r.count}표 (${r.percent}%)</span>
-          </div>
-          <div style="height:6px;background:#e4e6ea;border-radius:3px;overflow:hidden;">
-            <div style="width:${r.percent}%;height:100%;background:#1a7a4a;border-radius:3px;transition:width .5s;"></div>
-          </div>
-          ${p.is_active && !p.my_vote ? `<button class="btn btn-outline-success btn-sm w-100 mt-1" style="font-size:0.72rem;padding:2px;" onclick="votePoll(${p.id},'${esc(r.option)}')">선택</button>` : ''}
-        </div>
-      `).join('')}
-      <div class="text-muted mt-1" style="font-size:0.7rem;">총 ${p.total}표 · ${p.creator} · ${p.created_at}</div>
-    </div>
-  `).join('');
-}
-
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-</script>
-
-<!-- 투표 생성 모달 -->
-<div class="modal fade" id="pollModal" tabindex="-1">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content border-0 shadow">
-      <div class="modal-header border-0 pb-0">
-        <h6 class="modal-title fw-bold"><i class="fas fa-poll me-2 text-success"></i>채팅 투표 만들기</h6>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label small fw-semibold">질문</label>
-          <input type="text" id="poll-question" class="form-control form-control-sm" placeholder="예: 이번 주 모임 요일은?">
-        </div>
-        <div class="mb-2">
-          <label class="form-label small fw-semibold">선택지</label>
-          <div id="poll-options">
-            <input type="text" class="form-control form-control-sm mb-1 poll-opt" placeholder="선택지 1">
-            <input type="text" class="form-control form-control-sm mb-1 poll-opt" placeholder="선택지 2">
-          </div>
-          <button type="button" class="btn btn-outline-success btn-sm w-100 mt-1" onclick="addPollOption()">
-            <i class="fas fa-plus me-1"></i>선택지 추가
-          </button>
-        </div>
-      </div>
-      <div class="modal-footer border-0 pt-0">
-        <button class="btn btn-success w-100" onclick="submitPoll()">
-          <i class="fas fa-paper-plane me-1"></i>투표 시작
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// 투표 관련 전역 함수
-function addPollOption() {
-  const container = document.getElementById('poll-options');
-  const count = container.querySelectorAll('.poll-opt').length + 1;
-  const inp = document.createElement('input');
-  inp.type = 'text';
-  inp.className = 'form-control form-control-sm mb-1 poll-opt';
-  inp.placeholder = `선택지 ${count}`;
-  container.appendChild(inp);
-}
-
-async function submitPoll() {
-  const question = document.getElementById('poll-question').value.trim();
-  const options = [...document.querySelectorAll('.poll-opt')].map(i => i.value.trim()).filter(Boolean);
-  if (!question || options.length < 2) {
-    alert('질문과 선택지 2개 이상을 입력해주세요!');
-    return;
-  }
-  const chatType = window.CHAT_TYPE || 'public';
-  const groupId = window.CHAT_GROUP_ID || null;
-  const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || window.CSRF || '';
-  try {
-    const r = await fetch('/chat/poll/create/', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json','X-CSRFToken': csrf},
-      body: JSON.stringify({question, options, chat_type: chatType, group_id: groupId})
-    });
-    const d = await r.json();
-    if (d.status === 'ok') {
-      bootstrap.Modal.getInstance(document.getElementById('pollModal'))?.hide();
-      document.getElementById('poll-question').value = '';
-      document.querySelectorAll('.poll-opt').forEach((el,i) => { if(i>1) el.remove(); else el.value=''; });
-      if (typeof fetchMsgs === 'function') fetchMsgs();
-      loadPolls();
-    }
-  } catch(e) { alert('오류가 발생했어요'); }
-}
-
-async function votePoll(pollId, option) {
-  const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || window.CSRF || '';
-  const r = await fetch(`/chat/poll/${pollId}/vote/`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','X-CSRFToken': csrf},
-    body: JSON.stringify({option})
-  });
-  const d = await r.json();
-  if (d.status === 'ok') loadPolls();
-}
-
-async function loadPolls() {
-  const chatType = window.CHAT_TYPE || 'public';
-  const groupId = window.CHAT_GROUP_ID || '';
-  const url = `/chat/polls/?type=${chatType}${groupId ? '&group_id='+groupId : ''}`;
-  try {
-    const r = await fetch(url);
-    const d = await r.json();
-    renderPolls(d.polls);
-  } catch(e) {}
-}
-
-function renderPolls(polls) {
-  let container = document.getElementById('polls-container');
-  if (!container) return;
-  if (!polls || polls.length === 0) {
-    container.innerHTML = '<div class="text-muted small text-center py-3">진행 중인 투표가 없어요</div>';
-    return;
-  }
-  container.innerHTML = polls.map(p => `
-    <div class="p-3 mb-2 rounded" style="background:#f8f9fa;border:1px solid #e4e6ea;">
-      <div class="fw-bold small mb-2">📊 ${esc(p.question)}</div>
-      ${p.results.map(r => `
-        <div class="mb-1">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <span class="small">${esc(r.option)} ${p.my_vote === r.option ? '✓' : ''}</span>
-            <span class="small text-muted">${r.count}표 (${r.percent}%)</span>
-          </div>
-          <div style="height:6px;background:#e4e6ea;border-radius:3px;overflow:hidden;">
-            <div style="width:${r.percent}%;height:100%;background:#1a7a4a;border-radius:3px;transition:width .5s;"></div>
-          </div>
-          ${p.is_active && !p.my_vote ? `<button class="btn btn-outline-success btn-sm w-100 mt-1" style="font-size:0.72rem;padding:2px;" onclick="votePoll(${p.id},'${esc(r.option)}')">선택</button>` : ''}
-        </div>
-      `).join('')}
-      <div class="text-muted mt-1" style="font-size:0.7rem;">총 ${p.total}표 · ${p.creator} · ${p.created_at}</div>
-    </div>
-  `).join('');
-}
-
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-</script>
 
 {% block extra_scripts %}{% endblock %}
 </body>

@@ -93,7 +93,7 @@
 
   /* 오른쪽 패널 */
   .info-sec { margin-bottom: 14px; }
-  .info-sec-title { font-size: 0.68rem; color: #aaa; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; padding: 0 2px; }
+  .info-sec-title { font-size: 0.68rem; color: #aaa; font-weight: 700; letter-spacing: .03em; margin-bottom: 6px; padding: 0 2px; }
   .info-card { display: block; background: #f8f9fa; border-radius: 9px; padding: 9px 11px; margin-bottom: 5px; font-size: 0.79rem; text-decoration: none; color: inherit; transition: background .12s; }
   .info-card:hover { background: #eef7f2; color: inherit; }
   .info-card-t { font-weight: 600; color: #222; margin-bottom: 1px; font-size: 0.8rem; }
@@ -193,7 +193,7 @@
             <div class="tab-option-icon" style="background:#e8f5ee;color:var(--g);"><i class="fas fa-globe"></i></div>
             <div>
               <div style="font-weight:600;">전체 채팅</div>
-              <div style="font-size:0.72rem;color:#999;">단지 전체 오픈채팅</div>
+              <div style="font-size:0.72rem;color:#999;">단지 전체 전체채팅</div>
             </div>
           </button>
           <button class="tab-option" id="opt-dm" onclick="switchTab('dm')">
@@ -230,7 +230,7 @@
           <div style="font-size:1.1rem;font-weight:700;color:var(--g);margin-bottom:10px;">👋 해솔마을7단지에 오신 것을 환영합니다!</div>
           <div class="onboard-step">
             <div class="step-num">1</div>
-            <div class="step-text"><strong>로그인</strong>하면 이웃과 채팅을 시작할 수 있어요.<br><a href="/login/" class="step-link">→ 로그인하기</a> · <a href="/signup/" class="step-link">회원가입</a></div>
+            <div class="step-text"><strong>로그인</strong>하면 이웃과 채팅을 시작할 수 있어요.<br><a href="/accounts/login/" class="step-link">→ 로그인하기</a> · <a href="/accounts/signup/" class="step-link">회원가입</a></div>
           </div>
           <div class="onboard-step">
             <div class="step-num">2</div>
@@ -287,8 +287,8 @@
           <div class="empty-icon">🔒</div>
           <div class="empty-title">로그인이 필요해요</div>
           <div class="empty-desc">1:1 쪽지는 로그인 후 이용할 수 있어요.</div>
-          <a href="/login/" class="empty-btn">로그인하기</a>
-          <a href="/signup/" class="empty-btn-outline">회원가입</a>
+          <a href="/accounts/login/" class="empty-btn">로그인하기</a>
+          <a href="/accounts/signup/" class="empty-btn-outline">회원가입</a>
         </div>
         {% endif %}
       </div>
@@ -324,7 +324,7 @@
           <div class="empty-icon">🔒</div>
           <div class="empty-title">로그인이 필요해요</div>
           <div class="empty-desc">소모임 채팅은 로그인 후 이용할 수 있어요.</div>
-          <a href="/login/" class="empty-btn">로그인하기</a>
+          <a href="/accounts/login/" class="empty-btn">로그인하기</a>
         </div>
         {% endif %}
       </div>
@@ -350,7 +350,7 @@
           <div class="empty-icon">👥</div>
           <div class="empty-title">입주민 정보가 없어요</div>
           <div class="empty-desc">회원가입 후 이웃과 함께해요!</div>
-          <a href="/signup/" class="empty-btn">회원가입</a>
+          <a href="/accounts/signup/" class="empty-btn">회원가입</a>
         </div>
         {% endfor %}
       </div>
@@ -469,8 +469,8 @@
         <div class="info-card" style="text-align:center;cursor:default;">
           <div style="font-size:0.85rem;font-weight:600;color:#333;margin-bottom:8px;">함께 참여해요! 🏘️</div>
           <div style="font-size:0.75rem;color:#888;margin-bottom:10px;">로그인하면 채팅·봉사·소모임<br>모든 기능을 이용할 수 있어요.</div>
-          <a href="/login/" style="display:block;background:var(--g);color:#fff;border-radius:8px;padding:7px;font-size:0.8rem;font-weight:600;text-decoration:none;margin-bottom:6px;">로그인</a>
-          <a href="/signup/" style="display:block;border:1.5px solid var(--g);color:var(--g);border-radius:8px;padding:6px;font-size:0.8rem;font-weight:600;text-decoration:none;">회원가입</a>
+          <a href="/accounts/login/" style="display:block;background:var(--g);color:#fff;border-radius:8px;padding:7px;font-size:0.8rem;font-weight:600;text-decoration:none;margin-bottom:6px;">로그인</a>
+          <a href="/accounts/signup/" style="display:block;border:1.5px solid var(--g);color:var(--g);border-radius:8px;padding:6px;font-size:0.8rem;font-weight:600;text-decoration:none;">회원가입</a>
         </div>
       </div>
       {% endif %}
@@ -560,6 +560,7 @@ async function fetchMessages() {
     const res = await fetch(PUBLIC_URL + '?since=' + lastId);
     const data = await res.json();
     const box = document.getElementById('chat-box');
+    if (data.pinned && data.pinned.length > 0 && typeof renderPinned === 'function') renderPinned(data.pinned);
     if (data.messages && data.messages.length > 0) {
       if (lastId === 0) box.innerHTML = '';
       renderMsgs(data.messages);
@@ -579,11 +580,10 @@ async function sendMessage() {
   if (!msg) return;
   inp.value = ''; inp.style.height = 'auto';
   try {
-    await fetch(PUBLIC_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-      body: JSON.stringify({ message: msg })
-    });
+    const fd = new FormData();
+    fd.append('message', msg);
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    await fetch(PUBLIC_URL, { method: 'POST', body: fd });
     fetchMessages();
   } catch(e) {}
 }

@@ -1,7 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'base_3panel.html' %}
 {% block title %}검색 결과{% endblock %}
-{% block content %}
-<div class="container py-4">
+{% block panel_content %}
   <div class="row justify-content-center mb-4">
     <div class="col-12 col-md-8">
       <form method="get" action="/search/">
@@ -37,5 +36,4 @@
     {% endfor %}
   </div>
   {% endif %}
-</div>
 {% endblock %}

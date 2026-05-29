@@ -115,3 +115,12 @@ ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
 DEFAULT_NOTIFICATION_PERSONA = '다정한 이웃'
 
 AUTH_USER_MODEL = 'core.CustomUser'
+
+# 인증 URL 설정
+
+
+# 인증 URL 설정
+
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"

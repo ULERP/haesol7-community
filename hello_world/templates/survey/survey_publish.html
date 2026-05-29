@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'base_3panel.html' %}
+{% block menu_surveys %}active{% endblock %}
 {% block title %}설문 결과 발행{% endblock %}
-{% block content %}
-<div class="container py-4" style="max-width:560px;">
+{% block panel_content %}
   <div class="card border-0 shadow-sm">
     <div class="card-body p-4">
       <h5 class="fw-bold mb-1"><i class="fas fa-newspaper me-2 text-success"></i>설문 결과 게시글로 발행</h5>
@@ -37,5 +37,4 @@
       </form>
     </div>
   </div>
-</div>
 {% endblock %}

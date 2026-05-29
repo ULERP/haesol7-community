@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root { --haesol-green: #1a7a4a; --haesol-light: #e8f5ee; }
-    body { background: #f4f6f8; }
+    body { background: #f4f6f8; margin: 0; padding: 0; }
     .navbar { background: var(--haesol-green) !important; }
     .navbar-brand { color: #fff !important; font-size: 1.2rem; }
     .nav-link { color: rgba(255,255,255,0.85) !important; }
@@ -20,70 +20,78 @@
   {% block extra_head %}{% endblock %}
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg shadow-sm mb-0 py-2">
-    <div class="container-fluid px-3">
-      <a class="navbar-brand fw-bold" href="/"><i class="fas fa-home me-1"></i>해솔7 지킴이</a>
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto gap-1 align-items-lg-center">
-          <li class="nav-item"><a class="nav-link chat-link fw-semibold" href="/chat/public/"><i class="fas fa-comments me-1"></i>오픈채팅</a></li>
-          <li class="nav-item"><a class="nav-link" href="/chat/dm/list/"><i class="fas fa-envelope me-1"></i>쪽지</a></li>
-          <li class="nav-item"><a class="nav-link" href="/boards/"><i class="fas fa-clipboard me-1"></i>게시판</a></li>
-          <li class="nav-item"><a class="nav-link" href="/community/docs/"><i class="fas fa-file-alt me-1"></i>관리문서</a></li>
-          <li class="nav-item"><a class="nav-link" href="/surveys/"><i class="fas fa-poll me-1"></i>설문</a></li>
-          <li class="nav-item"><a class="nav-link" href="/volunteer/"><i class="fas fa-calendar me-1"></i>봉사달력</a></li>
-          <li class="nav-item"><a class="nav-link" href="/chatbot/"><i class="fas fa-robot me-1"></i>AI안내</a></li>
-          <li class="nav-item">
-            <form class="d-flex" method="get" action="/search/">
-              <div class="input-group input-group-sm">
-                <input class="form-control" type="text" name="q" placeholder="검색...">
-                <button class="btn btn-outline-light" type="submit"><i class="fas fa-search"></i></button>
-              </div>
-            </form>
-          </li>
-        </ul>
-        <ul class="navbar-nav align-items-lg-center gap-2">
+  <nav style="background:#1a7a4a;height:52px;display:flex;align-items:center;padding:0 16px;position:sticky;top:0;z-index:1000;box-shadow:0 1px 4px rgba(0,0,0,.15);">
+    <a href="/" style="color:#fff;font-weight:700;font-size:1.05rem;text-decoration:none;display:flex;align-items:center;gap:6px;flex-shrink:0;margin-right:16px;">
+      <i class="fas fa-home"></i>해솔7 지킴이
+    </a>
+    <div style="display:flex;align-items:center;gap:2px;flex:1;overflow:hidden;">
+      <a href="/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+        <i class="fas fa-comments"></i>전체채팅
+      </a>
+      <a href="/chat/dm/list/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+        <i class="fas fa-envelope"></i>쪽지
+      </a>
+      <a href="/boards/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+        <i class="fas fa-clipboard-list"></i>게시판
+      </a>
+      <a href="/community/docs/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+        <i class="fas fa-file-alt"></i>관리문서
+      </a>
+      <a href="/surveys/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+        <i class="fas fa-poll"></i>설문
+      </a>
+      <a href="/volunteer/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+        <i class="fas fa-calendar-alt"></i>봉사달력
+      </a>
+      <a href="/chatbot/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+        <i class="fas fa-robot"></i>AI안내
+      </a>
+      <form method="get" action="/search/" style="display:flex;align-items:center;margin-left:4px;">
+        <div style="display:flex;background:rgba(255,255,255,.15);border-radius:20px;overflow:hidden;height:30px;">
+          <input type="text" name="q" placeholder="검색..." style="background:none;border:none;color:#fff;padding:0 10px;font-size:0.78rem;width:120px;outline:none;">
+          <button type="submit" style="background:none;border:none;color:#fff;padding:0 10px;cursor:pointer;"><i class="fas fa-search" style="font-size:0.78rem;"></i></button>
+        </div>
+      </form>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
           {% if user.is_authenticated %}
-          <li class="nav-item">
-            <a href="/notifications/" class="nav-link position-relative">
+            <a href="/notifications/" style="color:rgba(255,255,255,.85);padding:5px 8px;border-radius:8px;position:relative;text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
               <i class="fas fa-bell"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger noti-badge" id="noti-count" style="display:none">0</span>
+              <span id="noti-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#ff4444;border-radius:50%;border:1.5px solid #1a7a4a;"></span>
             </a>
-          </li>
           {% if user.is_staff %}
-          <li class="nav-item"><a class="nav-link" href="/admin/"><i class="fas fa-cog me-1"></i>관리</a></li>
+          <a href="/admin/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;display:flex;align-items:center;gap:4px;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+            <i class="fas fa-cog"></i>관리
+          </a>
           {% endif %}
-          <li class="nav-item dropdown">
-            <a class="nav-link fw-bold dropdown-toggle" href="#" data-bs-toggle="dropdown">
-              <i class="fas fa-user me-1"></i>{{ user.nickname|default:user.username }}님
-              {% if user.unit_number %}<span class="text-white-50 small">({{ user.unit_number }})</span>{% endif %}
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-              <li><h6 class="dropdown-header">
-                {{ user.nickname|default:user.username }}
-                {% if user.unit_number %} · {{ user.unit_number }}{% endif %}
-              </h6></li>
-              <li><a class="dropdown-item" href="/mypage/"><i class="fas fa-home me-2 text-success"></i>마이페이지</a></li>
-              <li><a class="dropdown-item" href="/mypage/edit/"><i class="fas fa-pen me-2 text-muted"></i>프로필 수정</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <form method="post" action="/accounts/logout/" class="px-3 py-1">
+          <div style="position:relative;" id="user-menu-wrap">
+            <button onclick="document.getElementById('user-dd').style.display=document.getElementById('user-dd').style.display==='block'?'none':'block'" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;color:#fff;padding:5px 12px;font-size:0.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+              <i class="fas fa-user" style="font-size:0.78rem;"></i>
+              {{ user.nickname|default:user.username }}님
+              {% if user.unit_number %}<span style="opacity:.7;font-size:0.72rem;">({{ user.unit_number }})</span>{% endif %}
+              <i class="fas fa-chevron-down" style="font-size:0.62rem;opacity:.7;"></i>
+            </button>
+            <div id="user-dd" style="display:none;position:absolute;right:0;top:calc(100% + 6px);background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:180px;z-index:9999;overflow:hidden;">
+              <div style="padding:12px 14px;border-bottom:1px solid #f0f2f4;">
+                <div style="font-weight:700;font-size:0.85rem;color:#222;">{{ user.nickname|default:user.username }}</div>
+                <div style="font-size:0.72rem;color:#999;">{{ user.unit_number|default:"입주민" }}</div>
+              </div>
+              <a href="/mypage/" style="display:flex;align-items:center;gap:8px;padding:10px 14px;text-decoration:none;color:#333;font-size:0.82rem;transition:background .12s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='none'"><i class="fas fa-home" style="color:#1a7a4a;width:14px;"></i>마이페이지</a>
+              <a href="/mypage/edit/" style="display:flex;align-items:center;gap:8px;padding:10px 14px;text-decoration:none;color:#333;font-size:0.82rem;transition:background .12s;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='none'"><i class="fas fa-pen" style="color:#999;width:14px;"></i>프로필 수정</a>
+              <div style="border-top:1px solid #f0f2f4;padding:8px 14px;">
+                <form method="post" action="/accounts/logout/">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                  <button type="submit" style="width:100%;background:none;border:1px solid #ff4444;border-radius:8px;color:#ff4444;padding:6px;font-size:0.78rem;cursor:pointer;font-weight:600;">
                     <i class="fas fa-sign-out-alt me-1"></i>로그아웃
                   </button>
                 </form>
-              </li>
-            </ul>
-          </li>
+              </div>
+            </div>
+          </div>
           {% else %}
-          <li class="nav-item"><a class="nav-link" href="/login/">로그인</a></li>
-          <li class="nav-item"><a class="nav-link" href="/signup/">회원가입</a></li>
+          <a href="/accounts/login/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 12px;border-radius:8px;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">로그인</a>
+          <a href="/accounts/signup/" style="background:rgba(255,255,255,.2);color:#fff;text-decoration:none;font-size:0.82rem;padding:5px 12px;border-radius:8px;font-weight:600;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">회원가입</a>
           {% endif %}
-        </ul>
-      </div>
     </div>
   </nav>
 
@@ -101,7 +109,7 @@
       try {
         const res = await fetch('/notifications/count/');
         const data = await res.json();
-        const badge = document.getElementById('noti-count');
+        const badge = document.getElementById('noti-dot');
         if (data.count > 0) { badge.textContent = data.count; badge.style.display = 'flex'; }
         else { badge.style.display = 'none'; }
       } catch(e) {}
@@ -111,5 +119,14 @@
     {% endif %}
   </script>
   {% block extra_scripts %}{% endblock %}
+<script>
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('user-menu-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    const dd = document.getElementById('user-dd');
+    if (dd) dd.style.display = 'none';
+  }
+});
+</script>
 </body>
 </html>

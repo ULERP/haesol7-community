@@ -1,7 +1,7 @@
-{% extends 'base.html' %}
+{% extends 'base_3panel.html' %}
+{% block menu_groups %}active{% endblock %}
 {% block title %}{{ post.title }} — {{ group.name }}{% endblock %}
-{% block content %}
-<div class="container py-4" style="max-width:760px;">
+{% block panel_content %}
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="/groups/">소모임</a></li>
@@ -79,5 +79,4 @@
     </div>
     {% endif %}
   </div>
-</div>
 {% endblock %}
