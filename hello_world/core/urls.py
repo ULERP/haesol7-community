@@ -1,5 +1,6 @@
 from django.urls import path, include
 from django.contrib.auth.views import LogoutView
+from . import views_letter
 from rest_framework.routers import DefaultRouter
 from . import views
 
@@ -78,4 +79,13 @@ urlpatterns = [
     path('notifications/',                 views.notification_list,    name='notification_list'),
     path('notifications/count/',           views.notification_count,   name='notification_count'),
     path('api/', include(router.urls)),
+
+    # 쪽지함
+    path('letters/', views_letter.letter_inbox, name='letter_inbox'),
+    path('letters/sent/', views_letter.letter_sent, name='letter_sent'),
+    path('letters/write/', views_letter.letter_write, name='letter_write'),
+    path('letters/write/<int:receiver_id>/', views_letter.letter_write, name='letter_write_to'),
+    path('letters/<int:pk>/', views_letter.letter_detail, name='letter_detail'),
+    path('letters/<int:pk>/reply/', views_letter.letter_reply, name='letter_reply'),
+    path('letters/<int:pk>/delete/', views_letter.letter_delete, name='letter_delete'),
 ]

@@ -736,3 +736,24 @@ class ChatPoll(models.Model):
             pct = round(cnt/total*100) if total > 0 else 0
             results.append({'option': opt, 'count': cnt, 'percent': pct, 'voters': voters})
         return results
+
+class Letter(models.Model):
+    """쪽지 (받은쪽지함 / 보낸쪽지함 이원화)"""
+    sender   = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='sent_letters',     verbose_name='보낸 사람')
+    receiver = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='received_letters', verbose_name='받는 사람')
+    subject  = models.CharField(max_length=100, verbose_name='제목')
+    content  = models.TextField(verbose_name='내용')
+    parent   = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies', verbose_name='원본 쪽지')
+    is_read          = models.BooleanField(default=False)
+    sender_deleted   = models.BooleanField(default=False)
+    receiver_deleted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = '쪽지'
+        verbose_name_plural = '쪽지 목록'
+
+    def __str__(self):
+        return f"[{self.subject}] {self.sender} → {self.receiver}"
+

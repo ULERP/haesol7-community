@@ -25,10 +25,23 @@
       <i class="fas fa-home"></i>해솔7 지킴이
     </a>
     <div style="display:flex;align-items:center;gap:2px;flex:1;overflow:hidden;">
-      <a href="/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
-        <i class="fas fa-comments"></i>전체채팅
-      </a>
-      <a href="/chat/dm/list/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+      <div style="position:relative;display:inline-block;" onmouseenter="this.querySelector('.chat-drop').style.display='block'" onmouseleave="this.querySelector('.chat-drop').style.display='none'">
+        <a href="/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+          <i class="fas fa-comments"></i>채팅 <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+        </a>
+        <div class="chat-drop" style="display:none;position:absolute;top:100%;left:0;background:#1a7a4a;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.3);min-width:130px;z-index:999;overflow:hidden;">
+          <a href="/" style="display:flex;align-items:center;gap:8px;padding:9px 14px;color:rgba(255,255,255,.9);text-decoration:none;font-size:0.82rem;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+            <i class="fas fa-comments"></i>전체채팅
+          </a>
+          <a href="/chat/dm/list/" style="display:flex;align-items:center;gap:8px;padding:9px 14px;color:rgba(255,255,255,.9);text-decoration:none;font-size:0.82rem;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+            <i class="fas fa-comment-dots"></i>1:1채팅
+          </a>
+          <a href="/groups/" style="display:flex;align-items:center;gap:8px;padding:9px 14px;color:rgba(255,255,255,.9);text-decoration:none;font-size:0.82rem;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
+            <i class="fas fa-users"></i>소모임채팅
+          </a>
+        </div>
+      </div>
+      <a href="/letters/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
         <i class="fas fa-envelope"></i>쪽지
       </a>
       <a href="/boards/" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:0.82rem;padding:5px 9px;border-radius:8px;white-space:nowrap;display:flex;align-items:center;gap:4px;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.15)'" onmouseout="this.style.background='none'">
