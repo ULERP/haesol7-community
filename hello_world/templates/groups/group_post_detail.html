@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }} — {{ group.name }}{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:760px;">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/groups/">소모임</a></li>
+      <li class="breadcrumb-item"><a href="/groups/{{ group.pk }}/">{{ group.name }}</a></li>
+      <li class="breadcrumb-item"><a href="/groups/{{ group.pk }}/posts/">게시판</a></li>
+      <li class="breadcrumb-item active">{{ post.title|truncatechars:20 }}</li>
+    </ol>
+  </nav>
+
+  <!-- 게시글 -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+      <h5 class="fw-bold mb-1">{{ post.title }}</h5>
+      <div class="text-muted small d-flex gap-3">
+        <span><i class="fas fa-user me-1"></i>{{ post.author.nickname|default:post.author.username }}{% if post.author.unit_number %} ({{ post.author.unit_number }}){% endif %}</span>
+        <span><i class="fas fa-clock me-1"></i>{{ post.created_at|date:"Y.m.d H:i" }}</span>
+        <span><i class="fas fa-comment me-1"></i>{{ comments|length }}개</span>
+      </div>
+    </div>
+    <div class="card-body py-4">
+      <p style="white-space:pre-wrap;line-height:1.8;">{{ post.content }}</p>
+      {% if post.image %}
+      <img src="{{ post.image.url }}" class="img-fluid rounded mt-3" style="max-height:400px;">
+      {% endif %}
+    </div>
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+      <a href="/groups/{{ group.pk }}/posts/" class="btn btn-sm btn-outline-secondary">← 목록</a>
+      {% if request.user == post.author %}
+      <form method="post" action="/groups/{{ group.pk }}/posts/{{ post.pk }}/delete/" class="d-inline">
+        {% csrf_token %}
+        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('삭제할까요?')">
+          <i class="fas fa-trash me-1"></i>삭제
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 댓글 -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white fw-bold py-3">
+      <i class="fas fa-comments me-2 text-success"></i>댓글 {{ comments|length }}개
+    </div>
+    <div class="card-body p-3">
+      {% for c in comments %}
+      <div class="d-flex gap-3 py-3 border-bottom">
+        <a href="/users/{{ c.author.pk }}/" style="text-decoration:none;flex-shrink:0;">
+          <div style="width:36px;height:36px;border-radius:50%;background:#1a7a4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;">
+            {{ c.author.nickname|default:c.author.username|first|upper }}
+          </div>
+        </a>
+        <div style="flex:1;">
+          <div class="fw-semibold small mb-1">
+            {{ c.author.nickname|default:c.author.username }}
+            {% if c.author.unit_number %}<span class="text-muted fw-normal">({{ c.author.unit_number }})</span>{% endif %}
+            <span class="text-muted fw-normal ms-2">{{ c.created_at|date:"m.d H:i" }}</span>
+          </div>
+          <p class="mb-0 small" style="white-space:pre-wrap;">{{ c.content }}</p>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-4 text-muted small">첫 댓글을 남겨보세요!</div>
+      {% endfor %}
+    </div>
+    {% if request.user.is_authenticated %}
+    <div class="card-footer bg-white py-3">
+      <form method="post">
+        {% csrf_token %}
+        <div class="input-group">
+          <textarea name="content" class="form-control form-control-sm" rows="2"
+            placeholder="댓글을 입력하세요..." required></textarea>
+          <button class="btn btn-success" type="submit">등록</button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

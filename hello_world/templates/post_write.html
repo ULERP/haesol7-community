@@ -103,6 +103,32 @@
               <div class="form-text">여러 장 선택 가능합니다.</div>
             </div>
 
+            <!-- 설문 삽입 -->
+            {% if my_surveys %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold">
+                <i class="fas fa-poll me-1 text-success"></i>설문 삽입
+                <span class="text-muted small fw-normal">(선택)</span>
+              </label>
+              <select name="linked_survey_id" class="form-select">
+                <option value="">설문을 삽입하지 않음</option>
+                {% for s in my_surveys %}
+                <option value="{{ s.pk }}">{{ s.title }} ({{ s.total_responses }}명 응답 중)</option>
+                {% endfor %}
+              </select>
+              <div class="form-text">선택한 설문이 게시글 본문에 위젯으로 표시돼요</div>
+            </div>
+            {% else %}
+            <div class="mb-3">
+              <div class="p-3 rounded" style="background:#f8f9fa;border:1px dashed #dee2e6;">
+                <div class="small text-muted">
+                  <i class="fas fa-poll me-1"></i>
+                  <a href="/surveys/create/" class="text-success fw-semibold">설문을 먼저 만들면</a>
+                  게시글에 삽입할 수 있어요
+                </div>
+              </div>
+            </div>
+            {% endif %}
             <div class="form-check mt-3">
               {{ post_form.is_anonymous }}
               <label class="form-check-label">익명으로 작성</label>

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}소모임{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="fw-bold mb-1"><i class="fas fa-users me-2 text-success"></i>소모임</h4>
+      <p class="text-muted mb-0 small">관심사가 같은 이웃과 함께해요</p>
+    </div>
+    <a href="/groups/create/" class="btn btn-success"><i class="fas fa-plus me-1"></i>소모임 만들기</a>
+  </div>
+
+  {% if my_groups %}
+  <h6 class="fw-bold text-muted mb-3">내가 참여 중인 소모임</h6>
+  <div class="row g-3 mb-5">
+    {% for g in my_groups %}
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #1a7a4a !important;">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="width:44px;height:44px;border-radius:12px;background:#1a7a4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0;">{{ g.name|first|upper }}</div>
+            <div>
+              <h6 class="mb-0 fw-bold">{{ g.name }}</h6>
+              <small class="text-muted">{{ g.get_group_type_display }}</small>
+            </div>
+          </div>
+          <p class="text-muted small mb-3">{{ g.description|truncatechars:60 }}</p>
+          {% if g.location %}<div class="small text-muted mb-1"><i class="fas fa-map-marker-alt me-1"></i>{{ g.location }}</div>{% endif %}
+          {% if g.regular_schedule %}<div class="small text-muted mb-2"><i class="fas fa-clock me-1"></i>{{ g.regular_schedule }}</div>{% endif %}
+          <div class="d-flex gap-2 mt-auto">
+            <a href="/groups/{{ g.pk }}/" class="btn btn-outline-success btn-sm flex-grow-1">상세보기</a>
+            <a href="/chat/group/{{ g.pk }}/" class="btn btn-success btn-sm flex-grow-1"><i class="fas fa-comments me-1"></i>채팅</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h6 class="fw-bold text-muted mb-3">참여 가능한 소모임</h6>
+  {% if all_groups %}
+  <div class="row g-3">
+    {% for g in all_groups %}
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="width:44px;height:44px;border-radius:12px;background:#a8d5b8;color:#1a7a4a;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0;">{{ g.name|first|upper }}</div>
+            <div>
+              <h6 class="mb-0 fw-bold">{{ g.name }}</h6>
+              <small class="text-muted">{{ g.get_group_type_display }}</small>
+            </div>
+          </div>
+          <p class="text-muted small mb-3">{{ g.description|truncatechars:60 }}</p>
+          {% if g.location %}<div class="small text-muted mb-1"><i class="fas fa-map-marker-alt me-1"></i>{{ g.location }}</div>{% endif %}
+          {% if g.regular_schedule %}<div class="small text-muted mb-2"><i class="fas fa-clock me-1"></i>{{ g.regular_schedule }}</div>{% endif %}
+          {% if g.member_limit %}
+          <div class="small text-muted mb-2"><i class="fas fa-users me-1"></i>{{ g.members.count }} / {{ g.member_limit }}명</div>
+          {% endif %}
+          <a href="/groups/{{ g.pk }}/" class="btn btn-outline-success btn-sm w-100">자세히 보기</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <div style="font-size:3rem;margin-bottom:12px;">🌱</div>
+    <h5 class="fw-bold text-muted">아직 소모임이 없어요</h5>
+    <p class="text-muted">우리 단지 첫 소모임을 만들어보세요!</p>
+    <a href="/groups/create/" class="btn btn-success px-4">소모임 만들기</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

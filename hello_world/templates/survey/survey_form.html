@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% block title %}설문 만들기{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+:root { --g: #1a7a4a; --gl: #e8f5ee; }
+.q-block { background:#fff; border:1px solid #e4e6ea; border-radius:12px; padding:18px; margin-bottom:12px; position:relative; transition:box-shadow .15s; }
+.q-block:hover { box-shadow:0 2px 12px rgba(0,0,0,.08); }
+.q-block.section-block { background:#f0f7f3; border-color:#a8d5b8; }
+.q-type-badge { font-size:0.72rem; background:var(--gl); color:var(--g); padding:3px 8px; border-radius:10px; font-weight:600; }
+.q-toolbar { display:flex; gap:6px; align-items:center; }
+.q-btn { background:none; border:1px solid #e4e6ea; border-radius:6px; padding:4px 8px; font-size:0.75rem; color:#666; cursor:pointer; transition:all .12s; }
+.q-btn:hover { border-color:var(--g); color:var(--g); }
+.q-btn.danger:hover { border-color:#dc3545; color:#dc3545; }
+.type-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:8px; margin-top:8px; }
+.type-card { border:1.5px solid #e4e6ea; border-radius:10px; padding:10px; cursor:pointer; text-align:center; font-size:0.78rem; transition:all .15s; }
+.type-card:hover, .type-card.selected { border-color:var(--g); background:var(--gl); color:var(--g); font-weight:600; }
+.type-icon { font-size:1.3rem; display:block; margin-bottom:4px; }
+.add-q-bar { display:flex; gap:6px; flex-wrap:wrap; padding:12px; background:#f8f9fa; border-radius:10px; margin-top:8px; }
+.add-q-btn { border:1.5px dashed #a8d5b8; background:#fff; border-radius:8px; padding:6px 12px; font-size:0.78rem; color:var(--g); cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:4px; }
+.add-q-btn:hover { background:var(--gl); border-style:solid; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:780px;">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="/surveys/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i></a>
+    <div>
+      <h4 class="fw-bold mb-0"><i class="fas fa-poll me-2 text-success"></i>설문 만들기</h4>
+      <p class="text-muted small mb-0">다양한 유형의 질문으로 입주민 의견을 모아요</p>
+    </div>
+  </div>
+
+  <form method="post" id="survey-form">
+    {% csrf_token %}
+    <input type="hidden" name="questions_data" id="questions-data">
+    <input type="hidden" name="from_post" value="{{ request.GET.from_post }}">
+
+    <!-- 기본 설정 -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3 text-success"><i class="fas fa-cog me-1"></i>기본 설정</h6>
+        {% if request.GET.from_post %}
+        <div class="alert alert-success border-0 mb-3" style="background:#e8f5ee;">
+          <i class="fas fa-link me-2"></i>게시글과 연결된 설문을 만들고 있어요. 완성 후 게시글에 링크를 공유해보세요!
+        </div>
+        {% endif %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">설문 제목 <span class="text-danger">*</span></label>
+          <input type="text" name="title" class="form-control" placeholder="예: 단지 내 편의시설 추가에 대한 의견을 여쭤봅니다" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">설명 <span class="text-muted small fw-normal">(선택)</span></label>
+          <textarea name="description" class="form-control" rows="2" placeholder="설문 목적이나 안내사항을 적어주세요"></textarea>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">마감일시 <span class="text-muted small fw-normal">(선택)</span></label>
+            <input type="text" name="ends_at" id="ends-at" class="form-control" placeholder="날짜 선택...">
+          </div>
+          <div class="col-md-4 d-flex align-items-end pb-2">
+            <div>
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" name="is_anonymous" id="isAnon" checked>
+                <label class="form-check-label small fw-semibold" for="isAnon">익명 응답</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="allow_multiple" id="allowMulti">
+                <label class="form-check-label small fw-semibold" for="allowMulti">중복 응답 허용</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 질문 목록 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold mb-0">질문 목록</h6>
+      <span class="text-muted small" id="q-count-label">0개 질문</span>
+    </div>
+
+    <div id="questions-container"></div>
+
+    <!-- 질문 추가 버튼 -->
+    <div class="add-q-bar">
+      <button type="button" class="add-q-btn" onclick="addQ('single')"><span class="text-success">◉</span> 단일 선택</button>
+      <button type="button" class="add-q-btn" onclick="addQ('multiple')"><span class="text-success">☑</span> 복수 선택</button>
+      <button type="button" class="add-q-btn" onclick="addQ('text')"><span class="text-success">✏</span> 주관식</button>
+      <button type="button" class="add-q-btn" onclick="addQ('rating')"><span class="text-success">⭐</span> 평점</button>
+      <button type="button" class="add-q-btn" onclick="addQ('scale')"><span class="text-success">↔</span> 척도</button>
+      <button type="button" class="add-q-btn" onclick="addQ('date')"><span class="text-success">📅</span> 날짜</button>
+      <button type="button" class="add-q-btn" onclick="addQ('daterange')"><span class="text-success">📆</span> 날짜 범위</button>
+      <button type="button" class="add-q-btn" onclick="addQ('rank')"><span class="text-success">↕</span> 순위</button>
+      <button type="button" class="add-q-btn" onclick="addQ('matrix')"><span class="text-success">⊞</span> 매트릭스</button>
+      <button type="button" class="add-q-btn" onclick="addQ('section')"><span class="text-muted">—</span> 섹션 구분</button>
+    </div>
+
+    <div class="alert alert-success border-0 mt-4 mb-4" style="background:#e8f5ee;">
+      <i class="fas fa-share-alt me-2"></i>
+      설문 완성 후 <strong>링크를 채팅·게시판에 공유</strong>하면 입주민들이 바로 참여할 수 있어요!
+    </div>
+
+    <div class="d-flex gap-2 justify-content-end">
+      <a href="/surveys/" class="btn btn-outline-secondary">취소</a>
+      <button type="submit" class="btn btn-success px-4" onclick="serializeQuestions()">
+        <i class="fas fa-check me-1"></i>설문 만들기
+      </button>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+flatpickr('#ends-at', { locale:'ko', enableTime:true, dateFormat:'Y-m-d H:i', minDate:'today' });
+
+let questions = [];
+const TYPE_LABELS = {
+  single:'단일 선택', multiple:'복수 선택', text:'주관식',
+  rating:'평점(1-5)', scale:'선형 척도', date:'날짜 선택',
+  daterange:'날짜 범위', rank:'순위 매기기', matrix:'매트릭스', section:'섹션 구분'
+};
+const TYPE_ICONS = {
+  single:'◉', multiple:'☑', text:'✏', rating:'⭐', scale:'↔',
+  date:'📅', daterange:'📆', rank:'↕', matrix:'⊞', section:'—'
+};
+
+function addQ(type) {
+  const id = 'q_' + Date.now();
+  const q = { id, type, text:'', description:'', options:[''], rows:[''],
+    scale_min:1, scale_max:10, scale_min_label:'매우 낮음', scale_max_label:'매우 높음',
+    required:true };
+  if (type === 'rating') q.options = ['1','2','3','4','5'];
+  if (type === 'single' || type === 'multiple' || type === 'rank') q.options = ['옵션 1','옵션 2','옵션 3'];
+  if (type === 'matrix') { q.options = ['매우 그렇다','그렇다','보통','아니다','매우 아니다']; q.rows = ['항목 1','항목 2']; }
+  questions.push(q);
+  renderAll();
+  // 스크롤
+  setTimeout(() => document.getElementById('q-' + id)?.scrollIntoView({behavior:'smooth',block:'center'}), 100);
+}
+
+function removeQ(id) {
+  questions = questions.filter(q => q.id !== id);
+  renderAll();
+}
+
+function moveQ(id, dir) {
+  const i = questions.findIndex(q => q.id === id);
+  if (dir === -1 && i > 0) [questions[i], questions[i-1]] = [questions[i-1], questions[i]];
+  if (dir === 1 && i < questions.length-1) [questions[i], questions[i+1]] = [questions[i+1], questions[i]];
+  renderAll();
+}
+
+function renderAll() {
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+  questions.forEach((q, idx) => container.appendChild(renderQ(q, idx)));
+  document.getElementById('q-count-label').textContent = questions.filter(q=>q.type!=='section').length + '개 질문';
+}
+
+function renderQ(q, idx) {
+  const div = document.createElement('div');
+  div.id = 'q-' + q.id;
+  div.className = 'q-block' + (q.type === 'section' ? ' section-block' : '');
+
+  let body = '';
+
+  if (q.type === 'section') {
+    body = `
+      <div class="d-flex align-items-center gap-2">
+        <span style="font-size:1rem;">—</span>
+        <input type="text" class="form-control form-control-sm fw-bold" placeholder="섹션 제목 (선택)" value="${esc(q.text)}"
+          oninput="questions[${idx}].text=this.value">
+      </div>`;
+  } else {
+    // 공통 헤더
+    body = `
+      <div class="mb-2">
+        <input type="text" class="form-control fw-semibold" placeholder="질문을 입력하세요 ${q.required?'*':''}"
+          value="${esc(q.text)}" oninput="questions[${idx}].text=this.value" ${q.required?'required':''}>
+      </div>
+      <div class="mb-3">
+        <input type="text" class="form-control form-control-sm text-muted" placeholder="질문 설명 (선택)"
+          value="${esc(q.description)}" oninput="questions[${idx}].description=this.value">
+      </div>`;
+
+    // 유형별 옵션 UI
+    if (['single','multiple','rank'].includes(q.type)) {
+      body += `<div id="opts-${q.id}">`;
+      q.options.forEach((opt, oi) => {
+        body += `
+          <div class="d-flex gap-2 mb-2 align-items-center">
+            <span style="color:#aaa;font-size:0.9rem;">${q.type==='single'?'◉':q.type==='multiple'?'☑':'↕'}</span>
+            <input type="text" class="form-control form-control-sm" value="${esc(opt)}"
+              oninput="questions[${idx}].options[${oi}]=this.value" placeholder="선택지 ${oi+1}">
+            <button type="button" class="q-btn danger" onclick="removeOpt(${idx},${oi})"><i class="fas fa-times"></i></button>
+          </div>`;
+      });
+      body += `</div>
+        <button type="button" class="q-btn mt-1" onclick="addOpt(${idx})"><i class="fas fa-plus me-1"></i>선택지 추가</button>`;
+
+    } else if (q.type === 'rating') {
+      body += `<div class="d-flex gap-3 p-2" style="background:#f8f9fa;border-radius:8px;">
+        ${['1😞','2😐','3🙂','4😊','5😄'].map(s=>`<div style="text-align:center;font-size:0.8rem;"><div style="font-size:1.4rem;">${s[1]}</div>${s[0]}점</div>`).join('')}
+      </div>`;
+
+    } else if (q.type === 'scale') {
+      body += `
+        <div class="row g-2 mb-2">
+          <div class="col-3"><label class="form-label small">최솟값</label>
+            <input type="number" class="form-control form-control-sm" value="${q.scale_min}" oninput="questions[${idx}].scale_min=+this.value"></div>
+          <div class="col-3"><label class="form-label small">최댓값</label>
+            <input type="number" class="form-control form-control-sm" value="${q.scale_max}" oninput="questions[${idx}].scale_max=+this.value"></div>
+          <div class="col-3"><label class="form-label small">최솟값 레이블</label>
+            <input type="text" class="form-control form-control-sm" value="${esc(q.scale_min_label)}" oninput="questions[${idx}].scale_min_label=this.value"></div>
+          <div class="col-3"><label class="form-label small">최댓값 레이블</label>
+            <input type="text" class="form-control form-control-sm" value="${esc(q.scale_max_label)}" oninput="questions[${idx}].scale_max_label=this.value"></div>
+        </div>
+        <div class="d-flex align-items-center gap-2 p-2" style="background:#f8f9fa;border-radius:8px;">
+          <span class="small text-muted">${q.scale_min_label||q.scale_min}</span>
+          <input type="range" min="${q.scale_min}" max="${q.scale_max}" class="form-range flex-grow-1" disabled>
+          <span class="small text-muted">${q.scale_max_label||q.scale_max}</span>
+        </div>`;
+
+    } else if (q.type === 'date') {
+      body += `<div class="p-2" style="background:#f8f9fa;border-radius:8px;">
+        <input type="text" class="form-control form-control-sm" placeholder="📅 날짜 선택" disabled style="background:#fff;">
+        <div class="text-muted small mt-1">응답자가 달력에서 날짜를 선택해요</div>
+      </div>`;
+
+    } else if (q.type === 'daterange') {
+      body += `<div class="p-2" style="background:#f8f9fa;border-radius:8px;">
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control form-control-sm" placeholder="📅 시작일" disabled style="background:#fff;">
+          <input type="text" class="form-control form-control-sm" placeholder="📅 종료일" disabled style="background:#fff;">
+        </div>
+        <div class="text-muted small mt-1">응답자가 날짜 범위를 선택해요</div>
+      </div>`;
+
+    } else if (q.type === 'text') {
+      body += `<div class="p-2" style="background:#f8f9fa;border-radius:8px;">
+        <textarea class="form-control form-control-sm" rows="2" placeholder="응답자가 자유롭게 작성해요" disabled style="background:#fff;"></textarea>
+      </div>`;
+
+    } else if (q.type === 'matrix') {
+      body += `<div class="mb-2">
+        <label class="form-label small fw-semibold">행 (항목)</label>
+        <div id="rows-${q.id}">`;
+      q.rows.forEach((row, ri) => {
+        body += `<div class="d-flex gap-2 mb-1">
+          <input type="text" class="form-control form-control-sm" value="${esc(row)}"
+            oninput="questions[${idx}].rows[${ri}]=this.value" placeholder="행 ${ri+1}">
+          <button type="button" class="q-btn danger" onclick="removeRow(${idx},${ri})"><i class="fas fa-times"></i></button>
+        </div>`;
+      });
+      body += `</div>
+        <button type="button" class="q-btn mt-1" onclick="addRow(${idx})"><i class="fas fa-plus me-1"></i>행 추가</button>
+      </div>
+      <div class="mb-2">
+        <label class="form-label small fw-semibold">열 (선택지)</label>
+        <div id="mopts-${q.id}">`;
+      q.options.forEach((opt, oi) => {
+        body += `<div class="d-flex gap-2 mb-1">
+          <input type="text" class="form-control form-control-sm" value="${esc(opt)}"
+            oninput="questions[${idx}].options[${oi}]=this.value" placeholder="열 ${oi+1}">
+          <button type="button" class="q-btn danger" onclick="removeOpt(${idx},${oi})"><i class="fas fa-times"></i></button>
+        </div>`;
+      });
+      body += `</div>
+        <button type="button" class="q-btn mt-1" onclick="addOpt(${idx})"><i class="fas fa-plus me-1"></i>열 추가</button>
+      </div>`;
+    }
+  }
+
+  div.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <span style="color:#aaa;font-size:0.8rem;cursor:grab;">⠿</span>
+        <span class="q-type-badge">${TYPE_ICONS[q.type]} ${TYPE_LABELS[q.type]}</span>
+        ${q.type!=='section'?`<span class="text-muted small">Q${idx+1}</span>`:''}
+      </div>
+      <div class="q-toolbar">
+        ${q.type!=='section'?`
+        <label class="d-flex align-items-center gap-1 small mb-0">
+          <input type="checkbox" ${q.required?'checked':''} onchange="questions[${idx}].required=this.checked">필수
+        </label>`:''}
+        <button type="button" class="q-btn" onclick="moveQ('${q.id}',-1)" ${idx===0?'disabled':''}>↑</button>
+        <button type="button" class="q-btn" onclick="moveQ('${q.id}',1)" ${idx===questions.length-1?'disabled':''}>↓</button>
+        <button type="button" class="q-btn danger" onclick="removeQ('${q.id}')"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+    ${body}`;
+  return div;
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function addOpt(idx) { questions[idx].options.push(''); renderAll(); }
+function removeOpt(idx, oi) { questions[idx].options.splice(oi,1); renderAll(); }
+function addRow(idx) { questions[idx].rows.push(''); renderAll(); }
+function removeRow(idx, ri) { questions[idx].rows.splice(ri,1); renderAll(); }
+
+function serializeQuestions() {
+  const data = questions.map(q => ({
+    text: q.text, description: q.description, type: q.type,
+    options: q.options.filter(o=>o.trim()),
+    rows: q.rows.filter(r=>r.trim()),
+    scale_min: q.scale_min, scale_max: q.scale_max,
+    scale_min_label: q.scale_min_label, scale_max_label: q.scale_max_label,
+    required: q.required,
+  }));
+  document.getElementById('questions-data').value = JSON.stringify(data);
+}
+
+// 기본 질문 1개
+addQ('single');
+</script>
+{% endblock %}

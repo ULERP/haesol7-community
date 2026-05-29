@@ -1,0 +1,253 @@
+{% extends 'chat_base.html' %}
+{% block title %}오픈채팅 — 해솔7{% endblock %}
+{% block nav_public %}active{% endblock %}
+{% block tab_chat %}active{% endblock %}
+{% block left_title %}입주민{% endblock %}
+
+{% block left_panel %}
+<div class="sec-label">온라인</div>
+{% for u in online_users %}
+<a href="/chat/dm/{{ u.id }}/" class="side-item">
+  <div class="av av-sm">{{ u.username|first|upper }}</div>
+  <div style="flex:1;min-width:0;">
+    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.username }}</div>
+    <div style="font-size:0.7rem;color:#999;">{{ u.unit_number|default:"입주민" }}</div>
+  </div>
+  <div class="online-dot"></div>
+</a>
+{% empty %}
+<div style="font-size:0.75rem;color:#ccc;text-align:center;padding:8px;">접속자 없음</div>
+{% endfor %}
+<div class="sec-label" style="margin-top:8px;">소모임</div>
+<a href="/groups/create/" class="side-item" style="background:var(--gl);color:var(--g);font-weight:700;margin-bottom:4px;">
+  <i class="fas fa-plus" style="font-size:0.75rem;"></i>소모임 만들기
+</a>
+{% for g in my_groups %}
+<a href="/chat/group/{{ g.id }}/" class="side-item">
+  <div style="width:22px;height:22px;border-radius:6px;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;">{{ g.name|first|upper }}</div>
+  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ g.name }}</span>
+</a>
+{% endfor %}
+{% endblock %}
+
+{% block chat_content %}
+<div class="chat-tab-bar">
+  <div class="tab-dd" id="tabDd">
+    <button class="tab-dd-btn" id="tabDdBtn">
+      <i class="fas fa-globe" id="tabDdIcon"></i>
+      <span id="tabDdLabel">전체 채팅</span>
+      <i class="fas fa-chevron-down" style="font-size:0.65rem;"></i>
+    </button>
+    <div class="tab-dd-menu" id="tabDdMenu">
+      <button class="tab-opt active" id="tabOpt-public">
+        <div class="tab-opt-icon" style="background:#e8f5ee;color:var(--g);"><i class="fas fa-globe"></i></div>
+        <div><div style="font-weight:600;">전체 채팅</div><div style="font-size:0.72rem;color:#999;">단지 전체 오픈채팅</div></div>
+      </button>
+      <button class="tab-opt" id="tabOpt-dm">
+        <div class="tab-opt-icon" style="background:#e8f0fe;color:#4285f4;"><i class="fas fa-envelope"></i></div>
+        <div><div style="font-weight:600;">1:1 쪽지</div><div style="font-size:0.72rem;color:#999;">이웃과 개인 대화</div></div>
+      </button>
+      <button class="tab-opt" id="tabOpt-group">
+        <div class="tab-opt-icon" style="background:#fff3e0;color:#f57c00;"><i class="fas fa-users"></i></div>
+        <div><div style="font-weight:600;">소모임 채팅</div><div style="font-size:0.72rem;color:#999;">내 소모임 대화방</div></div>
+      </button>
+    </div>
+  </div>
+  <span class="tab-desc">단지 전체 입주민과 자유롭게 대화하세요</span>
+</div>
+
+<div class="msg-area" id="chat-box">
+  {% if not user.is_authenticated %}
+  <div class="empty"><div class="empty-icon">🔒</div><div class="empty-title">로그인이 필요해요</div><div class="empty-desc"><a href="/login/" style="color:var(--g);font-weight:600;">로그인하고 채팅 참여하기</a></div></div>
+  {% else %}
+  <div style="text-align:center;color:#bbb;font-size:0.8rem;padding:20px;"><i class="fas fa-circle-notch fa-spin" style="display:block;margin-bottom:6px;"></i>불러오는 중...</div>
+  {% endif %}
+</div>
+
+{% if user.is_authenticated %}
+<!-- 이미지 미리보기 -->
+<div class="img-preview-wrap" id="img-preview-wrap">
+  <img id="img-preview" src="" alt="미리보기">
+  <span style="font-size:0.75rem;color:#666;flex:1;">이미지 첨부됨</span>
+  <button class="img-preview-remove" onclick="removeImg()"><i class="fas fa-times"></i></button>
+</div>
+
+<div class="chat-input">
+  <div class="input-toolbar">
+    <label class="toolbar-btn" title="이미지 첨부">
+      <i class="fas fa-image"></i>
+      <input type="file" id="img-input" accept="image/*" style="display:none;">
+    </label>
+    <button type="button" class="toolbar-btn" title="투표 만들기"
+      data-bs-toggle="modal" data-bs-target="#pollModal"
+      onclick="window.CHAT_TYPE='public';">
+      <i class="fas fa-poll"></i>
+    </button>
+    </button>
+  </div>
+  <div class="input-row">
+    <textarea class="msg-textarea" id="msg-input" placeholder="메시지 입력... (Enter 전송, Shift+Enter 줄바꿈)" rows="1"
+      oninput="autoResize(this)"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+    <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane" style="font-size:0.82rem;"></i></button>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block right_panel %}
+<div class="info-sec">
+  <div class="info-sec-title">📢 최신 공지</div>
+  {% for p in notice_posts %}
+  <a href="/posts/{{ p.id }}/" class="info-card">
+    <div class="info-card-t">{{ p.title|truncatechars:22 }}</div>
+    <div class="info-card-s">{{ p.created_at|date:"m.d" }}</div>
+  </a>
+  {% empty %}
+  <div class="info-card" style="text-align:center;color:#bbb;cursor:default;"><div>📭</div><div style="font-size:0.73rem;">공지 없음</div></div>
+  {% endfor %}
+  <a href="/boards/" style="font-size:0.72rem;color:var(--g);display:block;text-align:right;text-decoration:none;margin-top:2px;">전체 게시판 →</a>
+</div>
+<div class="info-sec">
+  <div class="info-sec-title">📋 관리 문서</div>
+  {% for d in recent_docs %}
+  <a href="/community/docs/{{ d.id }}/" class="info-card">
+    <div class="info-card-t">{{ d.title|truncatechars:20 }}</div>
+    <div class="info-card-s">{{ d.category }}</div>
+  </a>
+  {% empty %}
+  <a href="/community/docs/" class="info-card" style="text-align:center;"><div style="font-size:0.78rem;color:var(--g);font-weight:600;">관리 문서 보기 →</div></a>
+  {% endfor %}
+</div>
+<div class="info-sec">
+  <div class="info-sec-title">🤖 AI 안내</div>
+  <a href="/chatbot/" class="info-card" style="background:#eef7f2;border:1px solid #c3e6d0;">
+    <div class="info-card-t" style="color:var(--g);">관리규약 AI 질문</div>
+    <div class="info-card-s">주차·펫·소음 등 바로 물어보세요</div>
+  </a>
+</div>
+{% if user.is_authenticated %}
+<div class="info-sec">
+  <div class="info-sec-title">👤 내 정보</div>
+  <div class="info-card" style="cursor:default;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <div class="av av-sm">{{ user.username|first|upper }}</div>
+      <div><div style="font-weight:700;font-size:0.82rem;">{{ user.username }}</div><div style="font-size:0.7rem;color:#999;">{{ user.unit_number|default:"입주민" }}</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.73rem;">
+      <span>🏅 <b style="color:var(--g);">{{ user.mileage_points|default:0 }}</b>P</span>
+      <span>❤️ <b style="color:var(--g);">{{ user.manners_score|default:50|floatformat:0 }}</b></span>
+    </div>
+  </div>
+  <a href="/mypage/" style="font-size:0.72rem;color:var(--g);display:block;text-align:center;text-decoration:none;font-weight:600;margin-top:4px;">마이페이지 →</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block right_panel_extra %}
+<div class="info-sec">
+  <div class="info-sec-title">📊 진행 중인 투표</div>
+  <div id="polls-container">
+    <div class="text-muted small text-center py-2">불러오는 중...</div>
+  </div>
+  {% if user.is_authenticated %}
+  <button class="btn btn-outline-success btn-sm w-100 mt-2"
+    data-bs-toggle="modal" data-bs-target="#pollModal"
+    onclick="window.CHAT_TYPE='public';">
+    <i class="fas fa-plus me-1"></i>투표 만들기
+  </button>
+  {% endif %}
+</div>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+const MSGS_URL = "/chat/public/messages/";
+const IS_AUTH = {{ user.is_authenticated|yesno:"true,false" }};
+const IS_STAFF = {{ user.is_staff|yesno:"true,false" }};
+const CSRF = '{{ csrf_token }}';
+let lastId = 0;
+
+// 이미지
+function removeImg() {
+  document.getElementById('img-input').value = '';
+  document.getElementById('img-preview-wrap').style.display = 'none';
+}
+setupImageInput('img-input', 'img-preview');
+document.getElementById('img-input')?.addEventListener('change', function() {
+  if (this.files[0]) document.getElementById('img-preview-wrap').style.display = 'flex';
+});
+
+// 고정/삭제
+async function pinMsg(id) {
+  await fetch('/chat/public/' + id + '/pin/', { method:'POST', headers:{'X-CSRFToken':CSRF} });
+  lastId = 0; document.getElementById('chat-box').innerHTML = ''; fetchMsgs();
+}
+async function delMsg(id) {
+  if (!confirm('메시지를 삭제할까요?')) return;
+  await fetch('/chat/public/' + id + '/delete/', { method:'POST', headers:{'X-CSRFToken':CSRF} });
+  const el = document.getElementById('msg-' + id);
+  if (el) el.remove();
+}
+
+async function fetchMsgs() {
+  if (!IS_AUTH) return;
+  try {
+    const r = await fetch(MSGS_URL + '?since=' + lastId);
+    const d = await r.json();
+    const box = document.getElementById('chat-box');
+    if (d.pinned && d.pinned.length > 0) renderPinned(d.pinned);
+    if (d.messages && d.messages.length > 0) {
+      const atBot = box.scrollHeight - box.scrollTop <= box.clientHeight + 80;
+      if (lastId === 0) box.innerHTML = '';
+      d.messages.forEach(m => { renderMsg(box, m); lastId = Math.max(lastId, m.id); });
+      if (atBot) box.scrollTop = box.scrollHeight;
+    } else if (lastId === 0) {
+      box.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><div class="empty-title">아직 대화가 없어요</div><div class="empty-desc">첫 메시지로 이웃에게 인사해보세요!</div></div>';
+    }
+  } catch(e) { console.error("fetchMsgs 오류:", e); }
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('msg-input');
+  const imgInp = document.getElementById('img-input');
+  const msg = inp?.value.trim();
+  const hasImg = imgInp?.files[0];
+  if (!msg && !hasImg) return;
+
+  const fd = new FormData();
+  if (msg) fd.append('message', msg);
+  if (hasImg) fd.append('image', imgInp.files[0]);
+  fd.append('csrfmiddlewaretoken', CSRF);
+
+  if (inp) { inp.value = ''; inp.style.height = 'auto'; }
+  removeImg();
+
+  await fetch(MSGS_URL, { method:'POST', body: fd });
+  fetchMsgs();
+}
+
+const inp = document.getElementById('msg-input');
+if (inp) {
+  inp.addEventListener('input', () => autoResize(inp));
+  inp.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
+}
+
+if (IS_AUTH) { fetchMsgs(); setInterval(fetchMsgs, 3000); }
+window.CHAT_TYPE = 'public';
+window.CSRF = '{{ csrf_token }}';
+loadPolls();
+setInterval(loadPolls, 10000);
+window.CHAT_TYPE = 'public';
+window.CSRF = '{{ csrf_token }}';
+loadPolls();
+setInterval(loadPolls, 10000);
+
+initTabDropdown([
+  { id:'public', icon:'fa-globe',    label:'전체 채팅',  desc:'단지 전체 오픈채팅', fn: null },
+  { id:'dm',     icon:'fa-envelope', label:'1:1 쪽지',   desc:'이웃과 개인 대화',   url:'/chat/dm/list/' },
+  { id:'group',  icon:'fa-users',    label:'소모임 채팅', desc:'소모임 대화방',      url:'/groups/' },
+]);
+</script>
+{% endblock %}

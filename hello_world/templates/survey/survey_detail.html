@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% block title %}{{ survey.title }}{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+:root { --g:#1a7a4a; --gl:#e8f5ee; }
+.q-card { background:#fff; border:1px solid #e4e6ea; border-radius:12px; padding:20px; margin-bottom:14px; }
+.q-num { width:26px;height:26px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0; }
+.rating-group { display:flex; gap:12px; flex-wrap:wrap; }
+.rating-label { text-align:center; cursor:pointer; }
+.rating-label input { display:none; }
+.rating-label .emoji { font-size:1.8rem; transition:transform .15s; display:block; }
+.rating-label input:checked ~ .emoji { transform:scale(1.3); }
+.rating-label .score { font-size:0.75rem; color:#999; }
+.scale-wrap { padding:8px 0; }
+.scale-labels { display:flex; justify-content:space-between; font-size:0.75rem; color:#999; margin-top:4px; }
+.rank-item { background:#f8f9fa; border:1px solid #e4e6ea; border-radius:8px; padding:10px 14px; margin-bottom:6px; cursor:grab; display:flex; align-items:center; gap:8px; font-size:0.88rem; }
+.rank-item:active { cursor:grabbing; background:var(--gl); }
+.rank-num { width:22px;height:22px;border-radius:50%;background:var(--g);color:#fff;font-size:0.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.matrix-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.matrix-table th { background:#f8f9fa; padding:8px; text-align:center; border:1px solid #e4e6ea; }
+.matrix-table td { padding:8px; text-align:center; border:1px solid #e4e6ea; }
+.matrix-table tr:hover td { background:#f8f9fa; }
+.section-divider { padding:14px 0 4px; border-top:2px solid #e4e6ea; margin-bottom:4px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:680px;">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/surveys/">설문조사</a></li>
+      <li class="breadcrumb-item active">{{ survey.title|truncatechars:30 }}</li>
+    </ol>
+  </nav>
+
+  <!-- 헤더 카드 -->
+  <div class="card border-0 shadow-sm mb-4" style="border-top:4px solid var(--g) !important;">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <span class="badge {% if survey.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">{{ survey.get_status_display }}</span>
+        <div class="d-flex gap-2">
+          {% if survey.is_anonymous %}<span class="badge bg-light text-muted border"><i class="fas fa-user-secret me-1"></i>익명</span>{% endif %}
+          <span class="badge bg-light text-muted border"><i class="fas fa-users me-1"></i>{{ total }}명 응답</span>
+        </div>
+      </div>
+      <h4 class="fw-bold mb-2">{{ survey.title }}</h4>
+      {% if survey.description %}<p class="text-muted mb-2">{{ survey.description }}</p>{% endif %}
+      <div class="d-flex flex-wrap gap-3 small text-muted">
+        <span><i class="fas fa-user me-1"></i>{{ survey.creator.username }}</span>
+        <span><i class="fas fa-list me-1"></i>{{ questions|length }}개 질문</span>
+        {% if survey.ends_at %}<span><i class="fas fa-clock me-1"></i>마감 {{ survey.ends_at|date:"m월 d일 H시" }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if already_responded %}
+  <div class="alert alert-success border-0">
+    <i class="fas fa-check-circle me-2"></i>이미 응답하셨습니다!
+    <a href="/surveys/{{ survey.pk }}/result/" class="fw-bold ms-2">결과 보기 →</a>
+  </div>
+  {% elif not survey.is_active %}
+  <div class="alert alert-secondary border-0">
+    <i class="fas fa-lock me-2"></i>마감된 설문입니다.
+    <a href="/surveys/{{ survey.pk }}/result/" class="fw-bold ms-2">결과 보기 →</a>
+  </div>
+  {% else %}
+  {% if not user.is_authenticated %}
+  <div class="alert alert-warning border-0 text-center">
+    <i class="fas fa-lock me-2"></i><a href="/login/" class="fw-bold">로그인</a>하고 설문에 참여하세요
+  </div>
+  {% else %}
+  <form method="post" action="/surveys/{{ survey.pk }}/respond/" id="survey-form">
+    {% csrf_token %}
+    {% for q in questions %}
+      {% if q.question_type == 'section' %}
+      <div class="section-divider">
+        <h6 class="fw-bold text-success mb-0">{{ q.text|default:"—" }}</h6>
+      </div>
+      {% else %}
+      <div class="q-card">
+        <div class="d-flex gap-2 align-items-start mb-3">
+          <div class="q-num">{{ forloop.counter }}</div>
+          <div>
+            <div class="fw-bold">{{ q.text }}{% if q.is_required %} <span class="text-danger">*</span>{% endif %}</div>
+            {% if q.description %}<div class="text-muted small mt-1">{{ q.description }}</div>{% endif %}
+          </div>
+        </div>
+
+        {% if q.question_type == 'single' %}
+        {% for opt in q.options %}
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="radio" name="q_{{ q.id }}" value="{{ opt }}" id="q{{ q.id }}_{{ forloop.counter }}" {% if q.is_required %}required{% endif %}>
+          <label class="form-check-label" for="q{{ q.id }}_{{ forloop.counter }}">{{ opt }}</label>
+        </div>
+        {% endfor %}
+
+        {% elif q.question_type == 'multiple' %}
+        {% for opt in q.options %}
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" name="q_{{ q.id }}" value="{{ opt }}" id="q{{ q.id }}_{{ forloop.counter }}">
+          <label class="form-check-label" for="q{{ q.id }}_{{ forloop.counter }}">{{ opt }}</label>
+        </div>
+        {% endfor %}
+
+        {% elif q.question_type == 'rating' %}
+        <div class="rating-group">
+          {% for emoji in "😞😐🙂😊😄" %}
+          <label class="rating-label">
+            <input type="radio" name="q_{{ q.id }}" value="{{ forloop.counter }}" {% if q.is_required %}required{% endif %}>
+            <span class="emoji">{{ emoji }}</span>
+            <span class="score">{{ forloop.counter }}점</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        {% elif q.question_type == 'scale' %}
+        <div class="scale-wrap">
+          <div class="d-flex align-items-center gap-3">
+            <span class="small text-muted" style="min-width:60px;">{{ q.scale_min_label|default:q.scale_min }}</span>
+            <input type="range" name="q_{{ q.id }}" min="{{ q.scale_min }}" max="{{ q.scale_max }}"
+              value="{{ q.scale_min }}" class="form-range flex-grow-1"
+              oninput="document.getElementById('sv_{{ q.id }}').textContent=this.value">
+            <span class="small text-muted" style="min-width:60px;text-align:right;">{{ q.scale_max_label|default:q.scale_max }}</span>
+          </div>
+          <div class="text-center mt-1"><span class="badge bg-success" id="sv_{{ q.id }}">{{ q.scale_min }}</span></div>
+        </div>
+
+        {% elif q.question_type == 'date' %}
+        <input type="text" name="q_{{ q.id }}" class="form-control date-picker" placeholder="📅 날짜를 선택하세요" {% if q.is_required %}required{% endif %}>
+
+        {% elif q.question_type == 'daterange' %}
+        <div class="d-flex gap-2">
+          <input type="text" name="q_{{ q.id }}_start" class="form-control date-picker" placeholder="📅 시작일">
+          <span class="d-flex align-items-center text-muted">~</span>
+          <input type="text" name="q_{{ q.id }}_end" class="form-control date-picker" placeholder="📅 종료일">
+        </div>
+        <input type="hidden" name="q_{{ q.id }}" id="dr_{{ q.id }}">
+
+        {% elif q.question_type == 'text' %}
+        <textarea name="q_{{ q.id }}" class="form-control" rows="3" placeholder="의견을 자유롭게 적어주세요" {% if q.is_required %}required{% endif %}></textarea>
+
+        {% elif q.question_type == 'rank' %}
+        <div class="text-muted small mb-2">드래그하여 순서를 정해주세요 (위쪽이 1순위)</div>
+        <div id="rank_{{ q.id }}" class="rank-list">
+          {% for opt in q.options %}
+          <div class="rank-item" data-value="{{ opt }}">
+            <span class="rank-num">{{ forloop.counter }}</span>
+            {{ opt }}
+            <i class="fas fa-grip-vertical ms-auto text-muted"></i>
+          </div>
+          {% endfor %}
+        </div>
+        <input type="hidden" name="q_{{ q.id }}" id="rank_input_{{ q.id }}">
+
+        {% elif q.question_type == 'matrix' %}
+        <div class="table-responsive">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th style="text-align:left;">항목</th>
+                {% for opt in q.options %}<th>{{ opt }}</th>{% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in q.rows %}
+              <tr>
+                <td style="text-align:left;font-weight:600;">{{ row }}</td>
+                {% for opt in q.options %}
+                <td>
+                  <input type="radio" name="q_{{ q.id }}_row_{{ row }}" value="{{ opt }}" {% if q.is_required %}required{% endif %}>
+                </td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    <button type="submit" class="btn btn-success w-100 py-3 fw-bold" style="font-size:1rem;" onclick="prepareSubmit()">
+      <i class="fas fa-paper-plane me-2"></i>응답 제출하기
+    </button>
+  </form>
+  {% endif %}
+  {% endif %}
+
+  <div class="text-center mt-3">
+    <a href="/surveys/{{ survey.pk }}/result/" class="text-muted small">📊 중간 결과 보기</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+// 날짜 picker
+document.querySelectorAll('.date-picker').forEach(el => {
+  flatpickr(el, { locale:'ko', dateFormat:'Y-m-d' });
+});
+
+// 날짜 범위 연동
+document.querySelectorAll('[id^="dr_"]').forEach(hidden => {
+  const qid = hidden.id.replace('dr_','');
+  const start = document.querySelector(`[name="q_${qid}_start"]`);
+  const end = document.querySelector(`[name="q_${qid}_end"]`);
+  if (start && end) {
+    const update = () => hidden.value = (start.value||'') + ' ~ ' + (end.value||'');
+    start.addEventListener('change', update);
+    end.addEventListener('change', update);
+  }
+});
+
+// 순위 드래그
+document.querySelectorAll('.rank-list').forEach(list => {
+  const qid = list.id.replace('rank_','');
+  new Sortable(list, {
+    animation:150,
+    handle:'.fa-grip-vertical',
+    onEnd: () => {
+      const vals = [...list.querySelectorAll('.rank-item')].map(el => el.dataset.value);
+      // 번호 업데이트
+      list.querySelectorAll('.rank-num').forEach((el,i) => el.textContent = i+1);
+      document.getElementById('rank_input_' + qid).value = vals.join(',');
+    }
+  });
+  // 초기값
+  const vals = [...list.querySelectorAll('.rank-item')].map(el => el.dataset.value);
+  document.getElementById('rank_input_' + qid).value = vals.join(',');
+});
+
+function prepareSubmit() {
+  // 순위 최종 직렬화
+  document.querySelectorAll('.rank-list').forEach(list => {
+    const qid = list.id.replace('rank_','');
+    const vals = [...list.querySelectorAll('.rank-item')].map(el => el.dataset.value);
+    document.getElementById('rank_input_' + qid).value = vals.join(',');
+  });
+}
+</script>
+{% endblock %}

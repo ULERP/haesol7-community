@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% block title %}{{ profile_user.username }} 프로필{% endblock %}
+{% block extra_head %}
+<style>
+  .manners-meter { position:relative; height:36px; background:#f0f2f4; border-radius:18px; overflow:hidden; }
+  .manners-fill { height:100%; border-radius:18px; transition:width 1s ease; background:linear-gradient(90deg,#a8d5b8,#1a7a4a); }
+  .manners-text { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-weight:700; font-size:0.9rem; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.3); }
+  .star-btn { font-size:2rem; cursor:pointer; transition:transform .15s; color:#ddd; border:none; background:none; padding:2px; }
+  .star-btn:hover, .star-btn.active { color:#ffd600; transform:scale(1.2); }
+  .rating-card { background:#fff8e1; border:1px solid #ffe082; border-radius:10px; padding:12px 14px; margin-bottom:8px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:680px;">
+
+  <!-- 프로필 헤더 -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center gap-4">
+        <div style="width:72px;height:72px;border-radius:50%;background:#1a7a4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;flex-shrink:0;">
+          {{ profile_user.username|first|upper }}
+        </div>
+        <div style="flex:1;">
+          <h4 class="fw-bold mb-1">{{ profile_user.username }}</h4>
+          <div class="text-muted small mb-2">
+            <i class="fas fa-home me-1"></i>{{ profile_user.unit_number|default:"동호수 비공개" }}
+          </div>
+          {% if profile_user.introduction %}
+          <p class="text-muted small mb-0">{{ profile_user.introduction }}</p>
+          {% endif %}
+        </div>
+        <div class="text-center">
+          <div class="fw-bold text-success" style="font-size:1.4rem;">{{ profile_user.mileage_points }}</div>
+          <div class="text-muted small">마일리지</div>
+          <div class="fw-bold text-success mt-1">{{ total_activities }}</div>
+          <div class="text-muted small">봉사활동</div>
+        </div>
+      </div>
+
+      <!-- 이웃 온기 미터 -->
+      <div class="mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold small">❤️ 이웃 온기 점수</span>
+          <span class="fw-bold text-success">{{ profile_user.manners_score|floatformat:1 }}점</span>
+        </div>
+        <div class="manners-meter">
+          <div class="manners-fill" id="manners-fill" style="width:0%"></div>
+          <span class="manners-text">{{ profile_user.manners_score|floatformat:1 }}</span>
+        </div>
+        <div class="d-flex justify-content-between text-muted mt-1" style="font-size:0.72rem;">
+          <span>차가워요 🥶</span>
+          <span>보통 😐</span>
+          <span>따뜻해요 🔥</span>
+        </div>
+      </div>
+
+      <!-- 배지 -->
+      {% if user_badges %}
+      <div class="mt-3 d-flex flex-wrap gap-2">
+        {% for ub in user_badges %}
+        <span class="badge bg-warning text-dark">🏅 {{ ub.badge.title }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- 채팅/쪽지 버튼 -->
+      {% if request.user.is_authenticated and request.user != profile_user %}
+      <div class="mt-3 d-flex gap-2">
+        <a href="/chat/dm/{{ profile_user.pk }}/" class="btn btn-success btn-sm">
+          <i class="fas fa-envelope me-1"></i>쪽지 보내기
+        </a>
+        <a href="/chat/public/" class="btn btn-outline-success btn-sm">
+          <i class="fas fa-comments me-1"></i>오픈채팅에서 만나기
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 온기 점수 주기 -->
+  {% if can_rate %}
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <h6 class="fw-bold mb-3">❤️ 이웃 온기 점수 주기</h6>
+      {% if my_rating %}
+      <div class="alert alert-success border-0 mb-3" style="background:#e8f5ee;">
+        <i class="fas fa-check-circle me-2"></i>이미 온기를 보냈어요! 수정할 수 있어요.
+      </div>
+      {% endif %}
+      <div class="text-center mb-3">
+        <div class="d-flex justify-content-center gap-2 mb-2">
+          {% for i in "12345" %}
+          <button class="star-btn {% if my_rating and my_rating.score >= forloop.counter %}active{% endif %}"
+            data-score="{{ forloop.counter }}" onclick="setScore({{ forloop.counter }})">⭐</button>
+          {% endfor %}
+        </div>
+        <div class="text-muted small" id="score-label">
+          {% if my_rating %}{{ my_rating.score }}점을 주셨어요{% else %}별을 클릭해서 온기를 전달해요{% endif %}
+        </div>
+      </div>
+      <div class="mb-3">
+        <select class="form-select form-select-sm mb-2" id="rating-category">
+          <option value="general" {% if my_rating and my_rating.category == 'general' %}selected{% endif %}>전반적인 이웃</option>
+          <option value="manner" {% if my_rating and my_rating.category == 'manner' %}selected{% endif %}>매너가 좋아요</option>
+          <option value="helpful" {% if my_rating and my_rating.category == 'helpful' %}selected{% endif %}>도움이 많이 돼요</option>
+          <option value="active" {% if my_rating and my_rating.category == 'active' %}selected{% endif %}>활동적이에요</option>
+          <option value="friendly" {% if my_rating and my_rating.category == 'friendly' %}selected{% endif %}>친근해요</option>
+        </select>
+        <textarea class="form-control form-control-sm" id="rating-comment" rows="2"
+          placeholder="따뜻한 한마디를 남겨주세요 (선택)">{% if my_rating %}{{ my_rating.comment }}{% endif %}</textarea>
+      </div>
+      <button class="btn btn-success w-100" onclick="submitRating()">
+        <i class="fas fa-heart me-1"></i>온기 전달하기
+      </button>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 받은 온기 목록 -->
+  {% if ratings %}
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white fw-bold py-3">
+      <i class="fas fa-heart me-2 text-danger"></i>받은 이웃 온기 ({{ ratings|length }}건)
+    </div>
+    <div class="card-body p-3">
+      {% for r in ratings %}
+      <div class="rating-card">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <div>
+            {% for i in "12345" %}
+            <span style="color:{% if r.score >= forloop.counter %}#ffd600{% else %}#ddd{% endif %};">⭐</span>
+            {% endfor %}
+            <span class="badge bg-light text-muted ms-1 small">{{ r.category }}</span>
+          </div>
+          <small class="text-muted">{{ r.created_at|date:"m.d" }}</small>
+        </div>
+        {% if r.comment %}
+        <p class="mb-0 small text-muted">{{ r.comment }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+let selectedScore = {{ my_rating.score|default:0 }};
+const RATE_URL = '/users/{{ profile_user.pk }}/rate/';
+const CSRF = '{{ csrf_token }}';
+
+function setScore(score) {
+  selectedScore = score;
+  const labels = ['', '차가워요 🥶', '쌀쌀해요 😐', '보통이에요 🌤', '따뜻해요 😊', '아주 따뜻해요 🔥'];
+  document.getElementById('score-label').textContent = labels[score];
+  document.querySelectorAll('.star-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i < score);
+  });
+}
+
+async function submitRating() {
+  if (!selectedScore) { alert('별점을 선택해주세요!'); return; }
+  const comment = document.getElementById('rating-comment').value;
+  const category = document.getElementById('rating-category').value;
+  const res = await fetch(RATE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+    body: JSON.stringify({ score: selectedScore, comment, category })
+  });
+  const data = await res.json();
+  if (data.status === 'ok') {
+    // 온기 미터 업데이트
+    document.getElementById('manners-fill').style.width = data.new_score + '%';
+    document.querySelector('.manners-text').textContent = data.new_score;
+    alert(data.created ? '온기를 전달했어요! ❤️' : '온기 점수를 수정했어요!');
+    location.reload();
+  }
+}
+
+// 온기 미터 애니메이션
+setTimeout(() => {
+  document.getElementById('manners-fill').style.width = '{{ profile_user.manners_score }}%';
+}, 300);
+</script>
+{% endblock %}

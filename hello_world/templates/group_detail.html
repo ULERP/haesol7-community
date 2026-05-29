@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block title %}{{ group.name }}<script>
+function switchTab(tab) {
+  document.getElementById('tab-posts').style.display = tab === 'posts' ? 'block' : 'none';
+  document.getElementById('tab-members').style.display = tab === 'members' ? 'block' : 'none';
+  document.getElementById('tab-posts-btn').className = tab === 'posts'
+    ? 'btn btn-success fw-semibold px-4 py-2 rounded-0'
+    : 'btn btn-outline-secondary fw-semibold px-4 py-2 rounded-0';
+  document.getElementById('tab-members-btn').className = tab === 'members'
+    ? 'btn btn-success fw-semibold px-4 py-2 rounded-0'
+    : 'btn btn-outline-secondary fw-semibold px-4 py-2 rounded-0';
+}
+</script>
+{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:900px;">
+
+  <!-- 헤더 -->
+  <div class="card border-0 shadow-sm mb-4" style="border-top:4px solid #1a7a4a !important;">
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <div style="width:52px;height:52px;border-radius:12px;background:#1a7a4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;flex-shrink:0;">
+              {{ group.name|first|upper }}
+            </div>
+            <div>
+              <h4 class="fw-bold mb-0">{{ group.name }}</h4>
+              <div class="text-muted small">
+                <i class="fas fa-users me-1"></i>{{ member_count }}명 참여
+                {% if group.location %} · <i class="fas fa-map-marker-alt me-1"></i>{{ group.location }}{% endif %}
+              </div>
+            </div>
+          </div>
+          {% if group.description %}
+          <p class="text-muted mb-0">{{ group.description }}</p>
+          {% endif %}
+          {% if group.regular_schedule %}
+          <div class="text-muted small mt-2"><i class="fas fa-clock me-1"></i>{{ group.regular_schedule }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+          {% if is_member %}
+          <a href="/chat/group/{{ group.pk }}/" class="btn btn-success me-2">
+            <i class="fas fa-comments me-1"></i>채팅방
+          </a>
+          {% else %}
+          <form method="post" action="/groups/{{ group.pk }}/join/" class="d-inline">
+            {% csrf_token %}
+            <button class="btn btn-success">
+              <i class="fas fa-plus me-1"></i>참여하기
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="d-flex gap-2 mb-4 border-bottom pb-0">
+    <button class="btn btn-success fw-semibold px-4 py-2 rounded-0 border-bottom border-3 border-success" 
+      id="tab-posts-btn" onclick="switchTab('posts')">
+      <i class="fas fa-list me-1"></i>게시판
+    </button>
+    <button class="btn btn-outline-secondary fw-semibold px-4 py-2 rounded-0"
+      id="tab-members-btn" onclick="switchTab('members')">
+      <i class="fas fa-users me-1"></i>멤버 {{ member_count }}명
+    </button>
+    {% if is_member %}
+    <a href="/chat/group/{{ group.pk }}/" class="btn btn-outline-success fw-semibold px-3 py-2 ms-auto">
+      <i class="fas fa-comments me-1"></i>채팅방
+    </a>
+    {% endif %}
+  </div>
+
+  <div>
+    <!-- 게시판 탭 -->
+    <div id="tab-posts">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0">소모임 게시판</h6>
+        {% if is_member %}
+        <a href="/groups/{{ group.pk }}/posts/create/" class="btn btn-success btn-sm">
+          <i class="fas fa-pen me-1"></i>글쓰기
+        </a>
+        {% endif %}
+      </div>
+      {% if recent_posts %}
+      <div class="list-group list-group-flush">
+        {% for post in recent_posts %}
+        <a href="/groups/{{ group.pk }}/posts/{{ post.pk }}/" class="list-group-item list-group-item-action py-3 px-0 border-bottom">
+          <div class="d-flex justify-content-between align-items-start">
+            <div style="flex:1;min-width:0;">
+              <div class="fw-semibold mb-1" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ post.title }}</div>
+              <div class="text-muted small">
+                {{ post.author.nickname|default:post.author.username }}
+                {% if post.author.unit_number %}({{ post.author.unit_number }}){% endif %}
+                · {{ post.created_at|date:"m.d H:i" }}
+                {% if post.comment_count %} · <i class="fas fa-comment me-1"></i>{{ post.comment_count }}{% endif %}
+              </div>
+            </div>
+            {% if post.image %}
+            <img src="{{ post.image.url }}" style="width:48px;height:48px;object-fit:cover;border-radius:6px;margin-left:12px;flex-shrink:0;">
+            {% endif %}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      <div class="text-center mt-3">
+        <a href="/groups/{{ group.pk }}/posts/" class="btn btn-outline-success btn-sm">전체 게시글 보기</a>
+      </div>
+      {% else %}
+      <div class="text-center py-5" style="background:#f8f9fa;border-radius:12px;">
+        <div style="font-size:2.5rem;margin-bottom:8px;">📝</div>
+        <div class="fw-bold text-muted mb-1">아직 게시글이 없어요</div>
+        {% if is_member %}
+        <a href="/groups/{{ group.pk }}/posts/create/" class="btn btn-success btn-sm mt-2">첫 글 작성하기</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- 멤버 탭 -->
+    <div id="tab-members" style="display:none;">
+      <div class="row g-3">
+        {% for m in members %}
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body py-3 px-3 d-flex align-items-center gap-3">
+              <a href="/users/{{ m.user.pk }}/" style="text-decoration:none;">
+                <div style="width:42px;height:42px;border-radius:50%;background:#1a7a4a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">
+                  {{ m.user.nickname|default:m.user.username|first|upper }}
+                </div>
+              </a>
+              <div style="flex:1;min-width:0;">
+                <div class="fw-semibold small">{{ m.user.nickname|default:m.user.username }}</div>
+                <div class="text-muted" style="font-size:0.72rem;">
+                  {{ m.user.unit_number|default:"입주민" }}
+                  {% if m.role == 'leader' %} · <span class="text-success fw-bold">리더</span>{% endif %}
+                </div>
+              </div>
+              {% if request.user.is_authenticated and request.user != m.user %}
+              <a href="/chat/dm/{{ m.user.pk }}/" class="btn btn-sm btn-outline-success" style="flex-shrink:0;">쪽지</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

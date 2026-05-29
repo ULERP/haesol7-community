@@ -11,7 +11,7 @@
         </div>
       </div>
       <div class="text-muted small mt-2">
-        <span class="me-3"><i class="fas fa-user me-1"></i>{{ post.author.real_name|default:post.author.username }}</span>
+        <span class="me-3"><i class="fas fa-user me-1"></i>{% if post.is_anonymous %}익명{% else %}{{ post.author.nickname|default:post.author.username }}{% if post.author.unit_number %} ({{ post.author.unit_number }}){% endif %}{% endif %}</span>
         <span class="me-3"><i class="fas fa-clock me-1"></i>{{ post.created_at|date:"Y.m.d H:i" }}</span>
         <span class="me-3"><i class="fas fa-eye me-1"></i>{{ post.view_count }}</span>
         <span><i class="fas fa-heart me-1"></i><span id="like-count">{{ post.like_count }}</span></span>
@@ -19,6 +19,51 @@
     </div>
     <div class="card-body py-4">
       <p style="white-space:pre-wrap; line-height:1.8">{{ post.content }}</p>
+      <!-- ── 삽입된 설문 위젯 ── -->
+      {% if post.linked_survey %}
+      <div class="mt-4 p-4 rounded" style="background:#f0fdf6;border:1.5px solid #a8d5b8;">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <i class="fas fa-poll text-success fa-lg"></i>
+          <div>
+            <div class="fw-bold">📊 {{ post.linked_survey.title }}</div>
+            <div class="text-muted small">이 게시글과 연결된 설문 · {{ post.linked_survey.total_responses }}명 응답</div>
+          </div>
+          <span class="ms-auto badge {% if post.linked_survey.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+            {{ post.linked_survey.get_status_display }}
+          </span>
+        </div>
+        <!-- 미니 설문 선택지 미리보기 -->
+        {% with q=post.linked_survey.questions.first %}
+        {% if q and q.options %}
+        <div class="mb-3">
+          <div class="small fw-semibold mb-2">{{ q.text }}</div>
+          {% for opt in q.options|slice:":4" %}
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <div class="form-check mb-0">
+              <input class="form-check-input" type="radio" disabled>
+            </div>
+            <span class="small">{{ opt }}</span>
+          </div>
+          {% endfor %}
+          {% if q.options|length > 4 %}
+          <div class="text-muted small mt-1">외 {{ q.options|length|add:"-4" }}개 항목...</div>
+          {% endif %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        <div class="d-flex gap-2">
+          {% if post.linked_survey.status == 'active' %}
+          <a href="/surveys/{{ post.linked_survey.pk }}/" class="btn btn-success btn-sm flex-grow-1">
+            <i class="fas fa-poll me-1"></i>설문 참여하기
+          </a>
+          {% endif %}
+          <a href="/surveys/{{ post.linked_survey.pk }}/result/" class="btn btn-outline-success btn-sm">
+            📊 결과 보기
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
       {% if post.images.all %}
       <div class="row g-2 mt-3">
         {% for img in post.images.all %}
@@ -55,7 +100,7 @@
         <div class="flex-grow-1">
           <div class="bg-light rounded p-3">
             <div class="fw-semibold small mb-1">
-              {{ comment.author.real_name|default:comment.author.username }}
+              {% if comment.is_anonymous %}익명{% else %}{{ comment.author.nickname|default:comment.author.username }}{% if comment.author.unit_number %} ({{ comment.author.unit_number }}){% endif %}{% endif %}
               <span class="text-muted fw-normal ms-2">{{ comment.created_at|date:"m.d H:i" }}</span>
             </div>
             <p class="mb-0" style="white-space:pre-wrap">{{ comment.content }}</p>
@@ -65,7 +110,7 @@
             <div class="bg-light rounded p-2 flex-grow-1">
               <div class="fw-semibold small mb-1">
                 <i class="fas fa-reply text-muted me-1"></i>
-                {{ reply.author.real_name|default:reply.author.username }}
+                {% if reply.is_anonymous %}익명{% else %}{{ reply.author.nickname|default:reply.author.username }}{% if reply.author.unit_number %} ({{ reply.author.unit_number }}){% endif %}{% endif %}
                 <span class="text-muted fw-normal ms-2">{{ reply.created_at|date:"m.d H:i" }}</span>
               </div>
               <p class="mb-0 small" style="white-space:pre-wrap">{{ reply.content }}</p>
@@ -93,17 +138,246 @@
     </div>
   </div>
 </div>
+<!-- ── 게시글 액션 바 ── -->
+<div class="card border-0 shadow-sm mb-4" style="background:#f8f9fa;">
+  <div class="card-body py-3 px-4">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <span class="text-muted small me-2"><i class="fas fa-share-alt me-1"></i>이 글을 공유하거나 함께 이야기해요</span>
+      <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#shareChatModal">
+        <i class="fas fa-comments me-1"></i>💬 채팅방에서 토론하기
+      </button>
+      <a href="/surveys/create/?from_post={{ post.pk }}" class="btn btn-sm btn-outline-success">
+        <i class="fas fa-poll me-1"></i>이 글에 설문 만들기
+      </a>
+      {% if user.is_authenticated %}
+      <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('link-post-card').style.display='block';document.getElementById('link-post-card').scrollIntoView({behavior:'smooth'})">
+        <i class="fas fa-link me-1"></i>관련 게시글 연결
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ── 연결된 설문 ── -->
+{% if linked_surveys %}
+<div class="card border-0 shadow-sm mb-4" style="border-left:4px solid #1a7a4a !important;">
+  <div class="card-body py-3 px-4">
+    <div class="fw-bold small mb-2"><i class="fas fa-poll me-2 text-success"></i>이 게시글과 연결된 설문</div>
+    {% for s in linked_surveys %}
+    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+      <div>
+        <span class="badge {% if s.status == 'active' %}bg-success{% else %}bg-secondary{% endif %} me-2">{{ s.get_status_display }}</span>
+        <span class="fw-semibold small">{{ s.title }}</span>
+        <span class="text-muted small ms-2">{{ s.total_responses }}명 응답</span>
+      </div>
+      <div class="d-flex gap-1">
+        {% if s.status == 'active' %}
+        <a href="/surveys/{{ s.pk }}/" class="btn btn-sm btn-success">참여</a>
+        {% endif %}
+        <a href="/surveys/{{ s.pk }}/result/" class="btn btn-sm btn-outline-success">결과</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── 관련 게시글 ── -->
+{% if related_posts %}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body py-3 px-4">
+    <div class="fw-bold small mb-2"><i class="fas fa-link me-2 text-muted"></i>관련 게시글</div>
+    {% for rp in related_posts %}
+    <a href="/posts/{{ rp.pk }}/" class="d-flex align-items-center gap-2 py-2 border-bottom text-decoration-none text-dark">
+      <span class="badge bg-light text-muted border small">{{ rp.board.name }}</span>
+      <span class="small fw-semibold flex-grow-1">{{ rp.title|truncatechars:40 }}</span>
+      <span class="text-muted small">{{ rp.created_at|date:"m.d" }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── 관련 게시글 연결하기 ── -->
+{% if user.is_authenticated %}
+<div class="card border-0 shadow-sm mb-4" id="link-post-card" style="display:none;">
+  <div class="card-body py-3 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="fw-bold small"><i class="fas fa-link me-2 text-muted"></i>관련 게시글 연결하기</div>
+      <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('link-post-card').style.display='none'">닫기</button>
+    </div>
+    <div class="input-group input-group-sm mb-2">
+      <input type="text" id="link-search-input" class="form-control" placeholder="연결할 게시글 제목 검색..." oninput="searchPosts(this.value)">
+    </div>
+    <div id="link-search-results"></div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── 작성자 프로필 카드 ── -->
+{% if post.author %}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body py-3 px-4">
+    <div class="d-flex align-items-center gap-3">
+      <a href="/users/{{ post.author.pk }}/" style="text-decoration:none;">
+        <div style="width:44px;height:44px;border-radius:50%;background:#1a7a4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;flex-shrink:0;">
+          {% if post.is_anonymous %}?{% else %}{{ post.author.nickname|default:post.author.username|first|upper }}{% endif %}
+        </div>
+      </a>
+      <div style="flex:1;">
+        <a href="/users/{{ post.author.pk }}/" style="text-decoration:none;color:inherit;">
+          <div class="fw-bold">{% if post.is_anonymous %}익명{% else %}{{ post.author.nickname|default:post.author.username }}{% endif %}</div>
+        </a>
+        <div class="text-muted small">
+          {{ post.author.unit_number|default:"입주민" }} ·
+          ❤️ 온기 {{ post.author.manners_score|floatformat:0 }}점 ·
+          🏅 {{ post.author.mileage_points }}P
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="/users/{{ post.author.pk }}/" class="btn btn-sm btn-outline-secondary">프로필</a>
+        {% if user.is_authenticated and user != post.author %}
+        <a href="/chat/dm/{{ post.author.pk }}/" class="btn btn-sm btn-success">
+          <i class="fas fa-envelope me-1"></i>쪽지
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <script>
 function toggleLike(postId) {
-  fetch(`/post/${postId}/like/`, {
+  fetch('/post/' + postId + '/like/', {
     method: 'POST',
     headers: {'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json'}
-  })
-  .then(r => r.json())
-  .then(data => {
+  }).then(r => r.json()).then(data => {
     document.getElementById('like-count').textContent = data.count;
     document.getElementById('like-count-btn').textContent = data.count;
   });
 }
+
+const POST_TITLE = '{{ post.title|escapejs }}';
+const POST_URL = window.location.href;
+const CSRF_TOKEN = '{{ csrf_token }}';
+
+async function postToChat(apiUrl, redirectUrl) {
+  const msg = '📌 게시글 공유\n제목: ' + POST_TITLE + '\n링크: ' + POST_URL;
+  const fd = new FormData();
+  fd.append('message', msg);
+  fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+  try { await fetch(apiUrl, { method: 'POST', body: fd }); } catch(e) {}
+  window.location.href = redirectUrl;
+}
+
+async function sendToChat(chatUrl) {
+  const modal = document.getElementById('shareChatModal');
+  if (modal) { const m = bootstrap.Modal.getInstance(modal); if(m) m.hide(); }
+  let apiUrl = '/chat/public/messages/';
+  if (chatUrl.includes('/chat/group/')) {
+    const gid = chatUrl.split('/chat/group/')[1].replace('/','');
+    apiUrl = '/chat/group/' + gid + '/messages/';
+  }
+  await postToChat(apiUrl, chatUrl);
+}
+
+async function sendToDM(userId) {
+  const modal = document.getElementById('shareChatModal');
+  if (modal) { const m = bootstrap.Modal.getInstance(modal); if(m) m.hide(); }
+  await postToChat('/chat/dm/' + userId + '/messages/', '/chat/dm/' + userId + '/');
+}
+
+async function searchPosts(q) {
+  if (q.length < 2) { document.getElementById('link-search-results').innerHTML = ''; return; }
+  const r = await fetch('/post/{{ post.pk }}/link/?q=' + encodeURIComponent(q));
+  const d = await r.json();
+  const box = document.getElementById('link-search-results');
+  box.innerHTML = d.results.map(p => `
+    <div class="d-flex align-items-center gap-2 py-2 border-bottom">
+      <span class="badge bg-light text-muted border small">${p.board}</span>
+      <span class="small flex-grow-1">${p.title}</span>
+      <span class="text-muted small">${p.date}</span>
+      <button class="btn btn-sm btn-success" onclick="linkPost(${p.id}, '${p.title}')">연결</button>
+    </div>`).join('');
+}
+
+async function linkPost(targetId, title) {
+  const r = await fetch('/post/{{ post.pk }}/link/', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken':CSRF_TOKEN},
+    body: JSON.stringify({target_id: targetId, action: 'add'})
+  });
+  const d = await r.json();
+  if (d.status === 'ok') {
+    alert(d.msg);
+    location.reload();
+  }
+}
+
+function copyPostLink() {
+  const inp = document.getElementById('post-link-input');
+  navigator.clipboard.writeText(inp.value).then(() => {
+    alert('링크 복사됐어요! 어디든 붙여넣어 공유하세요 😊');
+  }).catch(() => { inp.select(); document.execCommand('copy'); });
+}
 </script>
+<!-- 채팅 공유 모달 -->
+
+<!-- 채팅 공유 모달 -->
+<div class="modal fade" id="shareChatModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-0 pb-1">
+        <div>
+          <h6 class="modal-title fw-bold mb-0"><i class="fas fa-comments me-2 text-success"></i>채팅방에서 토론하기</h6>
+          <p class="text-muted small mb-0 mt-1">게시글 링크가 선택한 채팅방에 공유돼요</p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <div class="p-3 mb-3 rounded" style="background:#f8f9fa;border:1px solid #e4e6ea;">
+          <div class="small text-muted mb-1"><i class="fas fa-link me-1"></i>공유될 내용 미리보기</div>
+          <div class="fw-bold small">📌 {{ post.title|truncatechars:40 }}</div>
+          <div class="text-muted" style="font-size:0.72rem;word-break:break-all;">{{ request.build_absolute_uri }}</div>
+        </div>
+        <div class="mb-3">
+          <div class="small fw-bold text-muted mb-2">🌐 전체 채팅</div>
+          <button class="btn btn-success w-100 text-start mb-1" onclick="sendToChat('/chat/public/')">
+            <i class="fas fa-globe me-2"></i>단지 오픈채팅
+            <span class="float-end opacity-75 small">전체 입주민</span>
+          </button>
+        </div>
+        {% if user_groups %}
+        <div class="mb-3">
+          <div class="small fw-bold text-muted mb-2">👥 소모임 채팅</div>
+          {% for g in user_groups %}
+          <button class="btn btn-outline-warning w-100 text-start mb-1" onclick="sendToChat('/chat/group/{{ g.pk }}/')">
+            <i class="fas fa-users me-2"></i>{{ g.name }}
+          </button>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if post.author and user.is_authenticated and user != post.author %}
+        <div class="mb-3">
+          <div class="small fw-bold text-muted mb-2">✉️ 1:1 쪽지</div>
+          <button class="btn btn-outline-primary w-100 text-start" onclick="sendToDM('{{ post.author.pk }}')">
+            <i class="fas fa-envelope me-2"></i>작성자 {{ post.author.username }}님께 직접 쪽지
+          </button>
+        </div>
+        {% endif %}
+        <div class="border-top pt-3 mb-2">
+          <div class="small fw-bold text-muted mb-2">🔗 링크 복사</div>
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control" id="post-link-input" value="{{ request.build_absolute_uri }}" readonly>
+            <button class="btn btn-outline-secondary" onclick="copyPostLink()"><i class="fas fa-copy me-1"></i>복사</button>
+          </div>
+        </div>
+        <a href="/groups/create/" class="btn btn-outline-success btn-sm w-100">
+          <i class="fas fa-plus me-1"></i>새 소모임 만들고 토론하기
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

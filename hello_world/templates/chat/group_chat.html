@@ -1,0 +1,183 @@
+{% extends 'chat_base.html' %}
+{% block title %}{{ group.name }} 채팅 — 해솔7{% endblock %}
+{% block nav_groups %}active{% endblock %}
+{% block tab_groups %}active{% endblock %}
+{% block left_title %}소모임 멤버{% endblock %}
+
+{% block left_panel %}
+<div class="sec-label">{{ group.name }} 멤버</div>
+{% for m in members %}
+<div class="side-item" style="cursor:default;">
+  <div class="av av-sm">{{ m.user.username|first|upper }}</div>
+  <div style="flex:1;min-width:0;">
+    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.user.username }}</div>
+    <div style="font-size:0.7rem;color:#999;">{{ m.user.unit_number|default:"입주민" }}</div>
+  </div>
+  {% if m.role == 'leader' %}<span style="font-size:0.62rem;background:var(--gl);color:var(--g);padding:2px 6px;border-radius:8px;font-weight:700;">리더</span>{% endif %}
+</div>
+{% endfor %}
+<div class="sec-label" style="margin-top:10px;">다른 소모임</div>
+{% for g in my_groups %}{% if g.id != group.id %}
+<a href="/chat/group/{{ g.id }}/" class="side-item">
+  <div style="width:22px;height:22px;border-radius:6px;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;">{{ g.name|first|upper }}</div>
+  <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ g.name }}</span>
+</a>
+{% endif %}{% endfor %}
+<a href="/groups/create/" class="side-item" style="background:var(--gl);color:var(--g);font-weight:700;margin-top:4px;">
+  <i class="fas fa-plus" style="font-size:0.75rem;"></i>소모임 만들기
+</a>
+{% endblock %}
+
+{% block chat_content %}
+<!-- 드롭다운 탭 -->
+<div class="chat-tab-bar">
+  <div class="tab-dd">
+    <button class="tab-dd-btn" id="tabDdBtn" style="background:#f57c00;">
+      <i class="fas fa-users" id="tabDdIcon"></i>
+      <span id="tabDdLabel">{{ group.name }}</span>
+      <i class="fas fa-chevron-down" style="font-size:0.65rem;"></i>
+    </button>
+    <div class="tab-dd-menu" id="tabDdMenu">
+      <button class="tab-opt" id="tabOpt-public">
+        <div class="tab-opt-icon" style="background:#e8f5ee;color:var(--g);"><i class="fas fa-globe"></i></div>
+        <div><div style="font-weight:600;">전체 채팅</div><div style="font-size:0.72rem;color:#999;">단지 전체 오픈채팅</div></div>
+      </button>
+      <button class="tab-opt" id="tabOpt-dm">
+        <div class="tab-opt-icon" style="background:#e8f0fe;color:#4285f4;"><i class="fas fa-envelope"></i></div>
+        <div><div style="font-weight:600;">1:1 쪽지</div><div style="font-size:0.72rem;color:#999;">이웃과 개인 대화</div></div>
+      </button>
+      <button class="tab-opt active" id="tabOpt-group">
+        <div class="tab-opt-icon" style="background:#fff3e0;color:#f57c00;"><i class="fas fa-users"></i></div>
+        <div><div style="font-weight:600;">{{ group.name }}</div><div style="font-size:0.72rem;color:#999;">소모임 채팅방</div></div>
+      </button>
+    </div>
+  </div>
+  <span class="tab-desc">{{ group.name }} · {{ members|length }}명 참여 중</span>
+  <a href="/groups/{{ group.id }}/" style="font-size:0.75rem;color:var(--g);text-decoration:none;background:var(--gl);padding:4px 10px;border-radius:14px;font-weight:600;margin-left:auto;white-space:nowrap;flex-shrink:0;">소모임 정보</a>
+</div>
+
+<!-- 메시지 영역 -->
+<div class="msg-area" id="chat-box">
+  <div style="text-align:center;color:#bbb;font-size:0.8rem;padding:20px;">
+    <i class="fas fa-circle-notch fa-spin" style="display:block;margin-bottom:6px;"></i>불러오는 중...
+  </div>
+</div>
+
+<!-- 이미지 미리보기 -->
+<div class="img-preview-wrap" id="img-preview-wrap">
+  <img id="img-preview" src="" alt="미리보기">
+  <span style="font-size:0.75rem;color:#666;flex:1;">이미지 첨부됨</span>
+  <button class="img-preview-remove" onclick="removeImg()"><i class="fas fa-times"></i></button>
+</div>
+
+<!-- 입력창 -->
+<div class="chat-input">
+  <div class="input-toolbar">
+    <label class="toolbar-btn" title="이미지 첨부">
+      <i class="fas fa-image"></i>
+      <input type="file" id="img-input" accept="image/*" style="display:none;">
+    </label>
+  </div>
+  <div class="input-row">
+    <textarea class="msg-textarea" id="msg-input" placeholder="{{ group.name }} 채팅... (Enter 전송)" rows="1"
+      oninput="autoResize(this)"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+    <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane" style="font-size:0.82rem;"></i></button>
+  </div>
+</div>
+{% endblock %}
+
+{% block right_panel %}
+<div class="info-sec">
+  <div class="info-sec-title">🏘️ 소모임 정보</div>
+  <div class="info-card" style="cursor:default;">
+    <div style="font-weight:700;font-size:0.85rem;margin-bottom:4px;">{{ group.name }}</div>
+    <div style="font-size:0.75rem;color:#666;margin-bottom:6px;">{{ group.description|default:""|truncatechars:50 }}</div>
+    {% if group.location %}<div style="font-size:0.73rem;color:#999;"><i class="fas fa-map-marker-alt me-1"></i>{{ group.location }}</div>{% endif %}
+    {% if group.regular_schedule %}<div style="font-size:0.73rem;color:#999;margin-top:2px;"><i class="fas fa-clock me-1"></i>{{ group.regular_schedule }}</div>{% endif %}
+  </div>
+  <a href="/groups/{{ group.id }}/" class="info-card" style="text-align:center;color:var(--g);font-weight:600;font-size:0.8rem;">소모임 상세 보기 →</a>
+</div>
+<div class="info-sec">
+  <div class="info-sec-title">👥 멤버 {{ members|length }}명</div>
+  {% for m in members %}
+  <div class="info-card" style="cursor:default;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="av av-sm" style="width:24px;height:24px;font-size:0.68rem;">{{ m.user.username|first|upper }}</div>
+      <span style="font-size:0.78rem;font-weight:600;">{{ m.user.username }}</span>
+      {% if m.role == 'leader' %}<span style="font-size:0.62rem;color:var(--g);font-weight:700;margin-left:auto;">리더</span>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const MSGS_URL = "/chat/group/{{ group.id }}/messages/";
+const CSRF = '{{ csrf_token }}';
+let lastId = 0;
+
+function removeImg() {
+  document.getElementById('img-input').value = '';
+  document.getElementById('img-preview-wrap').style.display = 'none';
+}
+document.getElementById('img-input')?.addEventListener('change', function() {
+  if (!this.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('img-preview').src = e.target.result;
+    document.getElementById('img-preview-wrap').style.display = 'flex';
+  };
+  reader.readAsDataURL(this.files[0]);
+});
+
+async function fetchMsgs() {
+  try {
+    const r = await fetch(MSGS_URL + '?since=' + lastId);
+    const d = await r.json();
+    const box = document.getElementById('chat-box');
+    if (d.pinned && d.pinned.length > 0) renderPinned(d.pinned);
+    if (d.messages && d.messages.length > 0) {
+      const atBot = box.scrollHeight - box.scrollTop <= box.clientHeight + 80;
+      if (lastId === 0) box.innerHTML = '';
+      d.messages.forEach(m => { renderMsg(box, m); lastId = Math.max(lastId, m.id); });
+      if (atBot) box.scrollTop = box.scrollHeight;
+    } else if (lastId === 0) {
+      box.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><div class="empty-title">첫 대화를 시작해보세요!</div><div class="empty-desc">{{ group.name }} 멤버들과 자유롭게 이야기해요</div></div>';
+    }
+  } catch(e) {}
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('msg-input');
+  const imgInp = document.getElementById('img-input');
+  const msg = inp?.value.trim();
+  const hasImg = imgInp?.files[0];
+  if (!msg && !hasImg) return;
+  const fd = new FormData();
+  if (msg) fd.append('message', msg);
+  if (hasImg) fd.append('image', imgInp.files[0]);
+  fd.append('csrfmiddlewaretoken', CSRF);
+  if (inp) { inp.value = ''; inp.style.height = 'auto'; }
+  removeImg();
+  await fetch(MSGS_URL, { method:'POST', body: fd });
+  fetchMsgs();
+}
+
+const inp = document.getElementById('msg-input');
+if (inp) {
+  inp.addEventListener('input', () => autoResize(inp));
+  inp.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
+}
+
+fetchMsgs();
+setInterval(fetchMsgs, 3000);
+
+initTabDropdown([
+  { id:'public', icon:'fa-globe',    label:'전체 채팅',   desc:'단지 전체 오픈채팅', url:'/chat/public/' },
+  { id:'dm',     icon:'fa-envelope', label:'1:1 쪽지',    desc:'이웃과 개인 대화',   url:'/chat/dm/list/' },
+  { id:'group',  icon:'fa-users',    label:'소모임 채팅',  desc:'소모임 채팅방',      fn: null },
+]);
+</script>
+{% endblock %}

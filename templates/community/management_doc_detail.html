@@ -1,16 +1,14 @@
 {% extends 'base.html' %}
 {% block title %}{{ document.title }}{% endblock %}
-
 {% block content %}
 <div class="container py-4" style="max-width: 860px;">
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'management_doc_list' %}">관리 문서</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'management_doc_list' %}?category={{ document.category }}">{{ document.category }}</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'community:management_doc_list' %}">관리 문서</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'community:management_doc_list' %}?category={{ document.category }}">{{ document.category }}</a></li>
       <li class="breadcrumb-item active">{{ document.title|truncatechars:30 }}</li>
     </ol>
   </nav>
-
   <div class="card shadow-sm border-0">
     <div class="card-header bg-white border-bottom py-3">
       <div class="d-flex justify-content-between align-items-center">
@@ -20,16 +18,16 @@
       <h4 class="mt-2 mb-0 fw-bold">{{ document.title }}</h4>
     </div>
     <div class="card-body py-4">
-      <div class="doc-content" style="line-height: 1.9; white-space: pre-wrap;">{{ document.content }}</div>
+      <div style="line-height: 1.9; white-space: pre-wrap;">{{ document.content }}</div>
     </div>
     <div class="card-footer bg-transparent d-flex gap-2 justify-content-between">
-      <a href="{% url 'management_doc_list' %}" class="btn btn-outline-secondary btn-sm">
+      <a href="{% url 'community:management_doc_list' %}" class="btn btn-outline-secondary btn-sm">
         <i class="fas fa-arrow-left me-1"></i>목록으로
       </a>
       {% if user.is_staff %}
       <div class="d-flex gap-2">
-        <a href="{% url 'management_doc_edit' document.pk %}" class="btn btn-outline-primary btn-sm">수정</a>
-        <a href="{% url 'management_doc_delete' document.pk %}" class="btn btn-outline-danger btn-sm">삭제</a>
+        <a href="{% url 'community:management_doc_edit' document.pk %}" class="btn btn-outline-primary btn-sm">수정</a>
+        <a href="{% url 'community:management_doc_delete' document.pk %}" class="btn btn-outline-danger btn-sm">삭제</a>
       </div>
       {% endif %}
     </div>

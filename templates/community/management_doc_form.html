@@ -1,13 +1,11 @@
 {% extends 'base.html' %}
 {% block title %}{% if form.instance.pk %}문서 수정{% else %}문서 등록{% endif %}{% endblock %}
-
 {% block content %}
 <div class="container py-4" style="max-width: 760px;">
   <h4 class="mb-4 fw-bold">
     <i class="fas fa-file-alt me-2 text-primary"></i>
     {% if form.instance.pk %}관리 문서 수정{% else %}관리 문서 등록{% endif %}
   </h4>
-
   <div class="card shadow-sm border-0">
     <div class="card-body p-4">
       <form method="post">
@@ -26,10 +24,8 @@
           <textarea name="content" class="form-control" rows="16" placeholder="관리 규약 또는 안내 내용을 입력하세요..." required>{{ form.content.value|default:'' }}</textarea>
         </div>
         <div class="d-flex gap-2 justify-content-end">
-          <a href="{% url 'management_doc_list' %}" class="btn btn-outline-secondary">취소</a>
-          <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save me-1"></i>저장
-          </button>
+          <a href="{% url 'community:management_doc_list' %}" class="btn btn-outline-secondary">취소</a>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>저장</button>
         </div>
       </form>
     </div>

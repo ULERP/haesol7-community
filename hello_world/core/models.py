@@ -5,6 +5,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class CustomUser(AbstractUser):
     unit_number   = models.CharField(max_length=20, blank=True)
+    dong          = models.CharField('동', max_length=10, blank=True)
+    ho            = models.CharField('호', max_length=10, blank=True)
+    nickname      = models.CharField('닉네임', max_length=30, blank=True)
     phone_number  = models.CharField(max_length=20, blank=True)
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
     introduction  = models.TextField(blank=True, max_length=500)
@@ -64,6 +67,8 @@ class Activity(models.Model):
 
     class Meta:
         ordering = ['activity_type', 'name']
+        verbose_name = '봉사 활동'
+        verbose_name_plural = '봉사 활동 목록'
 
     def __str__(self):
         return self.name
@@ -89,6 +94,8 @@ class ActivityProof(models.Model):
 
     class Meta:
         ordering = ['-submitted_at']
+        verbose_name = '활동 인증'
+        verbose_name_plural = '활동 인증 목록'
 
     def __str__(self):
         return f"{self.user.username} - {self.activity.name}"
@@ -213,6 +220,8 @@ class Post(models.Model):
     is_active    = models.BooleanField(default=True)
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
+    related_posts = models.ManyToManyField('self', blank=True, symmetrical=True, verbose_name='관련 게시글')
+    linked_survey = models.ForeignKey('Survey', on_delete=models.SET_NULL, null=True, blank=True, related_name='linked_posts', verbose_name='삽입 설문')
 
     class Meta:
         ordering = ['-is_pinned', '-created_at']
@@ -348,16 +357,18 @@ class ChatHistory(models.Model):
 
 
 class ManagementDocument(models.Model):
-    title      = models.CharField(max_length=200)
-    content    = models.TextField()
-    category   = models.CharField(max_length=50)
-    embeddings = models.JSONField(blank=True, null=True)
-    is_active  = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    title      = models.CharField('제목', max_length=200)
+    content    = models.TextField('내용')
+    category   = models.CharField('카테고리', max_length=50)
+    embeddings = models.JSONField('임베딩', blank=True, null=True)
+    is_active  = models.BooleanField('활성화', default=True)
+    created_at = models.DateTimeField('등록일', auto_now_add=True)
+    updated_at = models.DateTimeField('수정일', auto_now=True)
 
     class Meta:
         ordering = ['category', 'title']
+        verbose_name = '관리 문서'
+        verbose_name_plural = '관리 문서 목록'
 
     def __str__(self):
         return f"[{self.category}] {self.title}"
@@ -388,6 +399,8 @@ class Group(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = '소그룹'
+        verbose_name_plural = '소그룹 목록'
 
     def __str__(self):
         return self.name
@@ -437,6 +450,8 @@ class Meetup(models.Model):
 
     class Meta:
         ordering = ['scheduled_at']
+        verbose_name = '번개/모임'
+        verbose_name_plural = '번개/모임 목록'
 
     def __str__(self):
         return self.title
@@ -477,8 +492,12 @@ class GroupComment(models.Model):
 class GroupChat(models.Model):
     group      = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='chat_messages')
     sender     = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='group_messages')
-    message    = models.TextField()
+    message    = models.TextField(blank=True)
     image      = models.ImageField(upload_to='group_chat/', blank=True, null=True)
+    is_pinned = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_pinned  = models.BooleanField(default=False)
+    is_active  = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -545,3 +564,175 @@ def get_user_grade(user):
         if grade in user_groups:
             return grade
     return '입주민'
+
+
+class DirectMessage(models.Model):
+    """1:1 개인 채팅"""
+    sender    = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='sent_messages')
+    receiver  = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='received_messages')
+    message   = models.TextField(blank=True)
+    image     = models.ImageField(upload_to='dm/', blank=True, null=True)
+    is_read   = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = '1:1 메시지'
+        verbose_name_plural = '1:1 메시지 목록'
+
+    def __str__(self):
+        return f"{self.sender.username} → {self.receiver.username}: {self.message[:30]}"
+
+
+class PublicChat(models.Model):
+    """단지 전체 오픈 채팅방"""
+    author    = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='public_chats')
+    message   = models.TextField()
+    image     = models.ImageField(upload_to='public_chat/', blank=True, null=True)
+    is_pinned = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    is_pinned = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = '오픈채팅'
+        verbose_name_plural = '오픈채팅 목록'
+
+    def __str__(self):
+        return f"{self.author.username}: {self.message[:30]}"
+
+
+# ============================================================================
+# 설문조사 시스템
+# ============================================================================
+class Survey(models.Model):
+    SURVEY_TYPE = [
+        ('single', '단일 선택'),
+        ('multiple', '복수 선택'),
+        ('text', '주관식'),
+        ('rating', '평점 (1-5점)'),
+    ]
+    STATUS = [
+        ('draft', '작성중'),
+        ('active', '진행중'),
+        ('closed', '마감'),
+    ]
+    title       = models.CharField('설문 제목', max_length=200)
+    description = models.TextField('설명', blank=True)
+    creator     = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='surveys')
+    survey_type = models.CharField('유형', max_length=20, choices=SURVEY_TYPE, default='single')
+    status      = models.CharField('상태', max_length=20, choices=STATUS, default='active')
+    is_anonymous = models.BooleanField('익명 응답', default=True)
+    allow_multiple = models.BooleanField('중복 응답 허용', default=False)
+    ends_at     = models.DateTimeField('마감일', null=True, blank=True)
+    source_post = models.ForeignKey('Post', on_delete=models.SET_NULL, null=True, blank=True, related_name='surveys', verbose_name='원본 게시글')
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = '설문조사'
+        verbose_name_plural = '설문조사 목록'
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def total_responses(self):
+        return self.responses.count()
+
+    @property
+    def is_active(self):
+        from django.utils import timezone
+        if self.status != 'active':
+            return False
+        if self.ends_at and self.ends_at < timezone.now():
+            return False
+        return True
+
+
+class SurveyQuestion(models.Model):
+    QUESTION_TYPE = [
+        ('single',   '단일 선택'),
+        ('multiple', '복수 선택'),
+        ('text',     '주관식'),
+        ('rating',   '평점 (1-5점)'),
+        ('scale',    '선형 척도 (슬라이더)'),
+        ('date',     '날짜 선택'),
+        ('daterange','날짜 범위 선택'),
+        ('rank',     '순위 매기기'),
+        ('matrix',   '매트릭스/표'),
+        ('section',  '섹션 구분'),
+    ]
+    survey        = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='questions')
+    text          = models.CharField('질문', max_length=300)
+    description   = models.CharField('질문 설명', max_length=300, blank=True)
+    question_type = models.CharField('유형', max_length=20, choices=QUESTION_TYPE, default='single')
+    options       = models.JSONField('선택지', default=list, blank=True)
+    rows          = models.JSONField('행 (매트릭스용)', default=list, blank=True)
+    scale_min     = models.IntegerField('최솟값', default=1)
+    scale_max     = models.IntegerField('최댓값', default=10)
+    scale_min_label = models.CharField('최솟값 레이블', max_length=50, blank=True)
+    scale_max_label = models.CharField('최댓값 레이블', max_length=50, blank=True)
+    is_required   = models.BooleanField('필수', default=True)
+    order         = models.PositiveIntegerField('순서', default=0)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = '설문 질문'
+
+    def __str__(self):
+        return f"{self.survey.title} - {self.text[:30]}"
+
+
+class SurveyResponse(models.Model):
+    survey      = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='responses')
+    respondent  = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='survey_responses')
+    answers     = models.JSONField('응답', default=dict)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+        verbose_name = '설문 응답'
+
+    def __str__(self):
+        return f"{self.survey.title} - {self.respondent.username if self.respondent else '익명'}"
+
+
+# ============================================================================
+# 채팅 미니 투표
+# ============================================================================
+class ChatPoll(models.Model):
+    """채팅창 내 /투표 명령어로 생성되는 미니 투표"""
+    chat_type   = models.CharField(max_length=20, default='public')  # public/group/dm
+    group       = models.ForeignKey('Group', on_delete=models.CASCADE, null=True, blank=True, related_name='polls')
+    creator     = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='chat_polls')
+    question    = models.CharField('질문', max_length=200)
+    options     = models.JSONField('선택지', default=list)
+    votes       = models.JSONField('투표 결과', default=dict)  # {option: [user_id, ...]}
+    is_active   = models.BooleanField(default=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = '채팅 투표'
+
+    def __str__(self):
+        return f"{self.question[:30]}"
+
+    @property
+    def total_votes(self):
+        return sum(len(v) for v in self.votes.values())
+
+    def get_results(self):
+        total = self.total_votes
+        results = []
+        for opt in self.options:
+            voters = self.votes.get(opt, [])
+            cnt = len(voters)
+            pct = round(cnt/total*100) if total > 0 else 0
+            results.append({'option': opt, 'count': cnt, 'percent': pct, 'voters': voters})
+        return results

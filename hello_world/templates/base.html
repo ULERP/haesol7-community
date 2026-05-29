@@ -1,53 +1,115 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>해솔7 지킴이</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}해솔7 지킴이{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --haesol-green: #1a7a4a; --haesol-light: #e8f5ee; }
+    body { background: #f4f6f8; }
+    .navbar { background: var(--haesol-green) !important; }
+    .navbar-brand { color: #fff !important; font-size: 1.2rem; }
+    .nav-link { color: rgba(255,255,255,0.85) !important; }
+    .nav-link:hover, .nav-link.active { color: #fff !important; }
+    .nav-link.chat-link { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 4px 12px !important; }
+    .nav-link.chat-link:hover { background: rgba(255,255,255,0.25); }
+    .noti-badge { font-size: 0.55rem; min-width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+  </style>
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold text-success" href="/">해솔7 지킴이</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="/">홈</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/boards/">전체 게시판</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/volunteer/">봉사 달력</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/chatbot/"><i class="fas fa-robot me-1"></i>AI 안내</a></li>
-                    <li class="nav-item">
-                      <form class="d-flex" method="get" action="/search/">
-                        <input class="form-control form-control-sm me-1" type="text" name="q" placeholder="검색...">
-                        <button class="btn btn-outline-light btn-sm" type="submit"><i class="fas fa-search"></i></button>
-                      </form>
-                    </li>
-                    <li class="nav-item"><a class="nav-link" href="/volunteer/">봉사 달력</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/chatbot/"><i class="fas fa-robot me-1"></i>AI 안내</a></li>
-                </ul>
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-              <a href="/notifications/" class="text-white me-2 position-relative">
-                <i class="fas fa-bell"></i>
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="noti-count" style="font-size:0.6rem;display:none">0</span>
-              </a>
-                        {% if user.is_staff %}
-                            <li class="nav-item"><a class="nav-link" href="/admin/">⚙️ 관리</a></li>
-                        {% endif %}
-                        <li class="nav-item"><a class="nav-link fw-bold" href="/mypage/">{{ user.username }}님</a></li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="/login/">로그인</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <div class="container">
-        {% block content %}{% endblock %}
+  <nav class="navbar navbar-expand-lg shadow-sm mb-0 py-2">
+    <div class="container-fluid px-3">
+      <a class="navbar-brand fw-bold" href="/"><i class="fas fa-home me-1"></i>해솔7 지킴이</a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto gap-1 align-items-lg-center">
+          <li class="nav-item"><a class="nav-link chat-link fw-semibold" href="/chat/public/"><i class="fas fa-comments me-1"></i>오픈채팅</a></li>
+          <li class="nav-item"><a class="nav-link" href="/chat/dm/list/"><i class="fas fa-envelope me-1"></i>쪽지</a></li>
+          <li class="nav-item"><a class="nav-link" href="/boards/"><i class="fas fa-clipboard me-1"></i>게시판</a></li>
+          <li class="nav-item"><a class="nav-link" href="/community/docs/"><i class="fas fa-file-alt me-1"></i>관리문서</a></li>
+          <li class="nav-item"><a class="nav-link" href="/surveys/"><i class="fas fa-poll me-1"></i>설문</a></li>
+          <li class="nav-item"><a class="nav-link" href="/volunteer/"><i class="fas fa-calendar me-1"></i>봉사달력</a></li>
+          <li class="nav-item"><a class="nav-link" href="/chatbot/"><i class="fas fa-robot me-1"></i>AI안내</a></li>
+          <li class="nav-item">
+            <form class="d-flex" method="get" action="/search/">
+              <div class="input-group input-group-sm">
+                <input class="form-control" type="text" name="q" placeholder="검색...">
+                <button class="btn btn-outline-light" type="submit"><i class="fas fa-search"></i></button>
+              </div>
+            </form>
+          </li>
+        </ul>
+        <ul class="navbar-nav align-items-lg-center gap-2">
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a href="/notifications/" class="nav-link position-relative">
+              <i class="fas fa-bell"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger noti-badge" id="noti-count" style="display:none">0</span>
+            </a>
+          </li>
+          {% if user.is_staff %}
+          <li class="nav-item"><a class="nav-link" href="/admin/"><i class="fas fa-cog me-1"></i>관리</a></li>
+          {% endif %}
+          <li class="nav-item dropdown">
+            <a class="nav-link fw-bold dropdown-toggle" href="#" data-bs-toggle="dropdown">
+              <i class="fas fa-user me-1"></i>{{ user.nickname|default:user.username }}님
+              {% if user.unit_number %}<span class="text-white-50 small">({{ user.unit_number }})</span>{% endif %}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+              <li><h6 class="dropdown-header">
+                {{ user.nickname|default:user.username }}
+                {% if user.unit_number %} · {{ user.unit_number }}{% endif %}
+              </h6></li>
+              <li><a class="dropdown-item" href="/mypage/"><i class="fas fa-home me-2 text-success"></i>마이페이지</a></li>
+              <li><a class="dropdown-item" href="/mypage/edit/"><i class="fas fa-pen me-2 text-muted"></i>프로필 수정</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="post" action="/accounts/logout/" class="px-3 py-1">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                    <i class="fas fa-sign-out-alt me-1"></i>로그아웃
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </li>
+          {% else %}
+          <li class="nav-item"><a class="nav-link" href="/login/">로그인</a></li>
+          <li class="nav-item"><a class="nav-link" href="/signup/">회원가입</a></li>
+          {% endif %}
+        </ul>
+      </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </nav>
+
+  {% block full_content %}
+  <div class="container py-4">
+    {% block content %}{% endblock %}
+  </div>
+  {% endblock %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // 알림 카운트 갱신
+    {% if user.is_authenticated %}
+    async function updateNotiCount() {
+      try {
+        const res = await fetch('/notifications/count/');
+        const data = await res.json();
+        const badge = document.getElementById('noti-count');
+        if (data.count > 0) { badge.textContent = data.count; badge.style.display = 'flex'; }
+        else { badge.style.display = 'none'; }
+      } catch(e) {}
+    }
+    updateNotiCount();
+    setInterval(updateNotiCount, 30000);
+    {% endif %}
+  </script>
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>

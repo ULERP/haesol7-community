@@ -49,15 +49,52 @@ def check_board_permission(user, board, action='read'):
 # 메인
 # ============================================================================
 def index(request):
+    from .models import ManagementDocument, Post, Board
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    # 공지 게시판 글
+    try:
+        notice_board = Board.objects.filter(board_type='notice', is_active=True).first()
+        notice_posts = Post.objects.filter(board=notice_board, is_active=True).order_by('-created_at')[:3] if notice_board else []
+    except: notice_posts = []
+    # 관리 문서
+    try: recent_docs = ManagementDocument.objects.filter(is_active=True).order_by('-updated_at')[:3]
+    except: recent_docs = []
+    # 전체 입주민
+    try: all_users = User.objects.filter(is_active=True).exclude(id=request.user.id if request.user.is_authenticated else 0).order_by('username')[:30]
+    except: all_users = []
+    # 온라인 입주민 (최근 5분 이내 - 간단히 최근 가입자로 대체)
+    try: online_users = User.objects.filter(is_active=True).order_by('-last_login')[:8]
+    except: online_users = []
+    # 내 소모임
+    try:
+        from .models import Group
+        my_groups = Group.objects.filter(members=request.user, is_active=True)[:5] if request.user.is_authenticated else []
+    except: my_groups = []
+
     boards = Board.objects.filter(is_active=True).order_by('order')
     recent_posts = Post.objects.filter(is_active=True).order_by('-created_at')[:10]
     upcoming_events = Activity.objects.filter(is_active=True).order_by('created_at')[:5]
-    from .models import Badge
+    from .models import Badge, ActivityProof, Meetup
+    activities_count = Activity.objects.filter(is_active=True).count()
+    approved_activities_count = ActivityProof.objects.filter(status='approved').count()
+    badges_count = Badge.objects.filter(is_active=True).count()
+    upcoming_meetups = Meetup.objects.filter(status='recruiting').order_by('scheduled_at')[:3]
+    groups_count = Group.objects.filter(is_active=True).count()
     return render(request, 'index.html', {
         'boards': boards,
         'recent_posts': recent_posts,
         'upcoming_events': upcoming_events,
-        'badges_count': Badge.objects.filter(is_active=True).count(),
+        'notice_posts': notice_posts,
+        'recent_docs': recent_docs,
+        'all_users': all_users,
+        'online_users': online_users,
+        'my_groups': my_groups,
+        'activities_count': activities_count,
+        'approved_activities_count': approved_activities_count,
+        'badges_count': badges_count,
+        'upcoming_meetups': upcoming_meetups,
+        'groups_count': groups_count,
     })
 
 
@@ -110,20 +147,35 @@ def signup(request):
 @login_required
 def mypage(request):
     user = request.user
-    my_posts    = Post.objects.filter(author=user, is_active=True).order_by('-created_at')[:5]
-    my_comments = Comment.objects.filter(author=user, is_active=True).order_by('-created_at')[:5]
+    from .models import Group, GroupMember, UserBadge, Survey, SurveyResponse, Rating
+    my_posts       = Post.objects.filter(author=user, is_active=True).order_by('-created_at')[:5]
+    my_comments    = Comment.objects.filter(author=user, is_active=True).order_by('-created_at')[:5]
+    my_activities  = ActivityProof.objects.filter(user=user).order_by('-submitted_at')[:5]
+    my_badges      = UserBadge.objects.filter(user=user).select_related('badge').order_by('-earned_at')
+    my_groups      = Group.objects.filter(members=user, is_active=True)
+    my_surveys     = Survey.objects.filter(creator=user).order_by('-created_at')[:3]
+    my_responses   = SurveyResponse.objects.filter(respondent=user).select_related('survey').order_by('-submitted_at')[:3]
+    received_ratings = Rating.objects.filter(rated_user=user).order_by('-created_at')[:5]
+    total_activities = ActivityProof.objects.filter(user=user, status='approved').count()
+    pending_activities = ActivityProof.objects.filter(user=user, status='pending').count()
     user_grade_name = get_user_grade(user)
     try:
         user_grade = MemberGrade.objects.get(name=str(user_grade_name)) if user_grade_name else None
     except:
         user_grade = None
-    total_activities = ActivityProof.objects.filter(user=user, status='approved').count()
     return render(request, 'mypage.html', {
         'user': user,
         'my_posts': my_posts,
         'my_comments': my_comments,
+        'my_activities': my_activities,
+        'my_badges': my_badges,
+        'my_groups': my_groups,
+        'my_surveys': my_surveys,
+        'my_responses': my_responses,
+        'received_ratings': received_ratings,
         'user_grade': user_grade,
         'total_activities': total_activities,
+        'pending_activities': pending_activities,
         'total_points': user.mileage_points,
     })
 
@@ -174,11 +226,21 @@ def post_detail(request, pk):
     post     = get_object_or_404(Post, pk=pk, is_active=True)
     Post.objects.filter(pk=pk).update(view_count=post.view_count+1)
     comments = post.comments.filter(is_active=True, parent=None)
-    return render(request, 'post_detail.html', {
+    user_groups = []
+    if request.user.is_authenticated:
+        from .models import Group
+        user_groups = Group.objects.filter(members=request.user, is_active=True)[:5]
+    # 연결된 설문
+    linked_surveys = Survey.objects.filter(source_post=post, status__in=['active','closed'])
+    # 관련 게시글
+    related_posts = post.related_posts.filter(is_active=True)[:5]
+    return render(request, 'post_detail.html', {'user_groups': user_groups,
         'post': post,
         'comments': comments,
         'can_comment': check_board_permission(request.user, post.board, 'comment'),
         'can_write':   check_board_permission(request.user, post.board, 'write'),
+        'linked_surveys': linked_surveys,
+        'related_posts': related_posts,
     })
 
 @login_required
@@ -213,6 +275,7 @@ def post_write(request, board_id):
         'board': board,
         'post_form': post_form,
         'extra_form': extra_form,
+        'my_surveys': Survey.objects.filter(creator=request.user, status='active') if request.user.is_authenticated else [],
     })
 
 @login_required
@@ -227,6 +290,18 @@ def board_post_create(request):
             post = form.save(commit=False)
             post.board  = board
             post.author = request.user
+            # 설문 삽입 처리
+            survey_id = request.POST.get('linked_survey_id')
+            if survey_id:
+                try:
+                    from .models import Survey
+                    survey = Survey.objects.get(pk=int(survey_id), creator=request.user)
+                    post.linked_survey = survey
+                    # 설문의 source_post 연결
+                    if not survey.source_post:
+                        survey.source_post = post
+                        survey.save()
+                except: pass
             post.save()
             return redirect('post_detail', pk=post.pk)
     else:
@@ -342,27 +417,18 @@ class MeetupViewSet(viewsets.ModelViewSet):
 # 프로필 수정
 # ============================================================================
 @login_required
-def profile_edit(request):
-    user = request.user
-    if request.method == 'POST':
-        user.first_name    = request.POST.get('first_name', '')
-        user.unit_number   = request.POST.get('unit_number', '')
-        user.phone_number  = request.POST.get('phone_number', '')
-        user.introduction  = request.POST.get('introduction', '')
-        if request.FILES.get('profile_image'):
-            user.profile_image = request.FILES['profile_image']
-        user.save()
-        messages.success(request, '프로필이 수정됐습니다!')
-        return redirect('mypage')
-    return render(request, 'profile_edit.html', {'user': user})
-
 
 @login_required
 def profile_edit(request):
     user = request.user
     if request.method == 'POST':
+        user.nickname     = request.POST.get('nickname', '')
         user.first_name   = request.POST.get('first_name', '')
-        user.unit_number  = request.POST.get('unit_number', '')
+        dong = request.POST.get('dong', '').strip()
+        ho   = request.POST.get('ho', '').strip()
+        user.dong = dong
+        user.ho   = ho
+        user.unit_number = f"{dong}동 {ho}호".strip() if dong or ho else ''
         user.phone_number = request.POST.get('phone_number', '')
         user.introduction = request.POST.get('introduction', '')
         if request.FILES.get('profile_image'):
@@ -629,3 +695,1122 @@ def chatbot_ask(request):
         'referenced': referenced,
         'confidence': confidence,
     })
+
+
+# ============================================================================
+# 관리 문서 게시판
+# ============================================================================
+def management_docs(request):
+    from .models import ManagementDocument
+    category = request.GET.get('category', '')
+    query = request.GET.get('q', '')
+    docs = ManagementDocument.objects.filter(is_active=True)
+    if category:
+        docs = docs.filter(category=category)
+    if query:
+        docs = docs.filter(
+            Q(title__icontains=query) |
+            Q(content__icontains=query)
+        )
+    categories = ManagementDocument.objects.filter(
+        is_active=True
+    ).values_list('category', flat=True).distinct()
+    return render(request, 'management_docs.html', {
+        'docs': docs.order_by('category', 'title'),
+        'categories': categories,
+        'selected_category': category,
+        'query': query,
+    })
+
+def management_doc_detail(request, pk):
+    from .models import ManagementDocument
+    doc = get_object_or_404(ManagementDocument, pk=pk, is_active=True)
+    return render(request, 'management_doc_detail.html', {'doc': doc})
+
+
+# =====================================================
+# 채팅 시스템
+# =====================================================
+from .models import DirectMessage, PublicChat, GroupChat, Group, CustomUser
+
+def public_chat(request):
+    from .models import ManagementDocument, Post, Board, Group
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    try:
+        notice_board = Board.objects.filter(board_type="notice", is_active=True).first()
+        notice_posts = Post.objects.filter(board=notice_board, is_active=True).order_by("-created_at")[:3] if notice_board else []
+    except: notice_posts = []
+    try: recent_docs = ManagementDocument.objects.filter(is_active=True).order_by("-updated_at")[:3]
+    except: recent_docs = []
+    try: online_users = User.objects.filter(is_active=True).order_by("-last_login")[:8]
+    except: online_users = []
+    try: my_groups = Group.objects.filter(members=request.user, is_active=True)[:5] if request.user.is_authenticated else []
+    except: my_groups = []
+    return render(request, "chat/public_chat.html", {
+        "notice_posts": notice_posts, "recent_docs": recent_docs,
+        "online_users": online_users, "my_groups": my_groups,
+    })
+
+def public_chat_messages(request):
+    import json
+    from django.http import JsonResponse
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인 필요'}, status=401)
+
+    if request.method == 'POST':
+        msg = request.POST.get('message', '').strip()
+        image = request.FILES.get('image')
+        if not msg and not image:
+            return JsonResponse({'error': '내용 없음'}, status=400)
+        chat = PublicChat.objects.create(author=request.user, message=msg)
+        if image:
+            chat.image = image
+            chat.save()
+        return JsonResponse({'status': 'ok', 'id': chat.id})
+
+    since_id = int(request.GET.get('since', 0))
+    # 고정 메시지
+    pinned = PublicChat.objects.filter(is_pinned=True, is_active=True).select_related('author').order_by('-created_at')[:3]
+    # 일반 메시지
+    msgs = PublicChat.objects.filter(id__gt=since_id, is_active=True).select_related('author').order_by('created_at')[:60]
+
+    def serialize(m):
+        return {
+            'id': m.id,
+            'author': m.author.username,
+            'unit': m.author.unit_number,
+            'message': m.message,
+            'image': request.build_absolute_uri(m.image.url) if m.image else None,
+            'time': m.created_at.strftime('%H:%M'),
+            'is_me': m.author == request.user,
+            'is_pinned': m.is_pinned,
+            'can_pin': request.user.is_staff,
+        }
+
+    return JsonResponse({
+        'messages': [serialize(m) for m in msgs],
+        'pinned': [serialize(m) for m in pinned] if since_id == 0 else [],
+    })
+
+def dm_list(request):
+    """1:1 채팅 상대 목록"""
+    if not request.user.is_authenticated:
+        from django.shortcuts import redirect
+        return redirect('login')
+    from django.db.models import Q, Max
+    partners_sent = DirectMessage.objects.filter(sender=request.user).values_list('receiver', flat=True).distinct()
+    partners_recv = DirectMessage.objects.filter(receiver=request.user).values_list('sender', flat=True).distinct()
+    partner_ids = set(list(partners_sent) + list(partners_recv))
+    partners = CustomUser.objects.filter(id__in=partner_ids)
+    unread_count = DirectMessage.objects.filter(receiver=request.user, is_read=False).count()
+    return render(request, 'chat/dm_list.html', {'partners': partners, 'unread_count': unread_count})
+
+def direct_message(request, user_id):
+    if not request.user.is_authenticated:
+        from django.shortcuts import redirect
+        return redirect('login')
+    partner = get_object_or_404(CustomUser, pk=user_id)
+    DirectMessage.objects.filter(sender=partner, receiver=request.user, is_read=False).update(is_read=True)
+    all_users = CustomUser.objects.filter(is_active=True).exclude(id=request.user.id).order_by('username')[:20]
+    return render(request, 'chat/direct_message.html', {'partner': partner, 'all_users': all_users})
+
+def dm_messages(request, user_id):
+    import json
+    from django.http import JsonResponse
+    from django.db.models import Q
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인 필요'}, status=401)
+    partner = get_object_or_404(CustomUser, pk=user_id)
+
+    if request.method == 'POST':
+        msg = request.POST.get('message', '').strip()
+        image = request.FILES.get('image')
+        if not msg and not image:
+            return JsonResponse({'error': '내용 없음'}, status=400)
+        dm = DirectMessage.objects.create(sender=request.user, receiver=partner, message=msg)
+        if image:
+            dm.image = image
+            dm.save()
+        return JsonResponse({'status': 'ok', 'id': dm.id})
+
+    since_id = int(request.GET.get('since', 0))
+    msgs = DirectMessage.objects.filter(
+        Q(sender=request.user, receiver=partner) | Q(sender=partner, receiver=request.user),
+        id__gt=since_id, is_active=True
+    ).select_related('sender').order_by('created_at')[:100]
+    # 읽음 처리
+    DirectMessage.objects.filter(sender=partner, receiver=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({'messages': [
+        {
+            'id': m.id,
+            'author': m.sender.username,
+            'unit': m.sender.unit_number,
+            'message': m.message,
+            'image': request.build_absolute_uri(m.image.url) if m.image else None,
+            'time': m.created_at.strftime('%H:%M'),
+            'is_me': m.sender == request.user,
+            'is_read': m.is_read,
+        } for m in msgs
+    ]})
+
+def group_chat(request, group_id):
+    if not request.user.is_authenticated:
+        from django.shortcuts import redirect
+        return redirect('login')
+    group = get_object_or_404(Group, pk=group_id)
+    from .models import GroupMember
+    members = GroupMember.objects.filter(group=group, is_active=True).select_related('user')
+    my_groups = Group.objects.filter(members=request.user, is_active=True)[:5]
+    return render(request, 'chat/group_chat.html', {'group': group, 'members': members, 'my_groups': my_groups})
+
+def group_chat_messages(request, group_id):
+    import json
+    from django.http import JsonResponse
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인 필요'}, status=401)
+    group = get_object_or_404(Group, pk=group_id)
+
+    if request.method == 'POST':
+        msg = request.POST.get('message', '').strip()
+        image = request.FILES.get('image')
+        if not msg and not image:
+            return JsonResponse({'error': '내용 없음'}, status=400)
+        chat = GroupChat.objects.create(group=group, sender=request.user, message=msg)
+        if image:
+            chat.image = image
+            chat.save()
+        return JsonResponse({'status': 'ok', 'id': chat.id})
+
+    since_id = int(request.GET.get('since', 0))
+    pinned = GroupChat.objects.filter(group=group, is_pinned=True, is_active=True).select_related('sender').order_by('-created_at')[:3]
+    msgs = GroupChat.objects.filter(group=group, id__gt=since_id, is_active=True).select_related('sender').order_by('created_at')[:100]
+
+    def serialize(m):
+        return {
+            'id': m.id,
+            'author': m.sender.username,
+            'unit': m.sender.unit_number,
+            'message': m.message,
+            'image': request.build_absolute_uri(m.image.url) if m.image else None,
+            'time': m.created_at.strftime('%H:%M'),
+            'is_me': m.sender == request.user,
+            'is_pinned': m.is_pinned,
+            'can_pin': request.user.is_staff,
+        }
+
+    return JsonResponse({
+        'messages': [serialize(m) for m in msgs],
+        'pinned': [serialize(m) for m in pinned] if since_id == 0 else [],
+    })
+
+
+# ============================================================================
+# 소모임 (Group)
+# ============================================================================
+@login_required
+def group_list(request):
+    from .models import Group, GroupMember
+    my_groups = Group.objects.filter(members=request.user, is_active=True)
+    all_groups = Group.objects.filter(is_active=True, is_public=True).exclude(members=request.user)
+    return render(request, 'group_list.html', {
+        'my_groups': my_groups,
+        'all_groups': all_groups,
+    })
+
+
+@login_required
+def group_create(request):
+    from .models import Group, GroupMember
+    GROUP_TYPE = [
+        ('hobby', '취미 활동'), ('pet', '반려동물'), ('sports', '스포츠'),
+        ('volunteer', '자원봉사'), ('learning', '학습'), ('event', '정기 행사'),
+    ]
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        group_type = request.POST.get('group_type', 'hobby')
+        location = request.POST.get('location', '').strip()
+        regular_schedule = request.POST.get('regular_schedule', '').strip()
+        member_limit = request.POST.get('member_limit') or None
+        is_public = request.POST.get('is_public') == 'on'
+        if not name:
+            messages.error(request, '소모임 이름을 입력해주세요.')
+            return render(request, 'group_form.html', {'group_types': GROUP_TYPE})
+        group = Group.objects.create(
+            name=name, description=description, group_type=group_type,
+            creator=request.user, location=location,
+            regular_schedule=regular_schedule,
+            member_limit=int(member_limit) if member_limit else None,
+            is_public=is_public,
+        )
+        GroupMember.objects.create(group=group, user=request.user, role='leader')
+        messages.success(request, f'소모임 "{name}"이 만들어졌어요! 이웃을 초대해보세요.')
+        return redirect('group_detail', pk=group.pk)
+    return render(request, 'group_form.html', {'group_types': GROUP_TYPE})
+
+
+def group_detail(request, pk):
+    from .models import Group, GroupMember, GroupPost, GroupChat
+    group = get_object_or_404(Group, pk=pk)
+    is_member = False
+    my_role = None
+    if request.user.is_authenticated:
+        membership = GroupMember.objects.filter(group=group, user=request.user, is_active=True).first()
+        is_member = bool(membership)
+        my_role = membership.role if membership else None
+    members = GroupMember.objects.filter(group=group, is_active=True).select_related('user')
+    recent_posts = GroupPost.objects.filter(group=group).order_by('-created_at')[:5]
+    return render(request, 'group_detail.html', {
+        'group': group,
+        'is_member': is_member,
+        'my_role': my_role,
+        'members': members,
+        'recent_posts': recent_posts,
+        'member_count': members.count(),
+    })
+
+
+@login_required
+def group_join(request, pk):
+    from .models import Group, GroupMember
+    group = get_object_or_404(Group, pk=pk)
+    if request.method == 'POST':
+        existing = GroupMember.objects.filter(group=group, user=request.user).first()
+        if existing:
+            existing.is_active = not existing.is_active
+            existing.save()
+            if existing.is_active:
+                messages.success(request, f'"{group.name}" 소모임에 참여했어요!')
+            else:
+                messages.info(request, f'"{group.name}" 소모임에서 나왔어요.')
+        else:
+            if group.member_limit and GroupMember.objects.filter(group=group, is_active=True).count() >= group.member_limit:
+                messages.error(request, '참여 인원이 가득 찼어요.')
+            else:
+                GroupMember.objects.create(group=group, user=request.user, role='member')
+                messages.success(request, f'"{group.name}" 소모임에 참여했어요!')
+    return redirect('group_detail', pk=pk)
+
+
+# ============================================================================
+# 채팅 고정 / 삭제 API
+# ============================================================================
+from django.views.decorators.http import require_POST
+
+@require_POST
+@login_required
+def pin_public_chat(request, msg_id):
+    from django.http import JsonResponse
+    if not request.user.is_staff:
+        return JsonResponse({'error': '권한 없음'}, status=403)
+    chat = get_object_or_404(PublicChat, pk=msg_id)
+    chat.is_pinned = not chat.is_pinned
+    chat.save()
+    return JsonResponse({'is_pinned': chat.is_pinned})
+
+@require_POST
+@login_required
+def delete_public_chat(request, msg_id):
+    from django.http import JsonResponse
+    chat = get_object_or_404(PublicChat, pk=msg_id)
+    if chat.author != request.user and not request.user.is_staff:
+        return JsonResponse({'error': '권한 없음'}, status=403)
+    chat.is_active = False
+    chat.save()
+    return JsonResponse({'status': 'ok'})
+
+@require_POST
+@login_required
+def pin_group_chat(request, msg_id):
+    from django.http import JsonResponse
+    if not request.user.is_staff:
+        return JsonResponse({'error': '권한 없음'}, status=403)
+    chat = get_object_or_404(GroupChat, pk=msg_id)
+    chat.is_pinned = not chat.is_pinned
+    chat.save()
+    return JsonResponse({'is_pinned': chat.is_pinned})
+
+
+
+# ============================================================================
+# 설문조사 (업그레이드)
+# ============================================================================
+from .models import Survey, SurveyQuestion, SurveyResponse
+import json as _json
+
+def survey_list(request):
+    active_surveys = Survey.objects.filter(status='active').select_related('creator').order_by('-created_at')
+    closed_surveys = Survey.objects.filter(status='closed').select_related('creator').order_by('-created_at')
+    my_surveys = Survey.objects.filter(creator=request.user).select_related('creator').order_by('-created_at') if request.user.is_authenticated else []
+    # 내가 응답한 설문 ID
+    responded_ids = set()
+    if request.user.is_authenticated:
+        responded_ids = set(SurveyResponse.objects.filter(
+            respondent=request.user
+        ).values_list('survey_id', flat=True))
+    return render(request, 'survey/survey_list.html', {
+        'active_surveys': active_surveys,
+        'closed_surveys': closed_surveys,
+        'my_surveys': my_surveys,
+        'responded_ids': responded_ids,
+    })
+
+@login_required
+def survey_create(request):
+    if request.method == 'POST':
+        title = request.POST.get('title','').strip()
+        description = request.POST.get('description','').strip()
+        is_anonymous = request.POST.get('is_anonymous') == 'on'
+        allow_multiple = request.POST.get('allow_multiple') == 'on'
+        show_result = request.POST.get('show_result', 'always')
+        ends_at_str = request.POST.get('ends_at','').strip()
+
+        if not title:
+            messages.error(request, '설문 제목을 입력해주세요.')
+            return render(request, 'survey/survey_form.html')
+
+        from django.utils import timezone
+        import datetime
+        ends_at = None
+        if ends_at_str:
+            try:
+                ends_at = timezone.make_aware(datetime.datetime.fromisoformat(ends_at_str))
+            except: pass
+
+        # from_post 처리
+        from_post_id = request.POST.get('from_post') or request.GET.get('from_post')
+        source_post = None
+        if from_post_id:
+            try:
+                source_post = Post.objects.get(pk=int(from_post_id), is_active=True)
+            except: pass
+
+        survey = Survey.objects.create(
+            title=title, description=description,
+            creator=request.user, is_anonymous=is_anonymous,
+            allow_multiple=allow_multiple, ends_at=ends_at,
+            source_post=source_post,
+        )
+
+        # 질문 파싱 (JSON으로 전달)
+        questions_json = request.POST.get('questions_data', '[]')
+        try:
+            questions_data = _json.loads(questions_json)
+        except:
+            questions_data = []
+
+        for i, q in enumerate(questions_data):
+            if not q.get('text','').strip() and q.get('type') != 'section':
+                continue
+            SurveyQuestion.objects.create(
+                survey=survey,
+                text=q.get('text','').strip(),
+                description=q.get('description','').strip(),
+                question_type=q.get('type','single'),
+                options=q.get('options',[]),
+                rows=q.get('rows',[]),
+                scale_min=int(q.get('scale_min',1)),
+                scale_max=int(q.get('scale_max',10)),
+                scale_min_label=q.get('scale_min_label',''),
+                scale_max_label=q.get('scale_max_label',''),
+                is_required=q.get('required',True),
+                order=i,
+            )
+
+        # 원본 게시글에 자동 댓글 등록
+        if source_post:
+            from django.contrib.auth import get_user_model
+            survey_url = f'/surveys/{survey.pk}/'
+            Comment.objects.create(
+                post=source_post,
+                author=request.user,
+                content=f'📊 이 게시글과 연관된 설문이 만들어졌어요!\n제목: {title}\n👉 설문 참여하기: {survey_url}',
+            )
+            messages.success(request, f'설문이 만들어지고 게시글에 안내 댓글이 등록됐어요!')
+        else:
+            messages.success(request, f'설문 "{title}"이 만들어졌어요!')
+        return redirect('survey_detail', pk=survey.pk)
+
+    return render(request, 'survey/survey_form.html')
+
+def survey_detail(request, pk):
+    survey = get_object_or_404(Survey, pk=pk)
+    questions = survey.questions.exclude(question_type='section').all() if False else survey.questions.all()
+    already_responded = False
+    if request.user.is_authenticated and not survey.allow_multiple:
+        already_responded = SurveyResponse.objects.filter(
+            survey=survey, respondent=request.user
+        ).exists()
+    return render(request, 'survey/survey_detail.html', {
+        'survey': survey,
+        'questions': questions,
+        'already_responded': already_responded,
+        'total': survey.total_responses,
+    })
+
+@login_required
+def survey_respond(request, pk):
+    from django.http import JsonResponse
+    survey = get_object_or_404(Survey, pk=pk)
+    if not survey.is_active:
+        messages.error(request, '마감된 설문입니다.')
+        return redirect('survey_detail', pk=pk)
+    if not survey.allow_multiple:
+        if SurveyResponse.objects.filter(survey=survey, respondent=request.user).exists():
+            messages.warning(request, '이미 응답하셨습니다.')
+            return redirect('survey_result', pk=pk)
+
+    if request.method == 'POST':
+        answers = {}
+        for q in survey.questions.all():
+            if q.question_type == 'section': continue
+            key = f'q_{q.id}'
+            if q.question_type == 'multiple':
+                answers[str(q.id)] = request.POST.getlist(key)
+            elif q.question_type == 'matrix':
+                matrix_ans = {}
+                for row in q.rows:
+                    row_key = f'q_{q.id}_row_{row}'
+                    matrix_ans[row] = request.POST.get(row_key, '')
+                answers[str(q.id)] = matrix_ans
+            elif q.question_type == 'rank':
+                answers[str(q.id)] = request.POST.get(key, '').split(',')
+            else:
+                answers[str(q.id)] = request.POST.get(key, '')
+
+        SurveyResponse.objects.create(
+            survey=survey,
+            respondent=request.user,
+            answers=answers,
+        )
+        messages.success(request, '응답이 제출됐어요! 고마워요 😊')
+        return redirect('survey_result', pk=pk)
+
+    return redirect('survey_detail', pk=pk)
+
+def survey_result(request, pk):
+    survey = get_object_or_404(Survey, pk=pk)
+    questions = survey.questions.exclude(question_type='section')
+    responses = SurveyResponse.objects.filter(survey=survey).order_by('-submitted_at')
+
+    stats = {}
+    for q in questions:
+        s = {
+            'id': q.id,
+            'question': q.text,
+            'type': q.question_type,
+            'options': q.options,
+            'rows': q.rows,
+            'scale_min': q.scale_min,
+            'scale_max': q.scale_max,
+            'scale_min_label': q.scale_min_label,
+            'scale_max_label': q.scale_max_label,
+            'counts': {},
+            'texts': [],
+            'dates': [],
+            'matrix': {},
+            'rank_scores': {},
+            'total': 0,
+            'avg': 0,
+        }
+        total = 0
+        val_sum = 0
+
+        for resp in responses:
+            ans = resp.answers.get(str(q.id))
+            if not ans and ans != 0: continue
+            total += 1
+
+            if q.question_type in ('single',):
+                s['counts'][ans] = s['counts'].get(ans, 0) + 1
+            elif q.question_type == 'multiple':
+                for a in (ans if isinstance(ans, list) else [ans]):
+                    if a: s['counts'][a] = s['counts'].get(a, 0) + 1
+            elif q.question_type in ('text',):
+                if ans: s['texts'].append(ans)
+            elif q.question_type in ('rating', 'scale'):
+                try:
+                    v = float(ans)
+                    val_sum += v
+                    k = str(int(v)) if v == int(v) else str(v)
+                    s['counts'][k] = s['counts'].get(k, 0) + 1
+                except: pass
+            elif q.question_type in ('date', 'daterange'):
+                if ans: s['dates'].append(ans if isinstance(ans, str) else str(ans))
+                s['counts'][str(ans)[:10] if ans else ''] = s['counts'].get(str(ans)[:10] if ans else '', 0) + 1
+            elif q.question_type == 'matrix':
+                if isinstance(ans, dict):
+                    for row, val in ans.items():
+                        if row not in s['matrix']: s['matrix'][row] = {}
+                        if val: s['matrix'][row][val] = s['matrix'][row].get(val, 0) + 1
+            elif q.question_type == 'rank':
+                if isinstance(ans, list):
+                    for idx, item in enumerate(ans):
+                        if item:
+                            score = len(ans) - idx
+                            s['rank_scores'][item] = s['rank_scores'].get(item, 0) + score
+
+        s['total'] = total
+        if q.question_type in ('rating','scale') and total > 0:
+            s['avg'] = round(val_sum / total, 1)
+        if q.question_type == 'rank' and s['rank_scores']:
+            s['rank_scores'] = dict(sorted(s['rank_scores'].items(), key=lambda x: -x[1]))
+        stats[q.id] = s
+
+    # 차트 데이터
+    chart_data = {}
+    for qid, s in stats.items():
+        if s['counts']:
+            chart_data[str(qid)] = {
+                'labels': list(s['counts'].keys()),
+                'data': list(s['counts'].values()),
+                'type': s['type'],
+            }
+        elif s['rank_scores']:
+            chart_data[str(qid)] = {
+                'labels': list(s['rank_scores'].keys()),
+                'data': list(s['rank_scores'].values()),
+                'type': 'rank',
+            }
+
+    # 응답자 목록 (관리자/작성자만)
+    show_respondents = (request.user == survey.creator or request.user.is_staff)
+    respondents = responses.select_related('respondent') if show_respondents else []
+
+    return render(request, 'survey/survey_result.html', {
+        'survey': survey,
+        'stats': stats,
+        'chart_data': _json.dumps(chart_data, ensure_ascii=False),
+        'total_responses': responses.count(),
+        'show_respondents': show_respondents,
+        'respondents': respondents,
+        'questions': questions,
+    })
+
+@login_required
+def survey_close(request, pk):
+    survey = get_object_or_404(Survey, pk=pk, creator=request.user)
+    if request.method == 'POST':
+        survey.status = 'closed'
+        survey.save()
+        messages.success(request, '설문이 마감됐습니다.')
+    return redirect('survey_result', pk=pk)
+
+@login_required
+def survey_delete(request, pk):
+    survey = get_object_or_404(Survey, pk=pk, creator=request.user)
+    if request.method == 'POST':
+        survey.delete()
+        messages.success(request, '설문이 삭제됐습니다.')
+        return redirect('survey_list')
+    return redirect('survey_detail', pk=pk)
+
+@login_required
+def survey_export(request, pk):
+    """CSV 내보내기"""
+    import csv
+    from django.http import HttpResponse
+    survey = get_object_or_404(Survey, pk=pk)
+    if survey.creator != request.user and not request.user.is_staff:
+        messages.error(request, '권한이 없습니다.')
+        return redirect('survey_result', pk=pk)
+
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = f'attachment; filename="survey_{pk}.csv"'
+    writer = csv.writer(response)
+
+    questions = survey.questions.exclude(question_type='section')
+    header = ['응답번호', '응답일시', '응답자'] + [q.text for q in questions]
+    writer.writerow(header)
+
+    for i, resp in enumerate(SurveyResponse.objects.filter(survey=survey).select_related('respondent'), 1):
+        row = [i, resp.submitted_at.strftime('%Y-%m-%d %H:%M'), resp.respondent.username if resp.respondent else '익명']
+        for q in questions:
+            ans = resp.answers.get(str(q.id), '')
+            if isinstance(ans, list): ans = ', '.join(ans)
+            elif isinstance(ans, dict): ans = ' / '.join(f"{k}:{v}" for k,v in ans.items())
+            row.append(ans)
+        writer.writerow(row)
+
+    return response
+
+
+# ============================================================================
+# 이웃 온기 점수 (Rating)
+# ============================================================================
+from .models import Rating
+
+@login_required
+def rate_user(request, user_id):
+    from django.http import JsonResponse
+    rated_user = get_object_or_404(CustomUser, pk=user_id)
+    if rated_user == request.user:
+        return JsonResponse({'error': '본인은 평가할 수 없어요.'}, status=400)
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        score = int(data.get('score', 5))
+        comment = data.get('comment', '').strip()
+        category = data.get('category', 'general')
+        score = max(1, min(5, score))
+        rating, created = Rating.objects.update_or_create(
+            rater=request.user, rated_user=rated_user,
+            defaults={'score': score, 'comment': comment, 'category': category}
+        )
+        # 온기 점수 재계산 (시그널로 자동 처리)
+        from hello_world.core.signals import recalculate_manners_score
+        recalculate_manners_score(rated_user)
+        # 평가 알림
+        if created:
+            Notification.objects.create(
+                recipient=rated_user,
+                title='따뜻한 이웃 온기를 받았어요 ❤️',
+                message=f'{request.user.username}님이 온기 점수를 보내줬어요!',
+                notification_type='community',
+                persona='따뜻한 이웃',
+            )
+        rated_user.refresh_from_db()
+        return JsonResponse({
+            'status': 'ok',
+            'created': created,
+            'new_score': round(rated_user.manners_score, 1),
+        })
+    # GET: 현재 내 평가 조회
+    my_rating = Rating.objects.filter(rater=request.user, rated_user=rated_user).first()
+    return JsonResponse({
+        'my_score': my_rating.score if my_rating else None,
+        'my_comment': my_rating.comment if my_rating else '',
+        'total_ratings': Rating.objects.filter(rated_user=rated_user).count(),
+        'manners_score': round(rated_user.manners_score, 1),
+    })
+
+def user_profile(request, user_id):
+    """다른 입주민 프로필 + 온기 평가"""
+    profile_user = get_object_or_404(CustomUser, pk=user_id)
+    ratings = Rating.objects.filter(rated_user=profile_user).order_by('-created_at')[:10]
+    my_rating = None
+    if request.user.is_authenticated and request.user != profile_user:
+        my_rating = Rating.objects.filter(rater=request.user, rated_user=profile_user).first()
+    total_activities = ActivityProof.objects.filter(user=profile_user, status='approved').count()
+    user_badges = profile_user.user_badges.filter(is_displayed=True).select_related('badge')[:6]
+    return render(request, 'profile.html', {
+        'profile_user': profile_user,
+        'ratings': ratings,
+        'my_rating': my_rating,
+        'total_activities': total_activities,
+        'user_badges': user_badges,
+        'can_rate': request.user.is_authenticated and request.user != profile_user,
+    })
+
+
+# ============================================================================
+# 관련 게시글 연결
+# ============================================================================
+@login_required
+def link_related_post(request, pk):
+    from django.http import JsonResponse
+    post = get_object_or_404(Post, pk=pk, is_active=True)
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        target_id = data.get('target_id')
+        action = data.get('action', 'add')
+        try:
+            target = Post.objects.get(pk=int(target_id), is_active=True)
+            if action == 'add':
+                post.related_posts.add(target)
+                return JsonResponse({'status': 'ok', 'msg': f'"{target.title}"와 연결됐어요!'})
+            else:
+                post.related_posts.remove(target)
+                return JsonResponse({'status': 'ok', 'msg': '연결이 해제됐어요.'})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    # GET: 관련 게시글 검색
+    q = request.GET.get('q', '').strip()
+    if q:
+        results = Post.objects.filter(
+            title__icontains=q, is_active=True
+        ).exclude(pk=pk).exclude(related_posts=post)[:10]
+        return JsonResponse({'results': [
+            {'id': p.id, 'title': p.title, 'board': p.board.name, 'date': p.created_at.strftime('%m.%d')}
+            for p in results
+        ]})
+    return JsonResponse({'results': []})
+
+
+# ============================================================================
+# 설문 결과 → 게시글 자동 발행
+# ============================================================================
+@login_required
+def survey_publish_post(request, pk):
+    survey = get_object_or_404(Survey, pk=pk, creator=request.user)
+    if request.method == 'POST':
+        # 결과 요약 자동 생성
+        questions = survey.questions.exclude(question_type='section')
+        responses = SurveyResponse.objects.filter(survey=survey).exclude(answers={})
+        
+        summary_lines = [f'📊 **{survey.title}** 설문 결과 요약\n']
+        summary_lines.append(f'총 {responses.count()}명이 참여했습니다.\n')
+        
+        for q in questions[:5]:  # 최대 5개 질문 요약
+            counts = {}
+            for resp in responses:
+                ans = resp.answers.get(str(q.id), '')
+                if not ans: continue
+                if isinstance(ans, list):
+                    for a in ans:
+                        if a: counts[a] = counts.get(a, 0) + 1
+                else:
+                    counts[str(ans)] = counts.get(str(ans), 0) + 1
+            
+            if counts:
+                total = sum(counts.values())
+                summary_lines.append(f'\n**{q.text}**')
+                top = sorted(counts.items(), key=lambda x: -x[1])[:3]
+                for opt, cnt in top:
+                    pct = round(cnt/total*100) if total else 0
+                    summary_lines.append(f'- {opt}: {cnt}명 ({pct}%)')
+        
+        summary_lines.append(f'\n👉 전체 결과 보기: /surveys/{survey.pk}/result/')
+        content = '\n'.join(summary_lines)
+        
+        # 공지 게시판에 자동 발행
+        board_id = request.POST.get('board_id')
+        try:
+            board = Board.objects.get(pk=int(board_id))
+        except:
+            board = Board.objects.filter(is_active=True).first()
+        
+        if board:
+            post = Post.objects.create(
+                board=board,
+                author=request.user,
+                title=f'[설문결과] {survey.title}',
+                content=content,
+                tag='설문결과',
+                linked_survey=survey,
+            )
+            survey.source_post = survey.source_post or post
+            survey.save()
+            messages.success(request, f'설문 결과가 게시글로 발행됐어요!')
+            return redirect('post_detail', pk=post.pk)
+    
+    # GET: 게시판 선택 폼
+    boards = Board.objects.filter(is_active=True)
+    return render(request, 'survey/survey_publish.html', {
+        'survey': survey,
+        'boards': boards,
+    })
+
+
+# ============================================================================
+# 소모임 게시판
+# ============================================================================
+def group_post_list(request, pk):
+    from .models import Group, GroupMember, GroupPost
+    group = get_object_or_404(Group, pk=pk)
+    is_member = GroupMember.objects.filter(group=group, user=request.user, is_active=True).exists() if request.user.is_authenticated else False
+    posts = GroupPost.objects.filter(group=group).select_related('author').order_by('-created_at')
+    return render(request, 'groups/group_post_list.html', {
+        'group': group, 'posts': posts, 'is_member': is_member,
+    })
+
+@login_required
+def group_post_create(request, pk):
+    from .models import Group, GroupMember, GroupPost
+    group = get_object_or_404(Group, pk=pk)
+    if not GroupMember.objects.filter(group=group, user=request.user, is_active=True).exists():
+        messages.error(request, '소모임 멤버만 글을 쓸 수 있어요.')
+        return redirect('group_detail', pk=pk)
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+        if not title or not content:
+            messages.error(request, '제목과 내용을 입력해주세요.')
+            return render(request, 'groups/group_post_form.html', {'group': group})
+        post = GroupPost.objects.create(
+            group=group, author=request.user,
+            title=title, content=content,
+        )
+        if request.FILES.get('image'):
+            post.image = request.FILES['image']
+            post.save()
+        messages.success(request, '게시글이 등록됐어요!')
+        return redirect('group_post_detail', pk=pk, post_pk=post.pk)
+    return render(request, 'groups/group_post_form.html', {'group': group})
+
+def group_post_detail(request, pk, post_pk):
+    from .models import Group, GroupMember, GroupPost, GroupComment
+    group = get_object_or_404(Group, pk=pk)
+    post = get_object_or_404(GroupPost, pk=post_pk, group=group)
+    is_member = GroupMember.objects.filter(group=group, user=request.user, is_active=True).exists() if request.user.is_authenticated else False
+    comments = post.comments.select_related('author').order_by('created_at')
+    if request.method == 'POST' and request.user.is_authenticated:
+        content = request.POST.get('content', '').strip()
+        if content:
+            GroupComment.objects.create(post=post, author=request.user, content=content)
+            post.comment_count = post.comments.count()
+            post.save()
+            messages.success(request, '댓글이 등록됐어요!')
+        return redirect('group_post_detail', pk=pk, post_pk=post_pk)
+    return render(request, 'groups/group_post_detail.html', {
+        'group': group, 'post': post,
+        'comments': comments, 'is_member': is_member,
+    })
+
+@login_required
+def group_post_delete(request, pk, post_pk):
+    from .models import GroupPost
+    post = get_object_or_404(GroupPost, pk=post_pk, author=request.user)
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, '게시글이 삭제됐어요.')
+        return redirect('group_post_list', pk=pk)
+    return redirect('group_post_detail', pk=pk, post_pk=post_pk)
+
+
+# ============================================================================
+# 채팅 미니 투표
+# ============================================================================
+from .models import ChatPoll
+
+def chat_poll_create(request):
+    """POST /chat/poll/create/ - /투표 명령어 처리"""
+    from django.http import JsonResponse
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인 필요'}, status=401)
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+
+    import json
+    data = json.loads(request.body)
+    question = data.get('question', '').strip()
+    options = [o.strip() for o in data.get('options', []) if o.strip()]
+    chat_type = data.get('chat_type', 'public')
+    group_id = data.get('group_id')
+
+    if not question or len(options) < 2:
+        return JsonResponse({'error': '질문과 선택지 2개 이상을 입력해주세요'}, status=400)
+
+    group = None
+    if group_id:
+        from .models import Group
+        try:
+            group = Group.objects.get(pk=int(group_id))
+        except: pass
+
+    poll = ChatPoll.objects.create(
+        chat_type=chat_type,
+        group=group,
+        creator=request.user,
+        question=question,
+        options=options,
+        votes={opt: [] for opt in options},
+    )
+
+    # 채팅방에 투표 생성 알림 메시지 자동 전송
+    poll_msg = f"📊 투표가 시작됐어요!\n질문: {question}\n" + "\n".join([f"  {i+1}. {o}" for i,o in enumerate(options)])
+    if chat_type == 'public':
+        PublicChat.objects.create(author=request.user, message=poll_msg)
+    elif chat_type == 'group' and group:
+        from .models import GroupChat
+        GroupChat.objects.create(group=group, sender=request.user, message=poll_msg)
+
+    return JsonResponse({
+        'status': 'ok',
+        'poll_id': poll.id,
+        'question': question,
+        'options': options,
+    })
+
+def chat_poll_vote(request, poll_id):
+    """POST /chat/poll/<id>/vote/"""
+    from django.http import JsonResponse
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인 필요'}, status=401)
+
+    import json
+    data = json.loads(request.body)
+    option = data.get('option', '').strip()
+
+    poll = get_object_or_404(ChatPoll, pk=poll_id, is_active=True)
+
+    if option not in poll.options:
+        return JsonResponse({'error': '없는 선택지예요'}, status=400)
+
+    # 기존 투표 제거 (한 사람 한 표)
+    user_id = request.user.id
+    votes = poll.votes
+    for opt in votes:
+        if user_id in votes[opt]:
+            votes[opt].remove(user_id)
+
+    # 새 투표 추가
+    if option not in votes:
+        votes[option] = []
+    votes[option].append(user_id)
+    poll.votes = votes
+    poll.save()
+
+    return JsonResponse({
+        'status': 'ok',
+        'results': poll.get_results(),
+        'total': poll.total_votes,
+    })
+
+def chat_poll_list(request):
+    """GET /chat/polls/?type=public&group_id=1"""
+    from django.http import JsonResponse
+    chat_type = request.GET.get('type', 'public')
+    group_id = request.GET.get('group_id')
+
+    polls = ChatPoll.objects.filter(chat_type=chat_type, is_active=True)
+    if group_id:
+        polls = polls.filter(group_id=int(group_id))
+    polls = polls.order_by('-created_at')[:5]
+
+    user_id = request.user.id if request.user.is_authenticated else None
+    result = []
+    for p in polls:
+        my_vote = None
+        for opt, voters in p.votes.items():
+            if user_id in voters:
+                my_vote = opt
+                break
+        result.append({
+            'id': p.id,
+            'question': p.question,
+            'options': p.options,
+            'results': p.get_results(),
+            'total': p.total_votes,
+            'my_vote': my_vote,
+            'creator': p.creator.nickname or p.creator.username,
+            'created_at': p.created_at.strftime('%H:%M'),
+            'is_active': p.is_active,
+        })
+
+    return JsonResponse({'polls': result})
+
+
+# ============================================================================
+# 채팅 미니 투표
+# ============================================================================
+from .models import ChatPoll
+
+def chat_poll_create(request):
+    """POST /chat/poll/create/ - /투표 명령어 처리"""
+    from django.http import JsonResponse
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인 필요'}, status=401)
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+
+    import json
+    data = json.loads(request.body)
+    question = data.get('question', '').strip()
+    options = [o.strip() for o in data.get('options', []) if o.strip()]
+    chat_type = data.get('chat_type', 'public')
+    group_id = data.get('group_id')
+
+    if not question or len(options) < 2:
+        return JsonResponse({'error': '질문과 선택지 2개 이상을 입력해주세요'}, status=400)
+
+    group = None
+    if group_id:
+        from .models import Group
+        try:
+            group = Group.objects.get(pk=int(group_id))
+        except: pass
+
+    poll = ChatPoll.objects.create(
+        chat_type=chat_type,
+        group=group,
+        creator=request.user,
+        question=question,
+        options=options,
+        votes={opt: [] for opt in options},
+    )
+
+    # 채팅방에 투표 생성 알림 메시지 자동 전송
+    poll_msg = f"📊 투표가 시작됐어요!\n질문: {question}\n" + "\n".join([f"  {i+1}. {o}" for i,o in enumerate(options)])
+    if chat_type == 'public':
+        PublicChat.objects.create(author=request.user, message=poll_msg)
+    elif chat_type == 'group' and group:
+        from .models import GroupChat
+        GroupChat.objects.create(group=group, sender=request.user, message=poll_msg)
+
+    return JsonResponse({
+        'status': 'ok',
+        'poll_id': poll.id,
+        'question': question,
+        'options': options,
+    })
+
+def chat_poll_vote(request, poll_id):
+    """POST /chat/poll/<id>/vote/"""
+    from django.http import JsonResponse
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': '로그인 필요'}, status=401)
+
+    import json
+    data = json.loads(request.body)
+    option = data.get('option', '').strip()
+
+    poll = get_object_or_404(ChatPoll, pk=poll_id, is_active=True)
+
+    if option not in poll.options:
+        return JsonResponse({'error': '없는 선택지예요'}, status=400)
+
+    # 기존 투표 제거 (한 사람 한 표)
+    user_id = request.user.id
+    votes = poll.votes
+    for opt in votes:
+        if user_id in votes[opt]:
+            votes[opt].remove(user_id)
+
+    # 새 투표 추가
+    if option not in votes:
+        votes[option] = []
+    votes[option].append(user_id)
+    poll.votes = votes
+    poll.save()
+
+    return JsonResponse({
+        'status': 'ok',
+        'results': poll.get_results(),
+        'total': poll.total_votes,
+    })
+
+def chat_poll_list(request):
+    """GET /chat/polls/?type=public&group_id=1"""
+    from django.http import JsonResponse
+    chat_type = request.GET.get('type', 'public')
+    group_id = request.GET.get('group_id')
+
+    polls = ChatPoll.objects.filter(chat_type=chat_type, is_active=True)
+    if group_id:
+        polls = polls.filter(group_id=int(group_id))
+    polls = polls.order_by('-created_at')[:5]
+
+    user_id = request.user.id if request.user.is_authenticated else None
+    result = []
+    for p in polls:
+        my_vote = None
+        for opt, voters in p.votes.items():
+            if user_id in voters:
+                my_vote = opt
+                break
+        result.append({
+            'id': p.id,
+            'question': p.question,
+            'options': p.options,
+            'results': p.get_results(),
+            'total': p.total_votes,
+            'my_vote': my_vote,
+            'creator': p.creator.nickname or p.creator.username,
+            'created_at': p.created_at.strftime('%H:%M'),
+            'is_active': p.is_active,
+        })
+
+    return JsonResponse({'polls': result})

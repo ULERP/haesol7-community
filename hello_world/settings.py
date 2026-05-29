@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "hello_world.core",
+    "community",
 ]
 
 MIDDLEWARE = [
@@ -51,7 +52,7 @@ ROOT_URLCONF = "hello_world.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "hello_world" / "templates"],
+        "DIRS": [BASE_DIR / "hello_world" / "templates", BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

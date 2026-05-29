@@ -38,8 +38,45 @@ urlpatterns = [
     path('volunteer/<int:pk>/',  views.volunteer_detail,   name='volunteer_detail'),
     path('volunteer/<int:pk>/join/', views.volunteer_join, name='volunteer_join'),
 
+    path('post/<int:pk>/link/', views.link_related_post, name='link_related_post'),
+    # 채팅 미니 투표
+    path('chat/poll/create/', views.chat_poll_create, name='chat_poll_create'),
+    path('chat/poll/<int:poll_id>/vote/', views.chat_poll_vote, name='chat_poll_vote'),
+    path('chat/polls/', views.chat_poll_list, name='chat_poll_list'),
+
+    # 이웃 온기 평가
+    path('users/<int:user_id>/rate/', views.rate_user, name='rate_user'),
+    path('users/<int:user_id>/', views.user_profile, name='user_profile'),
+
+    # 설문조사
+    path('surveys/', views.survey_list, name='survey_list'),
+    path('surveys/create/', views.survey_create, name='survey_create'),
+    path('surveys/<int:pk>/', views.survey_detail, name='survey_detail'),
+    path('surveys/<int:pk>/respond/', views.survey_respond, name='survey_respond'),
+    path('surveys/<int:pk>/result/', views.survey_result, name='survey_result'),
+    path('surveys/<int:pk>/close/', views.survey_close, name='survey_close'),
+    path('surveys/<int:pk>/delete/', views.survey_delete, name='survey_delete'),
+    path('surveys/<int:pk>/export/', views.survey_export, name='survey_export'),
+
+    # 소모임
+    path('groups/', views.group_list, name='group_list'),
+    path('groups/create/', views.group_create, name='group_create'),
+    path('groups/<int:pk>/', views.group_detail, name='group_detail'),
+    path('groups/<int:pk>/join/', views.group_join, name='group_join'),
+    path('groups/<int:pk>/posts/', views.group_post_list, name='group_post_list'),
+    path('groups/<int:pk>/posts/create/', views.group_post_create, name='group_post_create'),
+    path('groups/<int:pk>/posts/<int:post_pk>/', views.group_post_detail, name='group_post_detail'),
+    path('groups/<int:pk>/posts/<int:post_pk>/delete/', views.group_post_delete, name='group_post_delete'),
+
     # API
     path('search/', views.search, name='search'),
+    path('chat/public/', views.public_chat, name='public_chat'),
+    path('chat/public/messages/', views.public_chat_messages, name='public_chat_messages'),
+    path('chat/dm/<int:user_id>/', views.direct_message, name='direct_message'),
+    path('chat/dm/<int:user_id>/messages/', views.dm_messages, name='dm_messages'),
+    path('chat/dm/list/', views.dm_list, name='dm_list'),
+    path('chat/group/<int:group_id>/', views.group_chat, name='group_chat'),
+    path('chat/group/<int:group_id>/messages/', views.group_chat_messages, name='group_chat_messages'),
     path('chatbot/', views.chatbot, name='chatbot'),
     path('chatbot/ask/', views.chatbot_ask, name='chatbot_ask'),
     path('notifications/', views.notification_list, name='notification_list'),

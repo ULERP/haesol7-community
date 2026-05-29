@@ -20,12 +20,12 @@ def process_activity_points(sender, instance, created, update_fields, **kwargs):
     3. 알림 발송
     """
     
-    # 새로 생성되었거나, 상태가 변경되었을 때만 처리
-    if update_fields and 'status' not in update_fields:
+    # 상태 변경이 없는 저장은 무시 (단, update_fields가 None이면 전체 저장이므로 처리)
+    if update_fields is not None and 'status' not in update_fields:
         return
-    
-    # 승인 상태로 변경된 경우만 처리
-    if instance.status == 'approved' and instance.points_earned > 0:
+
+    # 승인 상태일 때만 처리
+    if instance.status == 'approved':
         user = instance.user
         
         # 1. 마일리지 포인트 증가

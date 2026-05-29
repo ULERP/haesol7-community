@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container py-4">
   <div class="row justify-content-center">
-    <div class="col-12 col-md-8 col-lg-6">
+    <div class="col-12 col-md-7 col-lg-5">
       <div class="card shadow-sm border-0">
         <div class="card-header bg-success text-white py-3">
           <h5 class="mb-0 fw-bold"><i class="fas fa-user-edit me-2"></i>프로필 수정</h5>
@@ -14,37 +14,70 @@
           {% endfor %}{% endif %}
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
+
+            <!-- 프로필 이미지 -->
             <div class="text-center mb-4">
-              {% if user.profile_image %}
-              <img src="{{ user.profile_image.url }}" class="rounded-circle mb-2" style="width:80px;height:80px;object-fit:cover">
-              {% else %}
-              <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width:80px;height:80px;font-size:2rem">
+              <div style="width:80px;height:80px;border-radius:50%;background:#1a7a4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 12px;">
                 <i class="fas fa-user"></i>
               </div>
-              {% endif %}
-              <input type="file" name="profile_image" class="form-control form-control-sm mt-2" accept="image/*">
+              <input type="file" name="profile_image" class="form-control form-control-sm" accept="image/*" style="max-width:300px;margin:0 auto;">
             </div>
+
+            <!-- 닉네임 + 이름 -->
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-semibold small">닉네임</label>
+                <input type="text" name="nickname" class="form-control form-control-sm"
+                  value="{{ user.nickname }}" placeholder="표시될 닉네임">
+                <div class="form-text" style="font-size:0.7rem;">없으면 아이디 사용</div>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold small">이름 <span class="text-muted fw-normal">(선택)</span></label>
+                <input type="text" name="first_name" class="form-control form-control-sm"
+                  value="{{ user.first_name }}" placeholder="실명">
+              </div>
+            </div>
+
+            <!-- 동호수 -->
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-semibold small">동</label>
+                <div class="input-group input-group-sm">
+                  <input type="number" name="dong" class="form-control"
+                    value="{{ user.dong }}" placeholder="101" min="1" max="999">
+                  <span class="input-group-text">동</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold small">호</label>
+                <div class="input-group input-group-sm">
+                  <input type="number" name="ho" class="form-control"
+                    value="{{ user.ho }}" placeholder="1234" min="1" max="9999">
+                  <span class="input-group-text">호</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 연락처 -->
             <div class="mb-3">
-              <label class="form-label fw-semibold">이름</label>
-              <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+              <label class="form-label fw-semibold small">연락처</label>
+              <input type="tel" name="phone_number" class="form-control form-control-sm"
+                value="{{ user.phone_number }}" placeholder="010-0000-0000">
             </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">동호수</label>
-              <input type="text" name="unit_number" class="form-control" value="{{ user.unit_number }}" placeholder="예: 101동 1234호">
+
+            <!-- 자기소개 -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold small">자기소개</label>
+              <textarea name="introduction" class="form-control form-control-sm" rows="3"
+                placeholder="간단한 자기소개를 입력하세요.">{{ user.introduction }}</textarea>
             </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">연락처</label>
-              <input type="text" name="phone_number" class="form-control" value="{{ user.phone_number }}" placeholder="010-0000-0000">
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">자기소개</label>
-              <textarea name="introduction" class="form-control" rows="4" placeholder="간단한 자기소개를 입력하세요.">{{ user.introduction }}</textarea>
-            </div>
-            <div class="d-flex justify-content-between mt-4 pt-3 border-top">
-              <a href="{% url 'mypage' %}" class="btn btn-outline-secondary">
+
+            <!-- 버튼 -->
+            <div class="d-flex justify-content-between pt-3 border-top">
+              <a href="/mypage/" class="btn btn-outline-secondary btn-sm px-3">
                 <i class="fas fa-arrow-left me-1"></i>취소
               </a>
-              <button type="submit" class="btn btn-success px-4">
+              <button type="submit" class="btn btn-success btn-sm px-4">
                 <i class="fas fa-save me-1"></i>저장하기
               </button>
             </div>

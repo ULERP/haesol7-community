@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Board, Post
+from hello_world.core.models import Board, Post, ManagementDocument
 def index(request):
     boards = Board.objects.filter(is_active=True).order_by('order')
     recent_posts = Post.objects.filter(is_active=True).order_by('-created_at')[:10]

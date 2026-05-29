@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% block title %}{{ survey.title }} — 결과{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root { --g:#1a7a4a; --gl:#e8f5ee; }
+.stat-card { background:#fff; border:1px solid #e4e6ea; border-radius:12px; padding:20px; margin-bottom:16px; }
+.stat-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+.q-label { font-weight:700; font-size:0.92rem; margin-bottom:4px; }
+.q-meta { font-size:0.75rem; color:#999; }
+.progress-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:0.82rem; }
+.progress-row .label { min-width:120px; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.progress-row .bar { flex:1; height:22px; background:#f0f2f4; border-radius:4px; overflow:hidden; }
+.progress-row .fill { height:100%; background:var(--g); border-radius:4px; transition:width .5s; display:flex; align-items:center; padding-left:6px; color:#fff; font-size:0.72rem; font-weight:600; }
+.progress-row .count { min-width:50px; text-align:right; color:#666; }
+.text-response { background:#f8f9fa; border-radius:8px; padding:10px 12px; margin-bottom:6px; font-size:0.84rem; border-left:3px solid var(--g); }
+.summary-box { background:var(--gl); border:1px solid #c3e6d0; border-radius:10px; padding:14px 18px; }
+.matrix-result { width:100%; border-collapse:collapse; font-size:0.8rem; }
+.matrix-result th { background:#f8f9fa; padding:8px; text-align:center; border:1px solid #e4e6ea; }
+.matrix-result td { padding:8px; text-align:center; border:1px solid #e4e6ea; }
+.chart-toggle { display:flex; gap:4px; }
+.chart-toggle button { border:1px solid #e4e6ea; background:#fff; border-radius:6px; padding:3px 8px; font-size:0.72rem; cursor:pointer; }
+.chart-toggle button.active { background:var(--g); color:#fff; border-color:var(--g); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:800px;">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/surveys/">설문조사</a></li>
+      <li class="breadcrumb-item"><a href="/surveys/{{ survey.pk }}/">{{ survey.title|truncatechars:20 }}</a></li>
+      <li class="breadcrumb-item active">결과</li>
+    </ol>
+  </nav>
+
+  <!-- 헤더 -->
+  <div class="card border-0 shadow-sm mb-4" style="border-top:4px solid var(--g) !important;">
+    <div class="card-body p-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <span class="badge {% if survey.status == 'active' %}bg-success{% else %}bg-secondary{% endif %} mb-2">{{ survey.get_status_display }}</span>
+          <h4 class="fw-bold mb-1">{{ survey.title }}</h4>
+          {% if survey.description %}<p class="text-muted small mb-2">{{ survey.description }}</p>{% endif %}
+          <div class="d-flex flex-wrap gap-3 small text-muted">
+            <span><i class="fas fa-user me-1"></i>{{ survey.creator.username }}</span>
+            <span><i class="fas fa-calendar me-1"></i>{{ survey.created_at|date:"Y.m.d" }}</span>
+            {% if survey.ends_at %}<span><i class="fas fa-clock me-1"></i>마감 {{ survey.ends_at|date:"m.d H:i" }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+          <div style="font-size:2.8rem;font-weight:800;color:var(--g);line-height:1;">{{ total_responses }}</div>
+          <div class="text-muted small">총 응답 수</div>
+          <div class="d-flex gap-2 justify-content-md-end mt-2 flex-wrap">
+            {% if survey.creator == user or user.is_staff %}
+            <a href="/surveys/{{ survey.pk }}/export/" class="btn btn-outline-success btn-sm"><i class="fas fa-download me-1"></i>CSV</a>
+            {% endif %}
+            {% if survey.status == 'active' %}
+            <a href="/surveys/{{ survey.pk }}/" class="btn btn-success btn-sm"><i class="fas fa-poll me-1"></i>참여</a>
+            {% endif %}
+            {% if survey.creator == user and survey.status == 'active' %}
+            <form method="post" action="/surveys/{{ survey.pk }}/close/" class="d-inline">
+              {% csrf_token %}
+              <button class="btn btn-outline-danger btn-sm" onclick="return confirm('마감할까요?')"><i class="fas fa-stop me-1"></i>마감</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 공유 링크 -->
+  <div class="summary-box mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <i class="fas fa-share-alt text-success fa-lg"></i>
+      <div style="flex:1;">
+        <div class="fw-bold small mb-1">설문 링크 공유하기</div>
+        <input type="text" class="form-control form-control-sm" id="share-link"
+          value="https://{{ request.get_host }}/surveys/{{ survey.pk }}/" readonly>
+      </div>
+      <button class="btn btn-success btn-sm" onclick="copyLink()"><i class="fas fa-copy me-1"></i>복사</button>
+    </div>
+  </div>
+
+  {% if total_responses == 0 %}
+  <div class="text-center py-5">
+    <div style="font-size:3rem;margin-bottom:12px;">📭</div>
+    <h5 class="fw-bold text-muted">아직 응답이 없어요</h5>
+    <p class="text-muted">링크를 공유해서 입주민들의 의견을 모아보세요!</p>
+    <button class="btn btn-success" onclick="copyLink()"><i class="fas fa-share-alt me-1"></i>링크 복사</button>
+  </div>
+  {% else %}
+
+  <!-- 질문별 통계 -->
+  {% for qid, s in stats.items %}
+  {% if s.type != 'section' %}
+  <div class="stat-card">
+    <div class="stat-header">
+      <div>
+        <div class="q-label">{{ s.question }}</div>
+        <div class="q-meta">{{ s.total }}명 응답 · {{ s.type }}</div>
+      </div>
+      {% if s.counts %}
+      <div class="chart-toggle" id="toggle-{{ qid }}">
+        <button class="active" onclick="setChart('{{ qid }}','bar',this)">막대</button>
+        <button onclick="setChart('{{ qid }}','doughnut',this)">도넛</button>
+        <button onclick="setChart('{{ qid }}','pie',this)">파이</button>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if s.type == 'text' %}
+      {% for t in s.texts %}
+      <div class="text-response">{{ t }}</div>
+      {% empty %}
+      <div class="text-muted small">응답 없음</div>
+      {% endfor %}
+
+    {% elif s.type == 'rating' or s.type == 'scale' %}
+    <div class="d-flex align-items-center gap-4 mb-3">
+      <div class="summary-box text-center px-4" style="min-width:100px;">
+        <div style="font-size:2rem;font-weight:800;color:var(--g);">{{ s.avg }}</div>
+        <div class="small text-muted">평균{% if s.type == 'rating' %} / 5점{% endif %}</div>
+      </div>
+      <div style="flex:1;">
+        {% for opt, cnt in s.counts.items %}
+        <div class="progress-row">
+          <span class="label">{{ opt }}{% if s.type == 'rating' %}점{% endif %}</span>
+          <div class="bar">
+            <div class="fill" style="width:{% if s.total %}{{ cnt|floatformat:0 }}{% else %}0{% endif %}%">
+              {% if s.total %}{{ cnt }}{% endif %}
+            </div>
+          </div>
+          <span class="count">{{ cnt }}명</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% elif s.type == 'matrix' %}
+    <div class="table-responsive">
+      <table class="matrix-result">
+        <thead>
+          <tr>
+            <th style="text-align:left;">항목</th>
+            {% for opt in s.options %}<th>{{ opt }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in s.rows %}
+          <tr>
+            <td style="text-align:left;font-weight:600;">{{ row }}</td>
+            {% for opt in s.options %}
+            <td>
+              {% if s.matrix %}
+                {% with cnt=s.matrix|default_if_none:"" %}
+                  {{ cnt }}
+                {% endwith %}
+              {% else %}0{% endif %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% elif s.type == 'rank' %}
+    <div class="small text-muted mb-2">점수가 높을수록 높은 순위를 받았어요</div>
+    {% for item, score in s.rank_scores.items %}
+    <div class="progress-row">
+      <span class="label">{{ item }}</span>
+      <div class="bar">
+        <div class="fill" style="width:{{ score|floatformat:0 }}%">{{ score }}점</div>
+      </div>
+      <span class="count">{{ forloop.counter }}위</span>
+    </div>
+    {% endfor %}
+
+    {% elif s.type == 'date' or s.type == 'daterange' %}
+    {% for d in s.dates %}
+    <div class="text-response"><i class="fas fa-calendar me-1 text-success"></i>{{ d }}</div>
+    {% empty %}
+    <div class="text-muted small">응답 없음</div>
+    {% endfor %}
+
+    {% else %}
+    <!-- 선택형: 진행바 + 차트 -->
+    {% for opt, cnt in s.counts.items %}
+    <div class="progress-row">
+      <span class="label">{{ opt }}</span>
+      <div class="bar">
+        <div class="fill" style="width:{% if s.total %}{{ cnt|floatformat:0 }}{% else %}0{% endif %}%">
+          {% if s.total %}{{ cnt }}{% endif %}
+        </div>
+      </div>
+      <span class="count">{{ cnt }}명 ({% if s.total %}{% widthratio cnt s.total 100 %}{% else %}0{% endif %}%)</span>
+    </div>
+    {% endfor %}
+    <div style="max-width:360px;margin:16px auto 0;">
+      <canvas id="chart-{{ qid }}" height="220"></canvas>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  <!-- 응답자 목록 (작성자/관리자만) -->
+  {% if show_respondents and respondents %}
+  <div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white fw-bold py-3">
+      <i class="fas fa-list me-2 text-success"></i>응답 내역 ({{ respondents|length }}건)
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 small">
+          <thead class="table-light">
+            <tr>
+              <th>#</th><th>응답자</th><th>응답일시</th>
+              {% for q in questions %}<th>{{ q.text|truncatechars:15 }}</th>{% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for resp in respondents %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ resp.respondent.username|default:"익명" }}</td>
+              <td>{{ resp.submitted_at|date:"m.d H:i" }}</td>
+              {% for q in questions %}
+              <td>
+                {% with ans=resp.answers|default_if_none:"" %}
+                  {% if ans %}{{ ans|truncatechars:20 }}{% else %}-{% endif %}
+                {% endwith %}
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <div class="text-center mt-4 d-flex gap-2 justify-content-center">
+    <a href="/surveys/{{ survey.pk }}/" class="btn btn-success">설문 참여</a>
+    <a href="/surveys/" class="btn btn-outline-secondary">목록으로</a>
+    {% if survey.creator == user %}
+    <form method="post" action="/surveys/{{ survey.pk }}/delete/" class="d-inline">
+      {% csrf_token %}
+      <button class="btn btn-outline-danger" onclick="return confirm('설문을 삭제할까요?')"><i class="fas fa-trash me-1"></i>삭제</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+const chartData = {{ chart_data|safe }};
+const charts = {};
+const colors = ['#1a7a4a','#a8d5b8','#4285f4','#f57c00','#e91e63','#9c27b0','#00bcd4','#ff5722','#607d8b'];
+
+Object.entries(chartData).forEach(([qid, d]) => {
+  const canvas = document.getElementById('chart-' + qid);
+  if (!canvas) return;
+  const total = d.data.reduce((a,b)=>a+b,0);
+  charts[qid] = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: d.labels,
+      datasets: [{ data: d.data, backgroundColor: colors, borderWidth:0, borderRadius:4 }]
+    },
+    options: {
+      responsive:true, plugins: {
+        legend:{display:false},
+        tooltip:{callbacks:{label: ctx=>{
+          const pct = total>0?Math.round(ctx.raw/total*100):0;
+          return ` ${ctx.raw}명 (${pct}%)`;
+        }}}
+      },
+      scales:{ y:{beginAtZero:true, ticks:{stepSize:1}} }
+    }
+  });
+});
+
+function setChart(qid, type, btn) {
+  if (!charts[qid]) return;
+  const c = charts[qid];
+  c.config.type = type;
+  if (type === 'bar') {
+    c.options.scales = { y:{beginAtZero:true, ticks:{stepSize:1}} };
+  } else {
+    c.options.scales = {};
+  }
+  c.update();
+  document.querySelectorAll('#toggle-' + qid + ' button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function copyLink() {
+  const el = document.getElementById('share-link');
+  navigator.clipboard.writeText(el.value).then(() => {
+    alert('링크 복사됐어요! 채팅이나 게시판에 붙여넣어 공유하세요 😊');
+  });
+}
+</script>
+{% endblock %}
