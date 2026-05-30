@@ -79,6 +79,7 @@ urlpatterns = [
     path('notifications/',                 views.notification_list,    name='notification_list'),
     path('notifications/count/',           views.notification_count,   name='notification_count'),
     path('api/', include(router.urls)),
+    path('stats/', views.community_stats, name='community_stats'),
 
     # 쪽지함
     path('letters/', views_letter.letter_inbox, name='letter_inbox'),

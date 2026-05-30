@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-3">
+
+<h4 class="fw-bold mb-4"><i class="fas fa-chart-bar me-2 text-success"></i>해솔7단지 통계 대시보드</h4>
+
+<!-- 핵심 지표 카드 -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm text-center h-100 border-0" style="background:linear-gradient(135deg,#28a745,#20c997)">
+      <div class="card-body text-white">
+        <div style="font-size:2rem;font-weight:700;">{{ total_users }}</div>
+        <div class="small">전체 회원</div>
+        <div class="mt-1"><span class="badge bg-white text-success">+{{ new_users }} 이번달</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm text-center h-100 border-0" style="background:linear-gradient(135deg,#007bff,#6610f2)">
+      <div class="card-body text-white">
+        <div style="font-size:2rem;font-weight:700;">{{ total_posts }}</div>
+        <div class="small">전체 게시글</div>
+        <div class="mt-1"><span class="badge bg-white text-primary">+{{ week_posts }} 이번주</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm text-center h-100 border-0" style="background:linear-gradient(135deg,#fd7e14,#ffc107)">
+      <div class="card-body text-white">
+        <div style="font-size:2rem;font-weight:700;">{{ total_groups }}</div>
+        <div class="small">활성 소모임</div>
+        <div class="mt-1"><span class="badge bg-white text-warning">{{ total_members }}명 참여중</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm text-center h-100 border-0" style="background:linear-gradient(135deg,#e83e8c,#dc3545)">
+      <div class="card-body text-white">
+        <div style="font-size:2rem;font-weight:700;">{{ total_surveys }}</div>
+        <div class="small">설문조사</div>
+        <div class="mt-1"><span class="badge bg-white text-danger">{{ total_responses }}회 참여</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <!-- 월별 가입자 추이 -->
+  <div class="col-md-7">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-graph-up me-1 text-success"></i>월별 신규 가입자
+      </div>
+      <div class="card-body">
+        <canvas id="joinChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- 이번주 활동 -->
+  <div class="col-md-5">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">
+        <i class="bi bi-activity me-1 text-success"></i>이번주 활동 현황
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span><i class="bi bi-file-text me-2 text-primary"></i>새 게시글</span>
+          <span class="badge bg-primary rounded-pill">{{ week_posts }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span><i class="bi bi-chat-dots me-2 text-success"></i>전체 채팅</span>
+          <span class="badge bg-success rounded-pill">{{ week_public }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span><i class="bi bi-chat me-2 text-info"></i>1:1 채팅</span>
+          <span class="badge bg-info rounded-pill">{{ week_dm }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span><i class="bi bi-envelope me-2 text-warning"></i>쪽지</span>
+          <span class="badge bg-warning rounded-pill">{{ week_letter }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2">
+          <span><i class="bi bi-calendar-event me-2 text-danger"></i>봉사 예정</span>
+          <span class="badge bg-danger rounded-pill">{{ upcoming_events }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 활동 랭킹 TOP5 -->
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-white fw-semibold">
+    <i class="bi bi-trophy me-1 text-warning"></i>활동 랭킹 TOP 5
+  </div>
+  <div class="card-body p-0">
+    <div class="list-group list-group-flush">
+      {% for u in top_users %}
+      <div class="list-group-item d-flex align-items-center gap-3">
+        <span class="fw-bold text-muted" style="width:24px;">{{ forloop.counter }}</span>
+        {% if forloop.counter == 1 %}<span>🥇</span>
+        {% elif forloop.counter == 2 %}<span>🥈</span>
+        {% elif forloop.counter == 3 %}<span>🥉</span>
+        {% else %}<span>🏅</span>{% endif %}
+        <a href="{% url 'user_profile' u.pk %}" class="text-decoration-none text-dark fw-semibold flex-grow-1">
+          {{ u.nickname }} <small class="text-muted">({{ u.dong }}동 {{ u.ho }}호)</small>
+        </a>
+        <span class="badge bg-success rounded-pill">게시글 {{ u.post_count }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+</div>
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('joinChart').getContext('2d');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: [{% for m in monthly_joins %}'{{ m.month }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+    datasets: [{
+      label: '신규 가입자',
+      data: [{% for m in monthly_joins %}{{ m.count }}{% if not forloop.last %},{% endif %}{% endfor %}],
+      backgroundColor: 'rgba(40,167,69,0.7)',
+      borderColor: 'rgba(40,167,69,1)',
+      borderWidth: 1,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+  }
+});
+</script>
+{% endblock %}
+{% endblock %}

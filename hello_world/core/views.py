@@ -895,11 +895,35 @@ def group_chat_messages(request, group_id):
 @login_required
 def group_list(request):
     from .models import Group, GroupMember
-    my_groups = Group.objects.filter(members=request.user, is_active=True)
-    all_groups = Group.objects.filter(is_active=True, is_public=True).exclude(members=request.user)
+    GROUP_TYPE_LABELS = {
+        'hobby': '취미 활동', 'pet': '반려동물', 'sports': '스포츠',
+        'volunteer': '자원봉사', 'learning': '학습', 'event': '정기 행사',
+    }
+    q          = request.GET.get('q', '').strip()
+    gtype      = request.GET.get('type', '')
+    order      = request.GET.get('order', 'newest')
+
+    from django.db.models import Q, Count
+    qs = Group.objects.filter(is_active=True, is_public=True)
+    if q:
+        qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
+    if gtype:
+        qs = qs.filter(group_type=gtype)
+    if order == 'members':
+        qs = qs.annotate(mc=Count('members')).order_by('-mc')
+    else:
+        qs = qs.order_by('-created_at')
+
+    my_groups  = Group.objects.filter(members=request.user, is_active=True) if request.user.is_authenticated else Group.objects.none()
+    all_groups = qs.exclude(members=request.user) if request.user.is_authenticated else qs
+
     return render(request, 'group_list.html', {
-        'my_groups': my_groups,
-        'all_groups': all_groups,
+        'my_groups':         my_groups,
+        'all_groups':        all_groups,
+        'q':                 q,
+        'gtype':             gtype,
+        'order':             order,
+        'group_type_labels': GROUP_TYPE_LABELS,
     })
 
 
@@ -1798,3 +1822,68 @@ def chat_poll_list(request):
         })
 
     return JsonResponse({'polls': result})
+
+
+def community_stats(request):
+    """단지 통계 대시보드"""
+    from django.db.models import Count
+    from django.utils import timezone
+    from datetime import timedelta
+    from .models import CustomUser, Post, Comment, Survey, SurveyResponse, Event, Group, GroupMember, Letter, DirectMessage, PublicChat
+
+    now = timezone.now()
+    month_ago = now - timedelta(days=30)
+    week_ago  = now - timedelta(days=7)
+
+    # 회원
+    total_users   = CustomUser.objects.filter(is_active=True).count()
+    new_users     = CustomUser.objects.filter(date_joined__gte=month_ago).count()
+
+    # 게시글/댓글
+    total_posts    = Post.objects.count()
+    week_posts     = Post.objects.filter(created_at__gte=week_ago).count()
+    total_comments = Comment.objects.count()
+
+    # 설문
+    total_surveys   = Survey.objects.count()
+    total_responses = SurveyResponse.objects.count()
+
+    # 봉사
+    total_events = Event.objects.count()
+    upcoming_events = Event.objects.filter(start_time__gte=now).count()
+
+    # 소모임
+    total_groups  = Group.objects.filter(is_active=True).count()
+    total_members = GroupMember.objects.count()
+
+    # 채팅 활성도 (최근 7일)
+    week_public = PublicChat.objects.filter(created_at__gte=week_ago).count()
+    week_dm     = DirectMessage.objects.filter(created_at__gte=week_ago).count()
+    week_letter = Letter.objects.filter(created_at__gte=week_ago).count()
+
+    # 활동 랭킹 TOP5 (게시글 기준)
+    top_users = CustomUser.objects.annotate(
+        post_count=Count("posts")
+    ).order_by("-post_count")[:5]
+
+    # 월별 신규 가입자 (최근 6개월)
+    monthly_joins = []
+    for i in range(5, -1, -1):
+        d = now - timedelta(days=30*i)
+        cnt = CustomUser.objects.filter(
+            date_joined__year=d.year,
+            date_joined__month=d.month
+        ).count()
+        monthly_joins.append({"month": d.strftime("%m월"), "count": cnt})
+
+    return render(request, "stats_dashboard.html", {
+        "total_users": total_users, "new_users": new_users,
+        "total_posts": total_posts, "week_posts": week_posts,
+        "total_comments": total_comments,
+        "total_surveys": total_surveys, "total_responses": total_responses,
+        "total_events": total_events, "upcoming_events": upcoming_events,
+        "total_groups": total_groups, "total_members": total_members,
+        "week_public": week_public, "week_dm": week_dm, "week_letter": week_letter,
+        "top_users": top_users,
+        "monthly_joins": monthly_joins,
+    })

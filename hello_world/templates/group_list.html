@@ -1,75 +1,162 @@
-{% extends 'base_3panel.html' %}
-{% block menu_groups %}active{% endblock %}
-{% block title %}소모임{% endblock %}
-{% block panel_content %}
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h4 class="fw-bold mb-1"><i class="fas fa-users me-2 text-success"></i>소모임</h4>
-      <p class="text-muted mb-0 small">관심사가 같은 이웃과 함께해요</p>
-    </div>
-    <a href="/groups/create/" class="btn btn-success"><i class="fas fa-plus me-1"></i>소모임 만들기</a>
-  </div>
+{% load custom_filters %}
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-3">
 
-  {% if my_groups %}
-  <h6 class="fw-bold text-muted mb-3">내가 참여 중인 소모임</h6>
-  <div class="row g-3 mb-5">
-    {% for g in my_groups %}
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #1a7a4a !important;">
-        <div class="card-body">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <div style="width:44px;height:44px;border-radius:12px;background:#1a7a4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0;">{{ g.name|first|upper }}</div>
-            <div>
-              <h6 class="mb-0 fw-bold">{{ g.name }}</h6>
-              <small class="text-muted">{{ g.get_group_type_display }}</small>
-            </div>
-          </div>
-          <p class="text-muted small mb-3">{{ g.description|truncatechars:60 }}</p>
-          {% if g.location %}<div class="small text-muted mb-1"><i class="fas fa-map-marker-alt me-1"></i>{{ g.location }}</div>{% endif %}
-          {% if g.regular_schedule %}<div class="small text-muted mb-2"><i class="fas fa-clock me-1"></i>{{ g.regular_schedule }}</div>{% endif %}
-          <div class="d-flex gap-2 mt-auto">
-            <a href="/groups/{{ g.pk }}/" class="btn btn-outline-success btn-sm flex-grow-1">상세보기</a>
-            <a href="/chat/group/{{ g.pk }}/" class="btn btn-success btn-sm flex-grow-1"><i class="fas fa-comments me-1"></i>채팅</a>
-          </div>
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="fw-bold mb-0"><i class="fas fa-users me-2 text-success"></i>소모임</h4>
+  {% if user.is_authenticated %}
+  <a href="{% url 'group_create' %}" class="btn btn-success btn-sm">
+    <i class="bi bi-plus-circle me-1"></i>소모임 만들기
+  </a>
+  {% endif %}
+</div>
+
+<!-- 검색/필터 -->
+<form method="get" class="card shadow-sm mb-4">
+  <div class="card-body py-2">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+          <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="소모임 이름/설명 검색">
         </div>
       </div>
+      <div class="col-md-3">
+        <select name="type" class="form-select form-select-sm">
+          <option value="">전체 유형</option>
+          {% for key, label in group_type_labels.items %}
+          <option value="{{ key }}" {% if gtype == key %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select name="order" class="form-select form-select-sm">
+          <option value="newest" {% if order == 'newest' %}selected{% endif %}>최신순</option>
+          <option value="members" {% if order == 'members' %}selected{% endif %}>인원 많은 순</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-success btn-sm w-100">검색</button>
+      </div>
     </div>
-    {% endfor %}
   </div>
-  {% endif %}
+</form>
 
-  <h6 class="fw-bold text-muted mb-3">참여 가능한 소모임</h6>
-  {% if all_groups %}
-  <div class="row g-3">
-    {% for g in all_groups %}
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-body">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <div style="width:44px;height:44px;border-radius:12px;background:#a8d5b8;color:#1a7a4a;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;flex-shrink:0;">{{ g.name|first|upper }}</div>
-            <div>
-              <h6 class="mb-0 fw-bold">{{ g.name }}</h6>
-              <small class="text-muted">{{ g.get_group_type_display }}</small>
-            </div>
-          </div>
-          <p class="text-muted small mb-3">{{ g.description|truncatechars:60 }}</p>
-          {% if g.location %}<div class="small text-muted mb-1"><i class="fas fa-map-marker-alt me-1"></i>{{ g.location }}</div>{% endif %}
-          {% if g.regular_schedule %}<div class="small text-muted mb-2"><i class="fas fa-clock me-1"></i>{{ g.regular_schedule }}</div>{% endif %}
-          {% if g.member_limit %}
-          <div class="small text-muted mb-2"><i class="fas fa-users me-1"></i>{{ g.members.count }} / {{ g.member_limit }}명</div>
+<!-- 내 소모임 -->
+{% if user.is_authenticated and my_groups %}
+<h6 class="fw-bold text-success mb-2"><i class="bi bi-star-fill me-1"></i>내 소모임</h6>
+<div class="row g-3 mb-4">
+  {% for group in my_groups %}
+  <div class="col-md-4 col-sm-6">
+    <div class="card h-100 shadow-sm border-success border-2">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <h6 class="fw-bold mb-0">{{ group.name }}</h6>
+          <span class="badge bg-success">{{ group_type_labels|getitem:group.group_type|default:group.group_type }}</span>
+        </div>
+        <p class="text-muted small mb-2">{{ group.description|truncatechars:60 }}</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <small class="text-muted"><i class="bi bi-people me-1"></i>{{ group.members.count }}명</small>
+          {% if group.regular_schedule %}
+          <small class="text-muted"><i class="bi bi-calendar me-1"></i>{{ group.regular_schedule }}</small>
           {% endif %}
-          <a href="/groups/{{ g.pk }}/" class="btn btn-outline-success btn-sm w-100">자세히 보기</a>
         </div>
       </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <a href="{% url 'group_detail' group.pk %}" class="btn btn-success btn-sm flex-grow-1">입장</a>
+        <a href="{% url 'group_chat' group.pk %}" class="btn btn-outline-success btn-sm"><i class="bi bi-chat"></i></a>
+        <button class="btn btn-outline-secondary btn-sm share-btn"
+                data-name="{{ group.name }}"
+                data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'group_detail' group.pk %}">
+          <i class="bi bi-share"></i>
+        </button>
+      </div>
     </div>
-    {% endfor %}
   </div>
-  {% else %}
-  <div class="text-center py-5">
-    <div style="font-size:3rem;margin-bottom:12px;">🌱</div>
-    <h5 class="fw-bold text-muted">아직 소모임이 없어요</h5>
-    <p class="text-muted">우리 단지 첫 소모임을 만들어보세요!</p>
-    <a href="/groups/create/" class="btn btn-success px-4">소모임 만들기</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- 전체 소모임 -->
+<h6 class="fw-bold mb-2">
+  <i class="bi bi-grid me-1"></i>전체 소모임
+  {% if q or gtype %}<small class="text-muted fw-normal ms-1">검색 결과 {{ all_groups|length }}개</small>{% endif %}
+</h6>
+{% if all_groups %}
+<div class="row g-3">
+  {% for group in all_groups %}
+  <div class="col-md-4 col-sm-6">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-1">
+          <h6 class="fw-bold mb-0">{{ group.name }}</h6>
+          <span class="badge bg-light text-dark border">{{ group_type_labels|getitem:group.group_type|default:group.group_type }}</span>
+        </div>
+        <p class="text-muted small mb-2">{{ group.description|truncatechars:60 }}</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <small class="text-muted"><i class="bi bi-people me-1"></i>{{ group.members.count }}명
+            {% if group.member_limit %} / {{ group.member_limit }}{% endif %}
+          </small>
+          {% if group.regular_schedule %}
+          <small class="text-muted"><i class="bi bi-calendar me-1"></i>{{ group.regular_schedule }}</small>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-footer bg-transparent d-flex gap-2">
+        <a href="{% url 'group_detail' group.pk %}" class="btn btn-outline-success btn-sm flex-grow-1">자세히 보기</a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'group_join' group.pk %}" class="btn btn-success btn-sm">참여</a>
+        {% endif %}
+        <button class="btn btn-outline-secondary btn-sm share-btn"
+                data-name="{{ group.name }}"
+                data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'group_detail' group.pk %}">
+          <i class="bi bi-share"></i>
+        </button>
+      </div>
+    </div>
   </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+  <i class="bi bi-people display-4 d-block mb-2"></i>
+  {% if q or gtype %}검색 결과가 없습니다.{% else %}아직 소모임이 없습니다.{% endif %}
+  {% if user.is_authenticated %}
+  <div class="mt-2"><a href="{% url 'group_create' %}" class="btn btn-success btn-sm">첫 소모임 만들기</a></div>
   {% endif %}
+</div>
+{% endif %}
+
+</div>
+
+<!-- 공유 토스트 -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+  <div id="shareToast" class="toast align-items-center text-bg-success border-0" role="alert">
+    <div class="d-flex">
+      <div class="toast-body"><i class="bi bi-check-circle me-1"></i>링크가 복사됐어요!</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.share-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const name = this.dataset.name;
+    const url  = this.dataset.url;
+    const text = `[해솔7지킴이] "${name}" 소모임에 참여해보세요!\n${url}`;
+    if (navigator.share) {
+      navigator.share({ title: name, text: text, url: url });
+    } else {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = new bootstrap.Toast(document.getElementById('shareToast'));
+        toast.show();
+      });
+    }
+  });
+});
+</script>
+{% endblock %}
 {% endblock %}
