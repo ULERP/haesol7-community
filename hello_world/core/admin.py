@@ -36,3 +36,17 @@ class CustomUserAdmin(admin.ModelAdmin):
     list_editable = ['is_verified']
     list_filter   = ['is_verified', 'is_staff']
     search_fields = ['username', 'nickname', 'dong']
+
+from .models import MemberGrade, Board, BoardGradePermission
+
+@admin.register(MemberGrade)
+class MemberGradeAdmin(admin.ModelAdmin):
+    list_display  = ['name', 'required_points', 'required_activities', 'order', 'is_active']
+    list_editable = ['required_points', 'order', 'is_active']
+    ordering      = ['order']
+
+@admin.register(Board)
+class BoardAdmin(admin.ModelAdmin):
+    list_display  = ['name', 'board_type', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
+    ordering      = ['order']
