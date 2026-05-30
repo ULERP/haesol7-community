@@ -15,10 +15,13 @@
           <input type="hidden" name="receiver_id" value="{{ receiver.pk }}">
           <input type="text" class="form-control" value="{{ receiver.nickname }} ({{ receiver.dong }}동 {{ receiver.ho }}호)" readonly>
         {% else %}
-          <select name="receiver_id" class="form-select" required>
+          <input type="text" id="userSearch" class="form-control mb-1" placeholder="닉네임 또는 아이디로 검색..." autocomplete="off">
+          <select name="receiver_id" id="receiverSelect" class="form-select" required size="4" style="height:auto;">
             <option value="">-- 이웃을 선택하세요 --</option>
             {% for u in users %}
-            <option value="{{ u.pk }}">{{ u.nickname }} ({{ u.dong }}동 {{ u.ho }}호)</option>
+            <option value="{{ u.pk }}" data-label="{{ u.nickname }} {{ u.username }}">
+              {{ u.nickname }} ({{ u.dong }}동)
+            </option>
             {% endfor %}
           </select>
         {% endif %}
@@ -41,4 +44,22 @@
 
 </div>
 </div>
+{% block extra_js %}
+<script>
+const search = document.getElementById('userSearch');
+const select = document.getElementById('receiverSelect');
+if (search && select) {
+  const opts = Array.from(select.options);
+  search.addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    select.innerHTML = '';
+    opts.forEach(opt => {
+      if (!q || opt.dataset.label && opt.dataset.label.toLowerCase().includes(q) || opt.value === '') {
+        select.appendChild(opt.cloneNode(true));
+      }
+    });
+  });
+}
+</script>
+{% endblock %}
 {% endblock %}

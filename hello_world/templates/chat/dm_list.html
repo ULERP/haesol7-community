@@ -1,30 +1,104 @@
 {% extends 'base_3panel.html' %}
 {% block title %}1:1 채팅{% endblock %}
 {% block panel_content %}
-  <h4 class="mb-4 fw-bold"><i class="fas fa-envelope me-2 text-primary"></i>1:1 채팅</h4>
-  {% if partners %}
-  <div class="list-group shadow-sm">
-    {% for partner in partners %}
-    <a href="{% url 'direct_message' partner.pk %}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-3">
-      {% if partner.profile_image %}
-      <img src="{{ partner.profile_image.url }}" class="rounded-circle" width="48" height="48" style="object-fit:cover;">
-      {% else %}
-      <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width:48px;height:48px;">
-        {{ partner.username|first|upper }}
-      </div>
-      {% endif %}
-      <div>
-        <div class="fw-semibold">{{ partner.username }}</div>
-        <small class="text-muted">{{ partner.unit_number }}</small>
-      </div>
-    </a>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="text-center py-5 text-muted">
-    <i class="fas fa-comment-slash fa-3x mb-3 d-block"></i>
-    <p>아직 1:1 채팅 상대가 없습니다.</p>
-    <small>게시글 작성자 프로필에서 채팅을 시작할 수 있어요.</small>
+<div class="container-fluid py-3">
+
+  <h5 class="fw-bold mb-3"><i class="fas fa-comment-dots me-2 text-primary"></i>1:1 채팅</h5>
+
+  <!-- 유저 검색 -->
+  <form method="get" class="mb-3">
+    <div class="input-group input-group-sm">
+      <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+      <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="닉네임/아이디/동으로 검색...">
+      <button type="submit" class="btn btn-primary">검색</button>
+    </div>
+  </form>
+
+  <!-- 온라인 유저 -->
+  {% if online_users %}
+  <div class="mb-3">
+    <div class="small fw-bold text-success mb-2">
+      <span class="d-inline-block rounded-circle bg-success me-1" style="width:8px;height:8px;"></span>
+      접속중인 이웃 ({{ online_users|length }}명)
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      {% for u in online_users %}
+      <a href="{% url 'direct_message' u.pk %}" class="text-decoration-none">
+        <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-pill border border-success bg-white" style="font-size:0.82rem;">
+          <span class="d-inline-block rounded-circle bg-success" style="width:8px;height:8px;flex-shrink:0;"></span>
+          <span class="fw-semibold">{{ u.nickname|default:u.username }}</span>
+          {% if u.is_verified %}<span class="text-muted small">{{ u.dong }}동</span>{% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
   </div>
   {% endif %}
+
+  <!-- 기존 대화 상대 -->
+  {% if partners %}
+  <div class="mb-3">
+    <div class="small fw-bold text-muted mb-2">최근 대화</div>
+    <div class="list-group shadow-sm">
+      {% for p in partners %}
+      <a href="{% url 'direct_message' p.pk %}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2">
+        {% if p.profile_image %}
+        <img src="{{ p.profile_image.url }}" class="rounded-circle" width="40" height="40" style="object-fit:cover;">
+        {% else %}
+        <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width:40px;height:40px;">
+          {{ p.nickname|default:p.username|first|upper }}
+        </div>
+        {% endif %}
+        <div class="flex-grow-1">
+          <div class="fw-semibold">{{ p.nickname|default:p.username }}
+            {% if p.is_verified %}<small class="text-muted">{{ p.dong }}동</small>{% endif %}
+          </div>
+        </div>
+        {% if p in online_users %}
+        <span class="badge bg-success rounded-pill" style="font-size:0.65rem;">온라인</span>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 전체 유저 목록 -->
+  <div>
+    <div class="small fw-bold text-muted mb-2">
+      {% if q %}검색 결과 ({{ all_users|length }}명){% else %}전체 이웃{% endif %}
+    </div>
+    {% if all_users %}
+    <div class="list-group shadow-sm">
+      {% for u in all_users %}
+      <a href="{% url 'direct_message' u.pk %}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 py-2">
+        {% if u.profile_image %}
+        <img src="{{ u.profile_image.url }}" class="rounded-circle" width="36" height="36" style="object-fit:cover;">
+        {% else %}
+        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width:36px;height:36px;font-size:0.8rem;">
+          {{ u.nickname|default:u.username|first|upper }}
+        </div>
+        {% endif %}
+        <div class="flex-grow-1">
+          <div class="fw-semibold" style="font-size:0.9rem;">{{ u.nickname|default:u.username }}</div>
+          <div class="text-muted" style="font-size:0.75rem;">
+            {% if u.is_verified %}{{ u.dong }}동 입주민{% else %}미인증{% endif %}
+          </div>
+        </div>
+        {% if u in online_users %}
+        <span class="d-inline-block rounded-circle bg-success" style="width:8px;height:8px;" title="온라인"></span>
+        {% endif %}
+        <i class="fas fa-comment-dots text-primary"></i>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-muted">
+      <i class="fas fa-search fa-2x mb-2 d-block"></i>
+      {% if q %}검색 결과가 없어요{% else %}이웃이 없어요{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+</div>
 {% endblock %}

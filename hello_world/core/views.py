@@ -811,7 +811,19 @@ def management_doc_detail(request, pk):
 from .models import DirectMessage, PublicChat, GroupChat, Group, CustomUser
 
 def public_chat(request):
-    return redirect('index')
+    from .models import PublicChat, Group
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    recent_chats = PublicChat.objects.filter(is_active=True).select_related('author').order_by('-created_at')[:50]
+    my_groups = Group.objects.filter(members=request.user, is_active=True)[:10] if request.user.is_authenticated else []
+    online_users = User.objects.filter(is_active=True).order_by('-last_login')[:20]
+    all_users = User.objects.filter(is_active=True).order_by('nickname')[:50]
+    return render(request, 'chat/public_chat.html', {
+        'recent_chats': list(reversed(recent_chats)),
+        'my_groups': my_groups,
+        'online_users': online_users,
+        'all_users': all_users,
+    })
 
 def public_chat_messages(request):
     import json
@@ -855,17 +867,43 @@ def public_chat_messages(request):
     })
 
 def dm_list(request):
-    """1:1 채팅 상대 목록"""
+    """1:1 채팅 상대 목록 + 온라인 유저 + 전체 유저 검색"""
     if not request.user.is_authenticated:
-        from django.shortcuts import redirect
         return redirect('login')
     from django.db.models import Q, Max
+    from django.utils import timezone
+    from datetime import timedelta
+
+    # 기존 대화 상대
     partners_sent = DirectMessage.objects.filter(sender=request.user).values_list('receiver', flat=True).distinct()
     partners_recv = DirectMessage.objects.filter(receiver=request.user).values_list('sender', flat=True).distinct()
     partner_ids = set(list(partners_sent) + list(partners_recv))
-    partners = CustomUser.objects.filter(id__in=partner_ids)
+    partners = CustomUser.objects.filter(id__in=partner_ids).exclude(id=request.user.id)
+
+    # 온라인 유저 (최근 5분 이내 로그인)
+    online_threshold = timezone.now() - timedelta(minutes=30)
+    online_users = CustomUser.objects.filter(
+        is_active=True,
+        last_login__gte=online_threshold
+    ).exclude(id=request.user.id).order_by('-last_login')[:20]
+
+    # 전체 유저 (검색용)
+    q = request.GET.get('q', '').strip()
+    all_users = CustomUser.objects.filter(is_active=True).exclude(id=request.user.id)
+    if q:
+        all_users = all_users.filter(
+            Q(nickname__icontains=q) | Q(username__icontains=q) | Q(dong__icontains=q)
+        )
+    all_users = all_users.order_by('nickname')[:30]
+
     unread_count = DirectMessage.objects.filter(receiver=request.user, is_read=False).count()
-    return render(request, 'chat/dm_list.html', {'partners': partners, 'unread_count': unread_count})
+    return render(request, 'chat/dm_list.html', {
+        'partners': partners,
+        'online_users': online_users,
+        'all_users': all_users,
+        'unread_count': unread_count,
+        'q': q,
+    })
 
 def direct_message(request, user_id):
     if not request.user.is_authenticated:
