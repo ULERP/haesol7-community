@@ -104,8 +104,13 @@
         {% elif forloop.counter == 3 %}<span>🥉</span>
         {% else %}<span>🏅</span>{% endif %}
         <a href="{% url 'user_profile' u.pk %}" class="text-decoration-none text-dark fw-semibold flex-grow-1">
-          {{ u.nickname }} <small class="text-muted">({{ u.dong }}동 {{ u.ho }}호)</small>
+          {{ u.nickname }} <small class="text-muted">({{ u.dong }}동)</small>
         </a>
+        {% if user.is_authenticated and user != u %}
+        <a href="/letters/write/{{ u.pk }}/" class="btn btn-outline-secondary btn-sm py-0 px-1" title="쪽지 보내기">
+          <i class="bi bi-envelope" style="font-size:0.75rem;"></i>
+        </a>
+        {% endif %}
         <span class="badge bg-success rounded-pill">게시글 {{ u.post_count }}</span>
       </div>
       {% endfor %}
