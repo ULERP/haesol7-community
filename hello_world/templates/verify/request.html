@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-6">
+<h4 class="fw-bold mb-4"><i class="bi bi-patch-check me-2 text-success"></i>입주민 인증 신청</h4>
+
+{% if user.verified_note == "인증 대기중" %}
+<div class="alert alert-warning">
+  <i class="bi bi-clock me-2"></i>인증 신청이 접수되었어요. 관리자 확인 후 승인됩니다.
+</div>
+{% else %}
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <p class="text-muted small mb-3">
+      <i class="bi bi-shield-lock me-1"></i>
+      동/호수 정보는 <strong>입주민 확인 목적으로만</strong> 사용되며,
+      다른 이용자에게는 <strong>동(洞)까지만</strong> 공개됩니다.
+      익명 게시글에서는 어떠한 정보도 표시되지 않습니다.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-6">
+          <label class="form-label fw-semibold">동 <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <input type="text" name="dong" class="form-control" placeholder="예: 713" value="{{ user.dong }}" required>
+            <span class="input-group-text">동</span>
+          </div>
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-semibold">호수 <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <input type="text" name="ho" class="form-control" placeholder="예: 1804" value="{{ user.ho }}" required>
+            <span class="input-group-text">호</span>
+          </div>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">연락처 <span class="text-danger">*</span></label>
+          <input type="tel" name="phone" class="form-control" placeholder="010-0000-0000" value="{{ user.phone_number }}" required>
+          <div class="form-text text-muted">관리자 확인용으로만 사용되며 외부에 공개되지 않습니다.</div>
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-success"><i class="bi bi-send me-1"></i>인증 신청</button>
+        <a href="{% url 'mypage' %}" class="btn btn-outline-secondary">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card border-0 bg-light">
+  <div class="card-body small text-muted">
+    <div class="fw-semibold mb-2"><i class="bi bi-info-circle me-1"></i>개인정보 처리 안내</div>
+    <ul class="mb-0 ps-3">
+      <li>동/호수 정보: 입주민 인증 후 프로필에 <strong>동(洞)까지만</strong> 표시</li>
+      <li>호수/연락처: 관리자만 확인 가능, 외부 비공개</li>
+      <li>익명 게시글: 작성자 정보 완전 비공개 (관리자도 신중히 확인)</li>
+    </ul>
+  </div>
+</div>
+{% endif %}
+
+</div>
+</div>
+{% endblock %}

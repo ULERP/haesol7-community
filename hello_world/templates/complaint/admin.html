@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-3">
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="fw-bold mb-0"><i class="bi bi-megaphone me-2"></i>민원/건의 관리</h4>
+  <a href="/admin/core/complaintcategory/" class="btn btn-outline-secondary btn-sm" target="_blank">
+    <i class="bi bi-tags me-1"></i>분류 관리
+  </a>
+</div>
+<div class="d-flex gap-2 mb-3">
+  <a href="?status=" class="btn btn-sm {% if not status %}btn-success{% else %}btn-outline-secondary{% endif %}">전체</a>
+  <a href="?status=received" class="btn btn-sm {% if status == 'received' %}btn-warning{% else %}btn-outline-secondary{% endif %}">접수됨</a>
+  <a href="?status=reviewing" class="btn btn-sm {% if status == 'reviewing' %}btn-info{% else %}btn-outline-secondary{% endif %}">검토중</a>
+  <a href="?status=done" class="btn btn-sm {% if status == 'done' %}btn-success{% else %}btn-outline-secondary{% endif %}">처리완료</a>
+</div>
+<div class="list-group shadow-sm">
+{% for c in complaints %}
+<div class="list-group-item">
+  <div class="d-flex justify-content-between align-items-start">
+    <div>
+      {% if c.category %}<span class="badge bg-secondary me-1"><i class="bi {{ c.category.icon }} me-1"></i>{{ c.category.name }}</span>{% endif %}
+      <strong>{{ c.title }}</strong>
+      {% if c.is_anonymous %}
+        <span class="badge bg-light text-dark border ms-1">익명</span>
+        <small class="text-muted ms-1">(관리자 확인: {{ c.author.nickname }} {{ c.author.dong }}동)</small>
+      {% else %}
+        <small class="text-muted ms-1">{{ c.author.nickname }} {{ c.author.dong }}동</small>
+      {% endif %}
+    </div>
+    <small class="text-muted">{{ c.created_at|date:"m/d H:i" }}</small>
+  </div>
+  <div class="mt-1 small text-muted">{{ c.content|truncatechars:80 }}</div>
+  <form method="post" action="{% url 'complaint_reply' c.pk %}" class="mt-2 d-flex gap-2">
+    {% csrf_token %}
+    <textarea name="reply" class="form-control form-control-sm" rows="2" placeholder="답변 입력...">{{ c.admin_reply }}</textarea>
+    <div class="d-flex flex-column gap-1" style="min-width:90px">
+      <select name="status" class="form-select form-select-sm">
+        <option value="received" {% if c.status == 'received' %}selected{% endif %}>접수됨</option>
+        <option value="reviewing" {% if c.status == 'reviewing' %}selected{% endif %}>검토중</option>
+        <option value="done" {% if c.status == 'done' %}selected{% endif %}>처리완료</option>
+        <option value="rejected" {% if c.status == 'rejected' %}selected{% endif %}>반려</option>
+      </select>
+      <button type="submit" class="btn btn-success btn-sm">저장</button>
+    </div>
+  </form>
+</div>
+{% empty %}
+<div class="list-group-item text-center text-muted py-4">민원이 없습니다.</div>
+{% endfor %}
+</div>
+</div>
+{% endblock %}

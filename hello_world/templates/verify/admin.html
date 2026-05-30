@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-3">
+<h4 class="fw-bold mb-4"><i class="bi bi-shield-check me-2 text-success"></i>입주민 인증 관리</h4>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header fw-semibold bg-warning bg-opacity-25">
+    <i class="bi bi-clock me-1"></i>인증 대기 ({{ pending|length }}명)
+  </div>
+  {% if pending %}
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>닉네임</th><th>동/호수</th><th>연락처</th><th>가입일</th><th>처리</th></tr>
+      </thead>
+      <tbody>
+        {% for u in pending %}
+        <tr>
+          <td>{{ u.nickname }}<br><small class="text-muted">{{ u.username }}</small></td>
+          <td><strong>{{ u.dong }}동 {{ u.ho }}호</strong></td>
+          <td>{{ u.phone_number }}</td>
+          <td>{{ u.date_joined|date:"m/d" }}</td>
+          <td>
+            <form method="post" action="{% url 'verify_approve' u.pk %}" class="d-inline">
+              {% csrf_token %}
+              <input type="hidden" name="note" value="관리자 승인">
+              <button class="btn btn-success btn-sm">승인</button>
+            </form>
+            <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal{{ u.pk }}">거절</button>
+            <div class="modal fade" id="rejectModal{{ u.pk }}" tabindex="-1">
+              <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                  <div class="modal-header"><h6 class="modal-title">인증 거절</h6></div>
+                  <form method="post" action="{% url 'verify_reject' u.pk %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                      <input type="text" name="reason" class="form-control form-control-sm" placeholder="거절 사유">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="btn btn-danger btn-sm">거절</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="p-3 text-muted text-center">대기 중인 신청이 없습니다.</div>
+  {% endif %}
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header fw-semibold bg-success bg-opacity-10">
+    <i class="bi bi-patch-check me-1 text-success"></i>인증 완료 ({{ verified|length }}명)
+  </div>
+  {% if verified %}
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr><th>닉네임</th><th>동/호수</th><th>인증일</th><th>메모</th></tr>
+      </thead>
+      <tbody>
+        {% for u in verified %}
+        <tr>
+          <td>{{ u.nickname }}</td>
+          <td>{{ u.dong }}동 {{ u.ho }}호</td>
+          <td>{{ u.verified_at|date:"Y/m/d" }}</td>
+          <td><small class="text-muted">{{ u.verified_note }}</small></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.urls import path, include
 from django.contrib.auth.views import LogoutView
-from . import views_letter
+from . import views_letter, views_verify, views_complaint
 from rest_framework.routers import DefaultRouter
 from . import views
 
@@ -89,4 +89,22 @@ urlpatterns = [
     path('letters/<int:pk>/', views_letter.letter_detail, name='letter_detail'),
     path('letters/<int:pk>/reply/', views_letter.letter_reply, name='letter_reply'),
     path('letters/<int:pk>/delete/', views_letter.letter_delete, name='letter_delete'),
+
+    # 입주민 인증
+    path('verify/', views_verify.verify_request, name='verify_request'),
+    path('verify/admin/', views_verify.verify_admin, name='verify_admin'),
+    path('verify/approve/<int:user_id>/', views_verify.verify_approve, name='verify_approve'),
+    path('verify/reject/<int:user_id>/', views_verify.verify_reject, name='verify_reject'),
+
+    # 민원/건의
+    path('complaints/', views_complaint.complaint_list, name='complaint_list'),
+    path('complaints/create/', views_complaint.complaint_create, name='complaint_create'),
+    path('complaints/<int:pk>/', views_complaint.complaint_detail, name='complaint_detail'),
+    path('complaints/admin/', views_complaint.complaint_admin, name='complaint_admin'),
+    path('complaints/<int:pk>/reply/', views_complaint.complaint_reply, name='complaint_reply'),
+
+    # 빠른 공지
+    path('notices/', views_complaint.notice_list, name='notice_list'),
+    path('notices/create/', views_complaint.notice_create, name='notice_create'),
+    path('notices/<int:pk>/delete/', views_complaint.notice_delete, name='notice_delete'),
 ]

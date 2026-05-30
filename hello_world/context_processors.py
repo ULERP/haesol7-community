@@ -10,3 +10,8 @@ def active_boards(request):
     except Exception:
         boards = []
     return {'active_boards': boards}
+
+def verification_status(request):
+    if request.user.is_authenticated:
+        return {'user_is_verified': request.user.is_verified}
+    return {'user_is_verified': False}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-7">
+<div class="card shadow-sm mb-3">
+  <div class="card-header d-flex justify-content-between">
+    <span class="fw-bold">{{ c.title }}</span>
+    {% if c.status == 'received' %}<span class="badge bg-warning text-dark">접수됨</span>
+    {% elif c.status == 'reviewing' %}<span class="badge bg-info">검토중</span>
+    {% elif c.status == 'done' %}<span class="badge bg-success">처리완료</span>
+    {% else %}<span class="badge bg-danger">반려</span>{% endif %}
+  </div>
+  <div class="card-body">
+    <div class="mb-2 small text-muted">
+      {% if c.category %}<span class="badge bg-secondary me-1"><i class="bi {{ c.category.icon }} me-1"></i>{{ c.category.name }}</span>{% endif %}
+      {{ c.created_at|date:"Y.m.d H:i" }}
+      {% if c.is_anonymous %}<span class="badge bg-light text-dark border ms-1">익명</span>{% endif %}
+    </div>
+    <div style="white-space:pre-wrap;">{{ c.content }}</div>
+  </div>
+</div>
+{% if c.admin_reply %}
+<div class="card shadow-sm border-success">
+  <div class="card-header bg-success bg-opacity-10 fw-semibold">
+    <i class="bi bi-reply me-1 text-success"></i>관리자 답변
+    <small class="text-muted ms-2">{{ c.replied_at|date:"Y.m.d H:i" }}</small>
+  </div>
+  <div class="card-body" style="white-space:pre-wrap;">{{ c.admin_reply }}</div>
+</div>
+{% else %}
+<div class="alert alert-light text-muted small">아직 관리자 답변이 없습니다.</div>
+{% endif %}
+<a href="{% url 'complaint_list' %}" class="btn btn-outline-secondary btn-sm mt-2"><i class="bi bi-arrow-left me-1"></i>목록으로</a>
+</div>
+</div>
+{% endblock %}

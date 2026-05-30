@@ -5,20 +5,20 @@ from decouple import config
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY", default='django-insecure-test-key-1234')
-DEBUG = config("DEBUG", default=True)
+DEBUG = config("DEBUG", default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 
 if 'CODESPACE_NAME' in os.environ:
-    codespace_name = config("CODESPACE_NAME")
-    codespace_domain = config("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN")
+    codespace_name = os.environ.get("CODESPACE_NAME", "")
+    codespace_domain = os.environ.get("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN", "app.github.dev")
     CSRF_TRUSTED_ORIGINS = [
         f'https://{codespace_name}-8000.{codespace_domain}',
+        'https://*.app.github.dev',
         'https://localhost:8000',
         'http://localhost:8000',
-        'https://127.0.0.1:8000',
-        'http://127.0.0.1:8000',
-        'https://*.app.github.dev',
     ]
+else:
+    CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:8000').split(',')
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -36,6 +36,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -61,6 +62,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "hello_world.context_processors.active_boards",
+                "hello_world.context_processors.verification_status",
             ],
         },
     },
@@ -87,9 +89,10 @@ TIME_ZONE = "Asia/Seoul"
 USE_I18N = True
 USE_TZ = True
 
-STATICFILES_DIRS = [BASE_DIR / "hello_world" / "static"]
 STATIC_URL = "static/"
-STATIC_ROOT = BASE_DIR / "hello_world" / "staticfiles"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "hello_world" / "static"]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "hello_world" / "media"
 
@@ -115,12 +118,13 @@ ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
 DEFAULT_NOTIFICATION_PERSONA = '다정한 이웃'
 
 AUTH_USER_MODEL = 'core.CustomUser'
-
-# 인증 URL 설정
-
-
-# 인증 URL 설정
-
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
+
+# 보안 설정 (프로덕션)
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-7">
+<h4 class="fw-bold mb-4"><i class="bi bi-megaphone me-2 text-success"></i>민원/건의 접수</h4>
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold">분류</label>
+        <select name="category" class="form-select">
+          <option value="">-- 분류 선택 --</option>
+          {% for cat in categories %}
+          <option value="{{ cat.pk }}"><i class="bi {{ cat.icon }}"></i> {{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">제목</label>
+        <input type="text" name="title" class="form-control" required maxlength="100" placeholder="민원/건의 제목">
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">내용</label>
+        <textarea name="content" class="form-control" rows="6" required placeholder="내용을 자세히 입력해주세요"></textarea>
+      </div>
+      <div class="mb-3 form-check">
+        <input type="checkbox" name="is_anonymous" id="isAnon" class="form-check-input">
+        <label for="isAnon" class="form-check-label">익명으로 접수 <small class="text-muted">(관리자에게만 작성자 공개)</small></label>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success"><i class="bi bi-send me-1"></i>접수하기</button>
+        <a href="{% url 'complaint_list' %}" class="btn btn-outline-secondary">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+</div>
+{% endblock %}

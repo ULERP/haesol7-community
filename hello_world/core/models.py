@@ -9,6 +9,9 @@ class CustomUser(AbstractUser):
     ho            = models.CharField('호', max_length=10, blank=True)
     nickname      = models.CharField('닉네임', max_length=30, blank=True)
     phone_number  = models.CharField(max_length=20, blank=True)
+    is_verified   = models.BooleanField('입주민 인증', default=False)
+    verified_at   = models.DateTimeField('인증일시', null=True, blank=True)
+    verified_note = models.CharField('인증 메모(관리자용)', max_length=200, blank=True)
     profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
     introduction  = models.TextField(blank=True, max_length=500)
     mileage_points= models.IntegerField(default=0, validators=[MinValueValidator(0)])
@@ -757,3 +760,100 @@ class Letter(models.Model):
     def __str__(self):
         return f"[{self.subject}] {self.sender} → {self.receiver}"
 
+
+
+class Complaint(models.Model):
+    """민원/건의 접수"""
+    STATUS = [
+        ('received',  '접수됨'),
+        ('reviewing', '검토중'),
+        ('done',      '처리완료'),
+        ('rejected',  '반려'),
+    ]
+    CATEGORY = [
+        ('noise',     '소음'),
+        ('parking',   '주차'),
+        ('facility',  '시설'),
+        ('cleaning',  '청소/위생'),
+        ('security',  '보안/안전'),
+        ('delivery',  '택배'),
+        ('etc',       '기타'),
+    ]
+    author      = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='complaints')
+    category    = models.ForeignKey('ComplaintCategory', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='분류')
+    title       = models.CharField(max_length=100)
+    content     = models.TextField()
+    is_anonymous = models.BooleanField(default=False)
+    status      = models.CharField(max_length=20, choices=STATUS, default='received')
+    admin_reply = models.TextField(blank=True)
+    replied_at  = models.DateTimeField(null=True, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = '민원/건의'
+        verbose_name_plural = '민원/건의 목록'
+
+    def __str__(self):
+        return f"[{self.get_category_display()}] {self.title}"
+
+
+class Notice(models.Model):
+    """주차/택배/긴급 빠른 공지"""
+    TYPE = [
+        ('parking',   '주차 안내'),
+        ('delivery',  '택배 안내'),
+        ('urgent',    '긴급 공지'),
+        ('general',   '일반 공지'),
+        ('water',     '단수/정전'),
+    ]
+    author      = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='notices')
+    notice_type = models.ForeignKey('NoticeCategory', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='유형')
+    title       = models.CharField(max_length=100)
+    content     = models.TextField()
+    is_pinned   = models.BooleanField(default=False)
+    expires_at  = models.DateTimeField(null=True, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-is_pinned', '-created_at']
+        verbose_name = '빠른 공지'
+        verbose_name_plural = '빠른 공지 목록'
+
+    def __str__(self):
+        return f"[{self.get_notice_type_display()}] {self.title}"
+
+
+class ComplaintCategory(models.Model):
+    """민원 분류 (관리자가 동적으로 추가/삭제)"""
+    name       = models.CharField(max_length=30, unique=True, verbose_name='분류명')
+    icon       = models.CharField(max_length=30, default='bi-tag', verbose_name='Bootstrap 아이콘 클래스')
+    order      = models.PositiveIntegerField(default=0, verbose_name='정렬순서')
+    is_active  = models.BooleanField(default=True, verbose_name='활성화')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = '민원 분류'
+        verbose_name_plural = '민원 분류 목록'
+
+    def __str__(self):
+        return self.name
+
+
+class NoticeCategory(models.Model):
+    """공지 유형 (관리자가 동적으로 추가/삭제)"""
+    name       = models.CharField(max_length=30, unique=True, verbose_name='유형명')
+    icon       = models.CharField(max_length=30, default='bi-bell', verbose_name='Bootstrap 아이콘 클래스')
+    color      = models.CharField(max_length=20, default='secondary', verbose_name='배지 색상(Bootstrap)')
+    order      = models.PositiveIntegerField(default=0, verbose_name='정렬순서')
+    is_active  = models.BooleanField(default=True, verbose_name='활성화')
+
+    class Meta:
+        ordering = ['order', 'name']
+        verbose_name = '공지 유형'
+        verbose_name_plural = '공지 유형 목록'
+
+    def __str__(self):
+        return self.name

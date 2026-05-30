@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-3">
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="fw-bold mb-0"><i class="bi bi-bell me-2 text-success"></i>단지 공지</h4>
+  {% if user.is_staff %}
+  <div class="d-flex gap-2">
+    <a href="/admin/core/noticecategory/" class="btn btn-outline-secondary btn-sm" target="_blank"><i class="bi bi-tags me-1"></i>유형 관리</a>
+    <a href="{% url 'notice_create' %}" class="btn btn-success btn-sm"><i class="bi bi-plus me-1"></i>공지 등록</a>
+  </div>
+  {% endif %}
+</div>
+{% if notices %}
+<div class="row g-3">
+{% for n in notices %}
+<div class="col-md-6">
+  <div class="card shadow-sm h-100 {% if n.is_pinned %}border-danger border-2{% endif %}">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+          {% if n.notice_type %}
+          <span class="badge bg-{{ n.notice_type.color }} {% if n.notice_type.color == 'warning' or n.notice_type.color == 'light' %}text-dark{% endif %} me-1">
+            <i class="bi {{ n.notice_type.icon }} me-1"></i>{{ n.notice_type.name }}
+          </span>
+          {% endif %}
+          {% if n.is_pinned %}<span class="badge bg-danger">📌 고정</span>{% endif %}
+        </div>
+        {% if user.is_staff %}
+        <form method="post" action="{% url 'notice_delete' n.pk %}">
+          {% csrf_token %}
+          <button class="btn btn-outline-danger btn-sm py-0 px-1" onclick="return confirm('삭제할까요?')"><i class="bi bi-trash"></i></button>
+        </form>
+        {% endif %}
+      </div>
+      <h6 class="fw-bold">{{ n.title }}</h6>
+      <p class="text-muted small mb-1" style="white-space:pre-wrap;">{{ n.content|truncatechars:100 }}</p>
+      <small class="text-muted">{{ n.created_at|date:"m/d H:i" }} · {{ n.author.nickname }}</small>
+    </div>
+  </div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+  <i class="bi bi-bell display-4 d-block mb-2"></i>등록된 공지가 없습니다.
+</div>
+{% endif %}
+</div>
+{% endblock %}
