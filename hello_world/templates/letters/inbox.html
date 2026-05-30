@@ -12,13 +12,13 @@
 
 <ul class="nav nav-tabs mb-3">
   <li class="nav-item">
-    <a class="nav-link active fw-semibold" style="color:#1a7a4a;border-bottom:2px solid #1a7a4a;" href="{% url 'letter_inbox' %}">
+    <a class="nav-link active fw-semibold" style="color:#1a7a4a !important;border-bottom:3px solid #1a7a4a;background:#fff;" href="{% url 'letter_inbox' %}">
       <i class="bi bi-inbox me-1"></i>받은 쪽지함
       {% if unread_count %}<span class="badge bg-danger ms-1">{{ unread_count }}</span>{% endif %}
     </a>
   </li>
   <li class="nav-item">
-    <a class="nav-link text-secondary" href="{% url 'letter_sent' %}">
+    <a class="nav-link" style="color:#444 !important;" href="{% url 'letter_sent' %}">
       <i class="bi bi-send me-1"></i>보낸 쪽지함
     </a>
   </li>
