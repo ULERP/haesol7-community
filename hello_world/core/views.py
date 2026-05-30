@@ -81,9 +81,64 @@ def index(request):
     badges_count = Badge.objects.filter(is_active=True).count()
     upcoming_meetups = Meetup.objects.filter(status='recruiting').order_by('scheduled_at')[:3]
     groups_count = Group.objects.filter(is_active=True).count()
+    from django.db.models import Count, Q
+    from django.utils import timezone
+    from datetime import timedelta
+    from .models import PostLike, Survey, Poll, PublicChat, Notice, Event
+
+    now = timezone.now()
+    week_ago = now - timedelta(days=7)
+
+    # 인기 게시글 (최근 7일, 좋아요 많은 순)
+    hot_posts = Post.objects.filter(
+        is_active=True, created_at__gte=week_ago
+    ).order_by('-like_count', '-created_at')[:5]
+
+    # 진행중인 설문 (status: draft/active/closed)
+    try:
+        active_surveys = Survey.objects.filter(
+            status='active'
+        ).annotate(resp_count=Count('responses')).order_by('-resp_count')[:3]
+    except: active_surveys = []
+
+    # 진행중인 채팅 투표
+    try:
+        active_polls = Poll.objects.filter(
+            is_active=True
+        ).order_by('-created_at')[:3]
+    except: active_polls = []
+
+    # 최근 공지
+    try:
+        recent_notices = Notice.objects.filter(
+            Q(expires_at__isnull=True) | Q(expires_at__gte=now)
+        ).order_by('-is_pinned', '-created_at')[:3]
+    except: recent_notices = []
+
+    # 최근 채팅 (미리보기용)
+    try:
+        recent_chats = PublicChat.objects.filter(
+            is_active=True
+        ).select_related('author').order_by('-created_at')[:5]
+    except: recent_chats = []
+
+    # 봉사 일정
+    try:
+        upcoming_volunteer = Event.objects.filter(
+            start_time__gte=now
+        ).order_by('start_time')[:3]
+    except: upcoming_volunteer = []
+
+    # 단지 현황 숫자
+    from django.contrib.auth import get_user_model
+    User2 = get_user_model()
+    total_users    = User2.objects.filter(is_active=True).count()
+    verified_users = User2.objects.filter(is_active=True, is_verified=True).count()
+
     return render(request, 'index.html', {
         'boards': boards,
         'recent_posts': recent_posts,
+        'hot_posts': hot_posts,
         'upcoming_events': upcoming_events,
         'notice_posts': notice_posts,
         'recent_docs': recent_docs,
@@ -95,6 +150,13 @@ def index(request):
         'badges_count': badges_count,
         'upcoming_meetups': upcoming_meetups,
         'groups_count': groups_count,
+        'active_surveys': active_surveys,
+        'active_polls': active_polls,
+        'recent_notices': recent_notices,
+        'recent_chats': recent_chats,
+        'upcoming_volunteer': upcoming_volunteer,
+        'total_users': total_users,
+        'verified_users': verified_users,
     })
 
 
@@ -163,6 +225,16 @@ def mypage(request):
         user_grade = MemberGrade.objects.get(name=str(user_grade_name)) if user_grade_name else None
     except:
         user_grade = None
+    from .models import Letter, Complaint, Notification
+    from django.utils import timezone
+    from datetime import timedelta
+    unread_letters   = Letter.objects.filter(receiver=user, is_read=False, receiver_deleted=False).count()
+    my_complaints    = Complaint.objects.filter(author=user).order_by('-created_at')[:3]
+    pending_complaints = Complaint.objects.filter(author=user, status__in=['received','reviewing']).count()
+    unread_noti      = Notification.objects.filter(user=user, is_read=False).count()
+    week_ago         = timezone.now() - timedelta(days=7)
+    recent_posts     = Post.objects.filter(author=user, created_at__gte=week_ago).count()
+
     return render(request, 'mypage.html', {
         'user': user,
         'my_posts': my_posts,
@@ -177,6 +249,11 @@ def mypage(request):
         'total_activities': total_activities,
         'pending_activities': pending_activities,
         'total_points': user.mileage_points,
+        'unread_letters': unread_letters,
+        'my_complaints': my_complaints,
+        'pending_complaints': pending_complaints,
+        'unread_noti': unread_noti,
+        'recent_posts': recent_posts,
     })
 
 

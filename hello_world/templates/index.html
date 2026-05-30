@@ -177,188 +177,142 @@
     </div>
   </div>
 
-  <!-- ② 중앙: 채팅 -->
-  <div class="panel" style="display:flex;flex-direction:column;min-height:0;">
-
-    <!-- 드롭다운 탭 선택 -->
-    <div class="chat-tab-bar">
-      <div class="tab-dropdown" id="tabDropdown">
-        <button class="tab-dropdown-btn" onclick="toggleDropdown()" id="tabBtn">
-          <i class="fas fa-globe" id="tabIcon"></i>
-          <span id="tabLabel">전체 채팅</span>
-          <i class="fas fa-chevron-down" style="font-size:0.65rem;margin-left:2px;"></i>
-        </button>
-        <div class="tab-dropdown-menu" id="tabMenu">
-          <button class="tab-option active" id="opt-public" onclick="switchTab('public')">
-            <div class="tab-option-icon" style="background:#e8f5ee;color:var(--g);"><i class="fas fa-globe"></i></div>
-            <div>
-              <div style="font-weight:600;">전체 채팅</div>
-              <div style="font-size:0.72rem;color:#999;">단지 전체 전체채팅</div>
-            </div>
-          </button>
-          <button class="tab-option" id="opt-dm" onclick="switchTab('dm')">
-            <div class="tab-option-icon" style="background:#e8f0fe;color:#4285f4;"><i class="fas fa-envelope"></i></div>
-            <div>
-              <div style="font-weight:600;">1:1 쪽지</div>
-              <div style="font-size:0.72rem;color:#999;">이웃과 개인 대화</div>
-            </div>
-          </button>
-          <button class="tab-option" id="opt-group" onclick="switchTab('group')">
-            <div class="tab-option-icon" style="background:#fff3e0;color:#f57c00;"><i class="fas fa-users"></i></div>
-            <div>
-              <div style="font-weight:600;">소모임 채팅</div>
-              <div style="font-size:0.72rem;color:#999;">내 소모임 대화방</div>
-            </div>
-          </button>
-          <button class="tab-option" id="opt-members" onclick="switchTab('members')">
-            <div class="tab-option-icon" style="background:#fce4ec;color:#e91e63;"><i class="fas fa-list"></i></div>
-            <div>
-              <div style="font-weight:600;">참여자 목록</div>
-              <div style="font-size:0.72rem;color:#999;">입주민 전체 보기</div>
-            </div>
-          </button>
-        </div>
+  <!-- 중앙: 커뮤니티 대시보드 -->
+  <div class="panel" style="flex:1;overflow-y:auto;">
+    <div class="ph" style="background:#fafbfc;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span class="ph-title">🏘️ 해솔7단지 지금 이 순간</span>
+        <span style="font-size:0.72rem;color:#aaa;">실시간 현황</span>
       </div>
-      <div style="flex:1;font-size:0.75rem;color:#aaa;" id="tabDesc">단지 전체 입주민과 자유롭게 대화하세요</div>
     </div>
+    <div class="pb" style="padding:12px;display:flex;flex-direction:column;gap:12px;">
 
-    <!-- 뷰: 전체채팅 -->
-    <div class="chat-view" id="view-public">
-      <div id="chat-box">
-        {% if not user.is_authenticated %}
-        <div class="onboard-card" style="margin:16px;">
-          <div style="font-size:1.1rem;font-weight:700;color:var(--g);margin-bottom:10px;">👋 해솔마을7단지에 오신 것을 환영합니다!</div>
-          <div class="onboard-step">
-            <div class="step-num">1</div>
-            <div class="step-text"><strong>로그인</strong>하면 이웃과 채팅을 시작할 수 있어요.<br><a href="/accounts/login/" class="step-link">→ 로그인하기</a> · <a href="/accounts/signup/" class="step-link">회원가입</a></div>
-          </div>
-          <div class="onboard-step">
-            <div class="step-num">2</div>
-            <div class="step-text"><strong>소모임</strong>에 참여해 관심사가 같은 이웃을 만나보세요.</div>
-          </div>
-          <div class="onboard-step">
-            <div class="step-num">3</div>
-            <div class="step-text"><strong>봉사활동</strong>에 참여하고 마일리지와 배지를 획득하세요.<br><a href="/volunteer/" class="step-link">→ 봉사 일정 보기</a></div>
-          </div>
-        </div>
-        {% else %}
-        <div style="text-align:center;color:#bbb;font-size:0.8rem;padding:20px;">
-          <i class="fas fa-circle-notch fa-spin" style="font-size:1.2rem;display:block;margin-bottom:8px;"></i>
-          채팅을 불러오는 중...
-        </div>
-        {% endif %}
+      <!-- 단지 현황 숫자 -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+        <div class="stat-box"><div style="font-size:1.3rem;font-weight:700;color:var(--g);">{{ total_users }}</div><div style="font-size:0.7rem;color:#888;">전체 회원</div></div>
+        <div class="stat-box"><div style="font-size:1.3rem;font-weight:700;color:#1a7a4a;">{{ verified_users }}</div><div style="font-size:0.7rem;color:#888;">인증 입주민</div></div>
+        <div class="stat-box"><div style="font-size:1.3rem;font-weight:700;color:#e67e22;">{{ groups_count }}</div><div style="font-size:0.7rem;color:#888;">활성 소모임</div></div>
+        <div class="stat-box"><div style="font-size:1.3rem;font-weight:700;color:#e74c3c;">{{ approved_activities_count }}</div><div style="font-size:0.7rem;color:#888;">봉사 완료</div></div>
       </div>
-      {% if user.is_authenticated %}
-      <div class="chat-input-area">
-        <div class="input-wrap">
-          <textarea id="msg-input" placeholder="메시지를 입력하세요... (Enter 전송, Shift+Enter 줄바꿈)" rows="1"></textarea>
-          <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane" style="font-size:0.82rem;"></i></button>
+
+      <!-- 긴급/고정 공지 -->
+      {% if recent_notices %}
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;color:#888;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+          <i class="bi bi-bell-fill text-danger"></i> 단지 공지
+          <a href="/notices/" style="margin-left:auto;font-size:0.72rem;color:var(--g);text-decoration:none;">전체보기</a>
+        </div>
+        {% for n in recent_notices %}
+        <a href="/notices/" class="info-card" style="border-left:3px solid {% if n.notice_type %}#{{ n.notice_type.color|default:'6c757d' }}{% else %}#6c757d{% endif %};margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            {% if n.is_pinned %}<span style="font-size:0.68rem;background:#dc3545;color:#fff;padding:1px 5px;border-radius:4px;">고정</span>{% endif %}
+            {% if n.notice_type %}<span style="font-size:0.68rem;background:#e8f5ee;color:var(--g);padding:1px 5px;border-radius:4px;">{{ n.notice_type.name }}</span>{% endif %}
+            <span style="font-size:0.8rem;font-weight:600;">{{ n.title|truncatechars:25 }}</span>
+            <span style="margin-left:auto;font-size:0.7rem;color:#aaa;">{{ n.created_at|date:"m/d" }}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- 인기 게시글 -->
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;color:#888;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+          <i class="bi bi-fire text-warning"></i> 이번주 인기 게시글
+          <a href="/boards/" style="margin-left:auto;font-size:0.72rem;color:var(--g);text-decoration:none;">전체보기</a>
+        </div>
+        {% for post in hot_posts %}
+        <a href="/posts/{{ post.pk }}/" class="info-card" style="margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:0.78rem;font-weight:600;flex:1;">{{ post.title|truncatechars:28 }}</span>
+            <span style="font-size:0.7rem;color:#e74c3c;display:flex;align-items:center;gap:2px;">
+              <i class="bi bi-heart-fill"></i>{{ post.like_count }}
+            </span>
+            <span style="font-size:0.7rem;color:#aaa;">{{ post.created_at|date:"m/d" }}</span>
+          </div>
+          <div style="font-size:0.72rem;color:#aaa;margin-top:2px;">
+            {{ post.author.nickname|default:"익명" }} · {{ post.board.name|default:"" }}
+          </div>
+        </a>
+        {% empty %}
+        <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:10px;">아직 인기 게시글이 없어요</div>
+        {% endfor %}
+      </div>
+
+      <!-- 진행중인 설문 -->
+      {% if active_surveys %}
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;color:#888;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+          <i class="bi bi-bar-chart-fill text-primary"></i> 진행중인 설문
+          <a href="/surveys/" style="margin-left:auto;font-size:0.72rem;color:var(--g);text-decoration:none;">전체보기</a>
+        </div>
+        {% for survey in active_surveys %}
+        <a href="/surveys/{{ survey.pk }}/" class="info-card" style="margin-bottom:4px;border-left:3px solid #3498db;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:0.78rem;font-weight:600;flex:1;">{{ survey.title|truncatechars:28 }}</span>
+            <span style="font-size:0.7rem;color:#3498db;">{{ survey.resp_count }}명 참여</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- 최근 전체채팅 미리보기 -->
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;color:#888;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+          <i class="bi bi-chat-dots-fill text-success"></i> 실시간 채팅
+          <a href="/" style="margin-left:auto;font-size:0.72rem;color:var(--g);text-decoration:none;">채팅 참여하기</a>
+        </div>
+        <div style="background:#f8f9fa;border-radius:10px;padding:8px;">
+          {% for chat in recent_chats %}
+          <div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;">
+            <div class="msg-av">{{ chat.author.nickname|first|upper }}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:0.72rem;color:#888;">{{ chat.author.nickname }}</div>
+              <div style="font-size:0.8rem;color:#333;">{{ chat.message|truncatechars:40 }}</div>
+            </div>
+            <div style="font-size:0.68rem;color:#bbb;flex-shrink:0;">{{ chat.created_at|date:"H:i" }}</div>
+          </div>
+          {% empty %}
+          <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:10px;">
+            아직 채팅이 없어요. <a href="/" style="color:var(--g);">첫 메시지 남기기</a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- 봉사활동 일정 -->
+      {% if upcoming_volunteer %}
+      <div>
+        <div style="font-size:0.75rem;font-weight:700;color:#888;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+          <i class="bi bi-calendar-heart-fill text-danger"></i> 봉사활동 일정
+          <a href="/volunteer/" style="margin-left:auto;font-size:0.72rem;color:var(--g);text-decoration:none;">전체보기</a>
+        </div>
+        {% for ev in upcoming_volunteer %}
+        <a href="/volunteer/{{ ev.pk }}/" class="info-card" style="margin-bottom:4px;border-left:3px solid #e74c3c;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:0.78rem;font-weight:600;flex:1;">{{ ev.post.title|truncatechars:25 }}</span>
+            <span style="font-size:0.7rem;color:#e74c3c;">{{ ev.start_time|date:"m/d" }}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- 비로그인 가입 유도 -->
+      {% if not user.is_authenticated %}
+      <div style="background:linear-gradient(135deg,#1a7a4a,#2ecc71);border-radius:12px;padding:16px;text-align:center;color:#fff;">
+        <div style="font-size:1rem;font-weight:700;margin-bottom:6px;">해솔7단지 이웃이신가요?</div>
+        <div style="font-size:0.8rem;opacity:.9;margin-bottom:12px;">가입하고 이웃들과 소통해보세요!</div>
+        <div style="display:flex;gap:8px;justify-content:center;">
+          <a href="/accounts/signup/" style="background:#fff;color:var(--g);padding:7px 16px;border-radius:20px;font-size:0.8rem;font-weight:700;text-decoration:none;">회원가입</a>
+          <a href="/accounts/login/" style="background:rgba(255,255,255,.2);color:#fff;padding:7px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.4);">로그인</a>
         </div>
       </div>
       {% endif %}
-    </div>
 
-    <!-- 뷰: 1:1 쪽지 -->
-    <div class="chat-view hidden" id="view-dm">
-      <div class="scroll-view">
-        {% if user.is_authenticated %}
-          {% if all_users %}
-          <div style="font-size:0.8rem;color:#888;margin-bottom:12px;padding:0 2px;">이웃을 선택해 1:1 대화를 시작하세요.</div>
-          {% for u in all_users %}
-          <a href="/chat/dm/{{ u.id }}/" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid #f0f2f4;margin-bottom:6px;text-decoration:none;color:inherit;transition:border-color .15s,box-shadow .15s;" onmouseover="this.style.borderColor='#a8d5b8';this.style.boxShadow='0 2px 8px rgba(26,122,74,.08)'" onmouseout="this.style.borderColor='#f0f2f4';this.style.boxShadow='none'">
-            <div class="res-av" style="width:38px;height:38px;font-size:0.85rem;">{{ u.username|first|upper }}</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:600;font-size:0.85rem;">{{ u.username }}</div>
-              <div style="font-size:0.73rem;color:#999;">{{ u.unit_number|default:"입주민" }}</div>
-            </div>
-            <span style="font-size:0.75rem;color:var(--g);background:var(--gl);padding:4px 10px;border-radius:16px;font-weight:600;">쪽지 보내기</span>
-          </a>
-          {% endfor %}
-          {% else %}
-          <div class="empty-state">
-            <div class="empty-icon">✉️</div>
-            <div class="empty-title">아직 대화 상대가 없어요</div>
-            <div class="empty-desc">게시판에서 이웃의 글에 댓글을 달거나,<br>참여자 목록에서 이웃을 찾아 쪽지를 보내보세요!</div>
-            <a href="/boards/" class="empty-btn">게시판 둘러보기</a>
-          </div>
-          {% endif %}
-        {% else %}
-        <div class="empty-state">
-          <div class="empty-icon">🔒</div>
-          <div class="empty-title">로그인이 필요해요</div>
-          <div class="empty-desc">1:1 쪽지는 로그인 후 이용할 수 있어요.</div>
-          <a href="/accounts/login/" class="empty-btn">로그인하기</a>
-          <a href="/accounts/signup/" class="empty-btn-outline">회원가입</a>
-        </div>
-        {% endif %}
-      </div>
     </div>
-
-    <!-- 뷰: 소모임 채팅 -->
-    <div class="chat-view hidden" id="view-group">
-      <div class="scroll-view">
-        {% if user.is_authenticated %}
-          {% if my_groups %}
-          <div style="font-size:0.8rem;color:#888;margin-bottom:12px;padding:0 2px;">참여 중인 소모임의 채팅방에 입장하세요.</div>
-          {% for g in my_groups %}
-          <a href="/chat/group/{{ g.id }}/" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid #f0f2f4;margin-bottom:8px;text-decoration:none;color:inherit;transition:all .15s;" onmouseover="this.style.borderColor='#a8d5b8';this.style.boxShadow='0 2px 8px rgba(26,122,74,.08)'" onmouseout="this.style.borderColor='#f0f2f4';this.style.boxShadow='none'">
-            <div style="width:42px;height:42px;border-radius:12px;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">{{ g.name|first|upper }}</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;font-size:0.87rem;">{{ g.name }}</div>
-              <div style="font-size:0.73rem;color:#999;margin-top:1px;">{{ g.description|default:"소모임 채팅방"|truncatechars:30 }}</div>
-            </div>
-            <i class="fas fa-chevron-right" style="color:#ccc;font-size:0.75rem;flex-shrink:0;"></i>
-          </a>
-          {% endfor %}
-          {% else %}
-          <div class="empty-state">
-            <div class="empty-icon">🌱</div>
-            <div class="empty-title">아직 참여한 소모임이 없어요</div>
-            <div class="empty-desc">관심사가 같은 이웃과 소모임을 만들어보세요.<br>텃밭 가꾸기, 반려동물 산책, 운동 모임 등<br>다양한 소모임이 기다리고 있어요!</div>
-            <a href="/volunteer/" class="empty-btn">소모임 둘러보기</a>
-            <a href="/volunteer/" class="empty-btn-outline">만들기</a>
-          </div>
-          {% endif %}
-        {% else %}
-        <div class="empty-state">
-          <div class="empty-icon">🔒</div>
-          <div class="empty-title">로그인이 필요해요</div>
-          <div class="empty-desc">소모임 채팅은 로그인 후 이용할 수 있어요.</div>
-          <a href="/accounts/login/" class="empty-btn">로그인하기</a>
-        </div>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- 뷰: 참여자 목록 -->
-    <div class="chat-view hidden" id="view-members">
-      <div class="scroll-view">
-        <div style="font-size:0.8rem;color:#888;margin-bottom:12px;padding:0 2px;">{{ all_users|length }}명의 입주민이 함께하고 있어요.</div>
-        {% for u in all_users %}
-        <div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #f5f5f5;">
-          <div class="res-av" style="width:34px;height:34px;font-size:0.78rem;">{{ u.username|first|upper }}</div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:0.83rem;font-weight:600;">{{ u.username }}</div>
-            <div style="font-size:0.72rem;color:#999;">{{ u.unit_number|default:"입주민" }}</div>
-          </div>
-          {% if user.is_authenticated and u != user %}
-          <a href="/users/{{ u.id }}/" style="font-size:0.73rem;color:#888;background:#f0f2f4;padding:3px 10px;border-radius:14px;text-decoration:none;font-weight:600;white-space:nowrap;margin-right:4px;">프로필</a><a href="/chat/dm/{{ u.id }}/" style="font-size:0.73rem;color:var(--g);background:var(--gl);padding:3px 10px;border-radius:14px;text-decoration:none;font-weight:600;white-space:nowrap;">쪽지</a>
-          {% endif %}
-        </div>
-        {% empty %}
-        <div class="empty-state">
-          <div class="empty-icon">👥</div>
-          <div class="empty-title">입주민 정보가 없어요</div>
-          <div class="empty-desc">회원가입 후 이웃과 함께해요!</div>
-          <a href="/accounts/signup/" class="empty-btn">회원가입</a>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
   </div>
-
-  <!-- ③ 오른쪽: 정보 패널 -->
   <div class="panel panel-right">
     <div class="ph"><p class="ph-title"><i class="fas fa-th-large me-1" style="color:var(--g)"></i>정보 패널</p></div>
     <div class="pb">

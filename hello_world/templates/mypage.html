@@ -1,5 +1,36 @@
 {% extends 'base_3panel.html' %}
-{% block menu_home %}active{% endblock %}
+{% block menu_home %}active
+      <!-- 민원/건의 현황 -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="section-title mb-0">📢 내 민원/건의</div>
+            <a href="{% url 'complaint_list' %}" class="btn btn-outline-success btn-sm">전체보기</a>
+          </div>
+          {% if my_complaints %}
+          <div class="list-group list-group-flush">
+            {% for c in my_complaints %}
+            <a href="{% url 'complaint_detail' c.pk %}" class="list-group-item list-group-item-action px-0 py-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="small">
+                  {% if c.category %}<span class="badge bg-secondary me-1">{{ c.category.name }}</span>{% endif %}
+                  {{ c.title|truncatechars:30 }}
+                </div>
+                {% if c.status == 'received' %}<span class="badge bg-warning text-dark">접수됨</span>
+                {% elif c.status == 'reviewing' %}<span class="badge bg-info">검토중</span>
+                {% elif c.status == 'done' %}<span class="badge bg-success">완료</span>
+                {% else %}<span class="badge bg-danger">반려</span>{% endif %}
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted small mb-0">접수한 민원이 없어요. <a href="{% url 'complaint_create' %}">민원 접수하기 →</a></p>
+          {% endif %}
+        </div>
+      </div>
+
+{% endblock %}
 {% block title %}마이페이지{% endblock %}
 {% block extra_head %}
 <style>
@@ -97,6 +128,68 @@
     <div class="col-md-6">
 
       <!-- 배지 -->
+  <!-- 빠른 현황 대시보드 -->
+  <div class="row g-2 mb-3">
+    <div class="col-6">
+      <a href="{% url 'letter_inbox' %}" class="text-decoration-none">
+        <div class="card border-0 shadow-sm text-center py-2 h-100 {% if unread_letters %}border-primary border-2{% endif %}">
+          <div class="card-body p-2">
+            <i class="bi bi-envelope{% if unread_letters %}-fill text-primary{% endif %} fs-4"></i>
+            <div class="fw-bold mt-1">{{ unread_letters|default:0 }}</div>
+            <div class="small text-muted">미읽은 쪽지</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6">
+      <a href="{% url 'notification_list' %}" class="text-decoration-none">
+        <div class="card border-0 shadow-sm text-center py-2 h-100 {% if unread_noti %}border-warning border-2{% endif %}">
+          <div class="card-body p-2">
+            <i class="bi bi-bell{% if unread_noti %}-fill text-warning{% endif %} fs-4"></i>
+            <div class="fw-bold mt-1">{{ unread_noti|default:0 }}</div>
+            <div class="small text-muted">새 알림</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6">
+      <a href="{% url 'complaint_list' %}" class="text-decoration-none">
+        <div class="card border-0 shadow-sm text-center py-2 h-100">
+          <div class="card-body p-2">
+            <i class="bi bi-megaphone fs-4 text-success"></i>
+            <div class="fw-bold mt-1">{{ pending_complaints|default:0 }}</div>
+            <div class="small text-muted">처리중 민원</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-6">
+      <a href="{% url 'activity_list' %}" class="text-decoration-none">
+        <div class="card border-0 shadow-sm text-center py-2 h-100">
+          <div class="card-body p-2">
+            <i class="bi bi-star-fill text-warning fs-4"></i>
+            <div class="fw-bold mt-1">{{ total_points|default:0 }}</div>
+            <div class="small text-muted">마일리지</div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- 인증 상태 배너 -->
+  {% if not user.is_verified %}
+  <div class="alert alert-warning d-flex align-items-center gap-2 py-2 mb-3">
+    <i class="bi bi-patch-exclamation-fill"></i>
+    <div class="flex-grow-1 small">입주민 인증을 완료하면 더 많은 기능을 이용할 수 있어요.</div>
+    <a href="{% url 'verify_request' %}" class="btn btn-warning btn-sm">인증하기</a>
+  </div>
+  {% else %}
+  <div class="alert alert-success d-flex align-items-center gap-2 py-2 mb-3">
+    <i class="bi bi-patch-check-fill"></i>
+    <div class="small">인증된 입주민이에요! <strong>{{ user.dong }}동</strong> 거주 확인됨</div>
+  </div>
+  {% endif %}
+
       <div class="card border-0 shadow-sm mb-4">
         <div class="card-body p-4">
           <div class="section-title">🎖️ 내 배지</div>
