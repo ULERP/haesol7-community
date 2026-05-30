@@ -923,7 +923,6 @@ def dm_messages(request, user_id):
     partner = get_object_or_404(CustomUser, pk=user_id)
 
     if request.method == 'POST':
-    if request.method == 'POST':
         try:
             data = json.loads(request.body)
             msg = data.get('message', '').strip()
@@ -938,10 +937,11 @@ def dm_messages(request, user_id):
             dm.save()
         return JsonResponse({'status': 'ok', 'id': dm.id})
 
+    since_id = int(request.GET.get('since', 0))
+    msgs = DirectMessage.objects.filter(
         Q(sender=request.user, receiver=partner) | Q(sender=partner, receiver=request.user),
         id__gt=since_id, is_active=True
     ).select_related('sender').order_by('created_at')[:100]
-    # 읽음 처리
     DirectMessage.objects.filter(sender=partner, receiver=request.user, is_read=False).update(is_read=True)
     return JsonResponse({'messages': [
         {
@@ -955,6 +955,7 @@ def dm_messages(request, user_id):
             'is_read': m.is_read,
         } for m in msgs
     ]})
+
 
 def group_chat(request, group_id):
     if not request.user.is_authenticated:
