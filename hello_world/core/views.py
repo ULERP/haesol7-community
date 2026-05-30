@@ -923,7 +923,12 @@ def dm_messages(request, user_id):
     partner = get_object_or_404(CustomUser, pk=user_id)
 
     if request.method == 'POST':
-        msg = request.POST.get('message', '').strip()
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            msg = data.get('message', '').strip()
+        except Exception:
+            msg = request.POST.get('message', '').strip()
         image = request.FILES.get('image')
         if not msg and not image:
             return JsonResponse({'error': '내용 없음'}, status=400)
@@ -933,8 +938,6 @@ def dm_messages(request, user_id):
             dm.save()
         return JsonResponse({'status': 'ok', 'id': dm.id})
 
-    since_id = int(request.GET.get('since', 0))
-    msgs = DirectMessage.objects.filter(
         Q(sender=request.user, receiver=partner) | Q(sender=partner, receiver=request.user),
         id__gt=since_id, is_active=True
     ).select_related('sender').order_by('created_at')[:100]
