@@ -9,9 +9,9 @@
       <div class="fw-bold mb-1" style="color:#92400e;font-size:0.92rem;">
         <i class="bi bi-person-badge me-1"></i> 실명 가입 안내
       </div>
-      <div style="font-size:0.82rem;color:#78350f;line-height:1.6;">
-        본 서비스는 <strong>실명으로 가입</strong>하시되, 커뮤니티에서는 설정하신 <strong>닉네임</strong>으로 활동하게 됩니다.<br>
-        실명과 동/호수 정보는 입주민 확인 목적으로만 사용되며, 다른 이용자에게는 공개되지 않습니다.
+      <div style="font-size:0.82rem;color:#78350f;line-height:1.7;">
+        본 서비스는 <strong>실명으로 가입</strong>하시되, 커뮤니티에서는 설정하신 <strong>닉네임</strong>으로 활동합니다.<br>
+        실명·동호수·연락처는 입주민 확인 목적으로만 사용되며 외부에 공개되지 않습니다.
       </div>
     </div>
 
@@ -23,65 +23,37 @@
       <div class="card-body p-4">
         {% if messages %}
           {% for message in messages %}
-          <div class="alert alert-{{ message.tags }} py-2">{{ message }}</div>
+          <div class="alert alert-{{ message.tags }} py-2 mb-3">{{ message }}</div>
           {% endfor %}
         {% endif %}
 
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
-          <div class="row g-3">
 
-            <!-- 아이디 -->
+          <!-- STEP 1: 계정 정보 -->
+          <div class="fw-bold mb-3" style="font-size:0.82rem;color:#1a7a4a;letter-spacing:.03em;">
+            <span style="background:#1a7a4a;color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:0.72rem;margin-right:6px;">1</span>
+            계정 정보
+          </div>
+          <div class="row g-3 mb-4">
             <div class="col-12">
               <label class="form-label fw-semibold" style="font-size:0.85rem;">아이디 <span class="text-danger">*</span></label>
               <input type="text" name="username" class="form-control" placeholder="로그인에 사용할 아이디" required>
             </div>
-
-            <!-- 실명 + 닉네임 -->
             <div class="col-md-6">
               <label class="form-label fw-semibold" style="font-size:0.85rem;">
                 실명 <span class="text-danger">*</span>
-                <span class="text-muted fw-normal" style="font-size:0.75rem;">비공개</span>
+                <span class="text-muted fw-normal" style="font-size:0.73rem;">비공개</span>
               </label>
               <input type="text" name="real_name" class="form-control" placeholder="홍길동" required>
-              <div class="form-text" style="font-size:0.73rem;">입주민 인증 및 관리 목적으로만 사용</div>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold" style="font-size:0.85rem;">
                 닉네임 <span class="text-danger">*</span>
-                <span class="text-muted fw-normal" style="font-size:0.75rem;">커뮤니티 표시명</span>
+                <span class="text-muted fw-normal" style="font-size:0.73rem;">커뮤니티 표시명</span>
               </label>
               <input type="text" name="nickname" class="form-control" placeholder="이웃에게 보여질 이름" required>
-              <div class="form-text" style="font-size:0.73rem;">게시판·채팅에서 이 이름으로 활동해요</div>
             </div>
-
-            <!-- 동/호수 -->
-            <div class="col-md-4">
-              <label class="form-label fw-semibold" style="font-size:0.85rem;">동 <span class="text-danger">*</span></label>
-              <div class="input-group">
-                <input type="text" name="dong" class="form-control" placeholder="예: 7xx" required>
-                <span class="input-group-text">동</span>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label fw-semibold" style="font-size:0.85rem;">호수 <span class="text-danger">*</span></label>
-              <div class="input-group">
-                <input type="text" name="ho" class="form-control" placeholder="예: xxxx" required>
-                <span class="input-group-text">호</span>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label fw-semibold" style="font-size:0.85rem;">연락처</label>
-              <input type="text" name="phone" class="form-control" placeholder="010-0000-0000">
-            </div>
-
-            <!-- 이메일 -->
-            <div class="col-12">
-              <label class="form-label fw-semibold" style="font-size:0.85rem;">이메일</label>
-              <input type="email" name="email" class="form-control" placeholder="이메일 (선택)">
-            </div>
-
-            <!-- 비밀번호 -->
             <div class="col-md-6">
               <label class="form-label fw-semibold" style="font-size:0.85rem;">비밀번호 <span class="text-danger">*</span></label>
               <input type="password" name="password1" class="form-control" placeholder="비밀번호" required>
@@ -90,24 +62,63 @@
               <label class="form-label fw-semibold" style="font-size:0.85rem;">비밀번호 확인 <span class="text-danger">*</span></label>
               <input type="password" name="password2" class="form-control" placeholder="비밀번호 확인" required>
             </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">이메일</label>
+              <input type="email" name="email" class="form-control" placeholder="이메일 (선택)">
+            </div>
           </div>
 
-          <!-- 입주민 인증 안내 박스 -->
-          <div class="mt-4 p-3 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0;">
-            <div class="fw-bold mb-2" style="font-size:0.85rem;color:#166534;">
-              <i class="bi bi-patch-check me-1"></i> 입주민 인증 방법 (가입 후 진행)
+          <hr class="my-3">
+
+          <!-- STEP 2: 입주민 정보 -->
+          <div class="fw-bold mb-3" style="font-size:0.82rem;color:#1a7a4a;letter-spacing:.03em;">
+            <span style="background:#1a7a4a;color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:0.72rem;margin-right:6px;">2</span>
+            입주민 정보
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">동 <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="text" name="dong" class="form-control" placeholder="7xx" required>
+                <span class="input-group-text">동</span>
+              </div>
             </div>
-            <div class="d-flex gap-3">
-              <div class="flex-fill p-2 rounded-2 text-center" style="background:#fff;border:1px solid #d1fae5;">
-                <div style="font-size:1.3rem;">📄</div>
-                <div class="fw-semibold" style="font-size:0.78rem;color:#166534;margin-top:4px;">관리비 고지서</div>
-                <div style="font-size:0.72rem;color:#6b7280;margin-top:2px;">고지서 사진 업로드<br>→ 빠른 자동 승인</div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">호수 <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="text" name="ho" class="form-control" placeholder="xxxx" required>
+                <span class="input-group-text">호</span>
               </div>
-              <div class="flex-fill p-2 rounded-2 text-center" style="background:#fff;border:1px solid #d1fae5;">
-                <div style="font-size:1.3rem;">🏢</div>
-                <div class="fw-semibold" style="font-size:0.78rem;color:#166534;margin-top:4px;">관리사무소 방문</div>
-                <div style="font-size:0.72rem;color:#6b7280;margin-top:2px;">직접 방문하여<br>실명 인증 가능</div>
-              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">연락처</label>
+              <input type="text" name="phone" class="form-control" placeholder="010-0000-0000">
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <!-- STEP 3: 입주민 인증 -->
+          <div class="fw-bold mb-2" style="font-size:0.82rem;color:#1a7a4a;letter-spacing:.03em;">
+            <span style="background:#1a7a4a;color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:0.72rem;margin-right:6px;">3</span>
+            입주민 인증 <span class="text-muted fw-normal" style="font-size:0.73rem;">가입 후 관리자 승인 필요</span>
+          </div>
+
+          <div class="p-3 rounded-3 mb-3" style="background:#f8fafc;border:1px solid #e2e8f0;font-size:0.8rem;color:#4b5563;line-height:1.9;">
+            <i class="bi bi-info-circle me-1 text-success"></i>
+            관리자가 입주민 여부를 확인 후 승인합니다.<br>
+            • <strong>관리비 고지서 첨부 시</strong> → 동·호수·이름 확인 후 <strong style="color:#1a7a4a;">빠르게 승인</strong><br>
+            • <strong>고지서 없이 신청 시</strong> → 관리자가 관리사무소를 통해 거주 확인 후 승인<span style="color:#9ca3af;"> (다소 시간 소요)</span>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:0.85rem;">
+              관리비 고지서
+              <span class="text-muted fw-normal" style="font-size:0.73rem;">선택사항 — 첨부 시 빠른 승인</span>
+            </label>
+            <input type="file" name="verify_document" accept="image/*,.pdf" class="form-control" id="doc-file">
+            <div class="form-text" style="font-size:0.72rem;">
+              📌 동·호수·이름이 보이도록 촬영해주세요. 확인 후 즉시 삭제됩니다.
             </div>
           </div>
 
@@ -126,7 +137,6 @@
       </div>
     </div>
 
-    <!-- 개인정보 안내 -->
     <div class="mt-3 text-center" style="font-size:0.72rem;color:#9ca3af;line-height:1.6;">
       <i class="bi bi-shield-lock me-1"></i>
       실명·동호수·연락처는 암호화 저장되며 입주민 인증 외 목적으로 사용되지 않습니다.

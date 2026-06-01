@@ -212,7 +212,17 @@ def signup(request):
             phone_number=phone,
             email=email,
         )
-        messages.success(request, f'가입이 완료됐어요! {nickname}님, 환영합니다 🎉 로그인 후 입주민 인증을 진행해주세요.')
+        # 관리비 고지서 첨부 여부에 따라 인증 상태 설정
+        doc = request.FILES.get('verify_document')
+        if doc:
+            user.profile_image = doc
+            user.verified_note = '인증 대기중 [고지서 제출]'
+            user.save(update_fields=['profile_image', 'verified_note'])
+            messages.success(request, f'가입 신청 완료! {nickname}님 환영합니다 🎉 관리비 고지서를 확인 후 빠르게 승인됩니다.')
+        else:
+            user.verified_note = '인증 대기중'
+            user.save(update_fields=['verified_note'])
+            messages.success(request, f'가입 신청 완료! {nickname}님 환영합니다 🎉 관리자가 거주 여부 확인 후 승인됩니다. 다소 시간이 소요될 수 있습니다.')
         return redirect('login')
     return render(request, 'registration/signup.html')
 
