@@ -38,7 +38,7 @@
           {% if not user_is_verified %}
           <li class="nav-item"><a href="/verify/" class="nav-link d-flex align-items-center gap-1" style="font-size:0.75rem;color:#ffd700;background:rgba(255,215,0,.15);border-radius:8px;padding:3px 8px;border:1px solid rgba(255,215,0,.3);"><i class="bi bi-patch-exclamation"></i>인증필요</a></li>
           {% else %}
-          <li class="nav-item"><span class="nav-link" style="font-size:0.75rem;color:rgba(255,255,255,.6);"><i class="bi bi-patch-check-fill" style="color:#90EE90;"></i></span></li>
+          <li class="nav-item"><span class="nav-link" style="color:rgba(255,255,255,.6);"><i class="bi bi-patch-check-fill" style="color:#90EE90;"></i></span></li>
           {% endif %}
           <li class="nav-item">
             <a href="/notifications/" class="nav-link text-white position-relative" style="padding:5px 8px;">
@@ -46,13 +46,10 @@
               <span id="noti-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#ff4444;border-radius:50%;border:1.5px solid #1a7a4a;"></span>
             </a>
           </li>
-          {% if user.is_staff %}
-          <li class="nav-item"><a href="/admin/" class="nav-link text-white d-flex align-items-center gap-1" style="font-size:0.82rem;"><i class="fas fa-cog"></i><span class="d-lg-none">관리자</span></a></li>
-          {% endif %}
+          {% if user.is_staff %}<li class="nav-item"><a href="/admin/" class="nav-link text-white" style="font-size:0.82rem;"><i class="fas fa-cog"></i></a></li>{% endif %}
           <li class="nav-item dropdown">
-            <button class="btn d-flex align-items-center gap-1 dropdown-toggle" data-bs-toggle="dropdown" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;color:#fff;padding:4px 12px;font-size:0.82rem;font-weight:600;">
-              <i class="fas fa-user" style="font-size:0.78rem;"></i>
-              {{ user.nickname|default:user.username }}
+            <button class="btn dropdown-toggle" data-bs-toggle="dropdown" style="background:rgba(255,255,255,.15);border:none;border-radius:20px;color:#fff;padding:4px 12px;font-size:0.82rem;font-weight:600;">
+              <i class="fas fa-user" style="font-size:0.78rem;"></i> {{ user.nickname|default:user.username }}
               {% if user.is_verified %}<span style="font-size:0.7rem;opacity:.7;">{{ user.dong }}동</span>{% endif %}
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width:180px;border-radius:12px;">
@@ -60,10 +57,10 @@
                 <div class="fw-bold" style="font-size:0.85rem;">{{ user.nickname|default:user.username }}</div>
                 <div class="text-muted" style="font-size:0.72rem;">{% if user.is_verified %}{{ user.dong }}동 입주민 ✓{% else %}미인증{% endif %}</div>
               </div></li>
-              <li><a class="dropdown-item d-flex align-items-center gap-2" href="/mypage/"><i class="fas fa-home text-success"></i>마이페이지</a></li>
-              <li><a class="dropdown-item d-flex align-items-center gap-2" href="/mypage/edit/"><i class="fas fa-pen text-muted"></i>프로필 수정</a></li>
-              <li><a class="dropdown-item d-flex align-items-center gap-2" href="/letters/"><i class="fas fa-envelope text-primary"></i>쪽지함</a></li>
-              <li><a class="dropdown-item d-flex align-items-center gap-2" href="/verify/"><i class="bi bi-patch-check text-warning"></i>입주민 인증</a></li>
+              <li><a class="dropdown-item" href="/mypage/"><i class="fas fa-home text-success me-2"></i>마이페이지</a></li>
+              <li><a class="dropdown-item" href="/mypage/edit/"><i class="fas fa-pen text-muted me-2"></i>프로필 수정</a></li>
+              <li><a class="dropdown-item" href="/letters/"><i class="fas fa-envelope text-primary me-2"></i>쪽지함</a></li>
+              <li><a class="dropdown-item" href="/verify/"><i class="bi bi-patch-check text-warning me-2"></i>입주민 인증</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><div class="px-3 pb-2"><form method="post" action="/accounts/logout/">{% csrf_token %}<button type="submit" class="btn btn-outline-danger btn-sm w-100"><i class="fas fa-sign-out-alt me-1"></i>로그아웃</button></form></div></li>
             </ul>

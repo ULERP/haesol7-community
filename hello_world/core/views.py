@@ -678,14 +678,7 @@ def notification_list(request):
     ).update(is_read=True)
     return render(request, 'notification_list.html', {'notifications': notis})
 
-def notification_count(request):
-    from .models import Notification
-    count = 0
-    if request.user.is_authenticated:
-        count = Notification.objects.filter(
-            recipient=request.user, is_read=False
-        ).count()
-    return JsonResponse({'count': count})
+
 
 
 # ============================================================================
