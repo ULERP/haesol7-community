@@ -591,7 +591,7 @@ class DirectMessage(models.Model):
 class PublicChat(models.Model):
     """단지 전체 오픈 채팅방"""
     author    = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='public_chats')
-    message   = models.TextField()
+    message   = models.TextField(blank=True)
     image     = models.ImageField(upload_to='public_chat/', blank=True, null=True)
     is_pinned = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
