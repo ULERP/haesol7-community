@@ -209,13 +209,16 @@ async function fetchMsgs() {
   } catch(e) { console.error("fetchMsgs 오류:", e); }
 }
 
+let isSending = false;
 async function sendMsg() {
+  if (isSending) return;
   const inp = document.getElementById('msg-input');
   const imgInp = document.getElementById('img-input');
   const msg = inp?.value.trim();
   const hasImg = imgInp?.files[0];
   if (!msg && !hasImg) return;
 
+  isSending = true;
   const fd = new FormData();
   if (msg) fd.append('message', msg);
   if (hasImg) fd.append('image', imgInp.files[0]);
@@ -224,8 +227,12 @@ async function sendMsg() {
   if (inp) { inp.value = ''; inp.style.height = 'auto'; }
   removeImg();
 
-  await fetch(MSGS_URL, { method:'POST', body: fd });
-  fetchMsgs();
+  try {
+    await fetch(MSGS_URL, { method:'POST', body: fd });
+    fetchMsgs();
+  } finally {
+    isSending = false;
+  }
 }
 
 const inp = document.getElementById('msg-input');
@@ -236,11 +243,6 @@ if (inp) {
 
 if (IS_AUTH) { fetchMsgs(); setInterval(fetchMsgs, 3000); }
 window.CHAT_TYPE = 'public';
-window.CSRF = '{{ csrf_token }}';
-loadPolls();
-setInterval(loadPolls, 10000);
-window.CHAT_TYPE = 'public';
-window.CSRF = '{{ csrf_token }}';
 loadPolls();
 setInterval(loadPolls, 10000);
 
