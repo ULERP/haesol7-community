@@ -1,68 +1,137 @@
 {% extends 'base.html' %}
-{% block title %}회원가입{% endblock %}
+{% block title %}회원가입 — 해솔7 지킴이{% endblock %}
 {% block content %}
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-success text-white text-center py-3">
-          <h5 class="mb-0 fw-bold"><i class="fas fa-user-plus me-2"></i>해솔7지킴이 회원가입</h5>
-        </div>
-        <div class="card-body p-4">
-          <p class="text-muted small text-center mb-4">해솔마을7단지 입주민만 가입 가능합니다.<br>가입 후 관리자 승인이 필요합니다.</p>
-          {% if messages %}
+<div class="row justify-content-center py-4">
+  <div class="col-md-6 col-lg-5">
+
+    <!-- 실명 가입 안내 배너 -->
+    <div class="alert border-0 mb-4" style="background:#fffbeb;border-left:4px solid #f59e0b !important;border-radius:10px;padding:14px 16px;">
+      <div class="fw-bold mb-1" style="color:#92400e;font-size:0.92rem;">
+        <i class="bi bi-person-badge me-1"></i> 실명 가입 안내
+      </div>
+      <div style="font-size:0.82rem;color:#78350f;line-height:1.6;">
+        본 서비스는 <strong>실명으로 가입</strong>하시되, 커뮤니티에서는 설정하신 <strong>닉네임</strong>으로 활동하게 됩니다.<br>
+        실명과 동/호수 정보는 입주민 확인 목적으로만 사용되며, 다른 이용자에게는 공개되지 않습니다.
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0" style="border-radius:14px;overflow:hidden;">
+      <div class="card-header text-white text-center py-3" style="background:#1a7a4a;">
+        <h5 class="mb-0 fw-bold"><i class="fas fa-user-plus me-2"></i>해솔7 지킴이 회원가입</h5>
+        <div style="font-size:0.78rem;opacity:.85;margin-top:3px;">해솔마을 7단지 입주민 전용</div>
+      </div>
+      <div class="card-body p-4">
+        {% if messages %}
           {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          <div class="alert alert-{{ message.tags }} py-2">{{ message }}</div>
           {% endfor %}
-          {% endif %}
-          <form method="post">
-            {% csrf_token %}
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">아이디 <span class="text-danger">*</span></label>
-                <input type="text" name="username" class="form-control" placeholder="아이디" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">이름 <span class="text-danger">*</span></label>
-                <input type="text" name="real_name" class="form-control" placeholder="홍길동" required>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label fw-semibold">동 <span class="text-danger">*</span></label>
-                <input type="text" name="dong" class="form-control" placeholder="예: 101" required>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label fw-semibold">호수 <span class="text-danger">*</span></label>
-                <input type="text" name="ho" class="form-control" placeholder="예: 1234" required>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label fw-semibold">연락처</label>
-                <input type="text" name="phone" class="form-control" placeholder="010-0000-0000">
-              </div>
-              <div class="col-12">
-                <label class="form-label fw-semibold">이메일</label>
-                <input type="email" name="email" class="form-control" placeholder="이메일 (선택)">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">비밀번호 <span class="text-danger">*</span></label>
-                <input type="password" name="password1" class="form-control" placeholder="비밀번호" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">비밀번호 확인 <span class="text-danger">*</span></label>
-                <input type="password" name="password2" class="form-control" placeholder="비밀번호 확인" required>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+
+            <!-- 아이디 -->
+            <div class="col-12">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">아이디 <span class="text-danger">*</span></label>
+              <input type="text" name="username" class="form-control" placeholder="로그인에 사용할 아이디" required>
+            </div>
+
+            <!-- 실명 + 닉네임 -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">
+                실명 <span class="text-danger">*</span>
+                <span class="text-muted fw-normal" style="font-size:0.75rem;">비공개</span>
+              </label>
+              <input type="text" name="real_name" class="form-control" placeholder="홍길동" required>
+              <div class="form-text" style="font-size:0.73rem;">입주민 인증 및 관리 목적으로만 사용</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">
+                닉네임 <span class="text-danger">*</span>
+                <span class="text-muted fw-normal" style="font-size:0.75rem;">커뮤니티 표시명</span>
+              </label>
+              <input type="text" name="nickname" class="form-control" placeholder="이웃에게 보여질 이름" required>
+              <div class="form-text" style="font-size:0.73rem;">게시판·채팅에서 이 이름으로 활동해요</div>
+            </div>
+
+            <!-- 동/호수 -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">동 <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="text" name="dong" class="form-control" placeholder="예: 713" required>
+                <span class="input-group-text">동</span>
               </div>
             </div>
-            <div class="d-grid mt-4">
-              <button type="submit" class="btn btn-success btn-lg fw-bold">가입 신청하기</button>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">호수 <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="text" name="ho" class="form-control" placeholder="예: 1804" required>
+                <span class="input-group-text">호</span>
+              </div>
             </div>
-          </form>
-          <hr>
-          <div class="text-center">
-            <span class="text-muted small">이미 회원이신가요?</span>
-            <a href="/accounts/login/" class="text-success fw-semibold ms-2">로그인</a>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">연락처</label>
+              <input type="text" name="phone" class="form-control" placeholder="010-0000-0000">
+            </div>
+
+            <!-- 이메일 -->
+            <div class="col-12">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">이메일</label>
+              <input type="email" name="email" class="form-control" placeholder="이메일 (선택)">
+            </div>
+
+            <!-- 비밀번호 -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">비밀번호 <span class="text-danger">*</span></label>
+              <input type="password" name="password1" class="form-control" placeholder="비밀번호" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">비밀번호 확인 <span class="text-danger">*</span></label>
+              <input type="password" name="password2" class="form-control" placeholder="비밀번호 확인" required>
+            </div>
           </div>
+
+          <!-- 입주민 인증 안내 박스 -->
+          <div class="mt-4 p-3 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+            <div class="fw-bold mb-2" style="font-size:0.85rem;color:#166534;">
+              <i class="bi bi-patch-check me-1"></i> 입주민 인증 방법 (가입 후 진행)
+            </div>
+            <div class="d-flex gap-3">
+              <div class="flex-fill p-2 rounded-2 text-center" style="background:#fff;border:1px solid #d1fae5;">
+                <div style="font-size:1.3rem;">📄</div>
+                <div class="fw-semibold" style="font-size:0.78rem;color:#166534;margin-top:4px;">관리비 고지서</div>
+                <div style="font-size:0.72rem;color:#6b7280;margin-top:2px;">고지서 사진 업로드<br>→ 빠른 자동 승인</div>
+              </div>
+              <div class="flex-fill p-2 rounded-2 text-center" style="background:#fff;border:1px solid #d1fae5;">
+                <div style="font-size:1.3rem;">🏢</div>
+                <div class="fw-semibold" style="font-size:0.78rem;color:#166534;margin-top:4px;">관리사무소 방문</div>
+                <div style="font-size:0.72rem;color:#6b7280;margin-top:2px;">직접 방문하여<br>실명 인증 가능</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-lg fw-bold text-white" style="background:#1a7a4a;border-radius:10px;">
+              <i class="fas fa-user-plus me-2"></i>가입 신청하기
+            </button>
+          </div>
+        </form>
+
+        <hr class="my-3">
+        <div class="text-center">
+          <span class="text-muted small">이미 회원이신가요?</span>
+          <a href="/accounts/login/" class="fw-semibold ms-2" style="color:#1a7a4a;">로그인</a>
         </div>
       </div>
     </div>
+
+    <!-- 개인정보 안내 -->
+    <div class="mt-3 text-center" style="font-size:0.72rem;color:#9ca3af;line-height:1.6;">
+      <i class="bi bi-shield-lock me-1"></i>
+      실명·동호수·연락처는 암호화 저장되며 입주민 인증 외 목적으로 사용되지 않습니다.
+    </div>
+
   </div>
 </div>
 {% endblock %}

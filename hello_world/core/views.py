@@ -180,12 +180,13 @@ def custom_login(request):
 
 def signup(request):
     if request.method == 'POST':
-        username  = request.POST.get('username')
-        real_name = request.POST.get('real_name')
-        dong      = request.POST.get('dong')
-        ho        = request.POST.get('ho')
-        phone     = request.POST.get('phone', '')
-        email     = request.POST.get('email', '')
+        username  = request.POST.get('username', '').strip()
+        real_name = request.POST.get('real_name', '').strip()
+        nickname  = request.POST.get('nickname', '').strip()
+        dong      = request.POST.get('dong', '').strip()
+        ho        = request.POST.get('ho', '').strip()
+        phone     = request.POST.get('phone', '').strip()
+        email     = request.POST.get('email', '').strip()
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
         if password1 != password2:
@@ -194,15 +195,24 @@ def signup(request):
         if CustomUser.objects.filter(username=username).exists():
             messages.error(request, '이미 사용 중인 아이디입니다.')
             return render(request, 'registration/signup.html')
+        if nickname and CustomUser.objects.filter(nickname=nickname).exists():
+            messages.error(request, '이미 사용 중인 닉네임입니다.')
+            return render(request, 'registration/signup.html')
+        # 닉네임 미입력 시 아이디로 자동 설정
+        if not nickname:
+            nickname = username
         user = CustomUser.objects.create_user(
             username=username,
             password=password1,
+            first_name=real_name,
+            nickname=nickname,
+            dong=dong,
+            ho=ho,
             unit_number=f'{dong}동 {ho}호',
             phone_number=phone,
             email=email,
-            first_name=real_name,
         )
-        messages.success(request, '가입 완료! 로그인해주세요.')
+        messages.success(request, f'가입이 완료됐어요! {nickname}님, 환영합니다 🎉 로그인 후 입주민 인증을 진행해주세요.')
         return redirect('login')
     return render(request, 'registration/signup.html')
 
