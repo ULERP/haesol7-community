@@ -656,12 +656,11 @@ def notification_list(request):
 
 def notification_count(request):
     from .models import Notification
+    count = 0
     if request.user.is_authenticated:
-        count = Notification.objects.filter(
-            recipient=request.user, is_read=False
-        ).count()
-    else:
-        count = 0
+        noti = Notification.objects.filter(recipient=request.user, is_read=False).count()
+        dm = DirectMessage.objects.filter(receiver=request.user, is_read=False).count()
+        count = noti + dm
     return JsonResponse({'count': count})
 
 
@@ -741,9 +740,13 @@ def chatbot_ask(request):
     try:
         response = req.post(
             'https://api.anthropic.com/v1/messages',
-            headers={'Content-Type': 'application/json'},
+            headers={
+                'Content-Type': 'application/json',
+                'x-api-key': settings.ANTHROPIC_API_KEY,
+                'anthropic-version': '2023-06-01',
+            },
             json={
-                'model': 'claude-sonnet-4-20250514',
+                'model': 'claude-haiku-4-5-20251001',
                 'max_tokens': 1000,
                 'system': system_prompt,
                 'messages': [{'role': 'user', 'content': question}]
