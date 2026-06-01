@@ -380,12 +380,19 @@
     }
     function renderMsg(box, m) {
       const d = document.createElement('div');
+      d.id = 'msg-' + m.id;
       d.className = 'msg-row' + (m.is_me ? ' me' : '');
+      const imgHtml = m.image
+        ? `<div class="msg-img-wrap"><img class="msg-img" src="${m.image}" onclick="window.open('${m.image}','_blank')" alt="이미지"></div>`
+        : '';
+      const msgHtml = m.message
+        ? `<div class="msg-bbl">${esc(m.message)}</div>`
+        : '';
       d.innerHTML = `
         <div class="av av-sm" style="${m.is_me ? 'background:#a8d5b8;color:#1a7a4a;' : ''}">${esc(m.author.charAt(0).toUpperCase())}</div>
         <div class="msg-inner">
           <div class="msg-name">${esc(m.author)}${m.unit ? ' · ' + esc(m.unit) : ''}</div>
-          <div class="msg-bbl">${esc(m.message)}</div>
+          ${imgHtml}${msgHtml}
           <div class="msg-time">${m.time}</div>
         </div>`;
       box.appendChild(d);
