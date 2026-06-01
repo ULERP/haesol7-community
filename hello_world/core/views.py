@@ -251,7 +251,7 @@ def mypage(request):
     unread_letters   = Letter.objects.filter(receiver=user, is_read=False, receiver_deleted=False).count()
     my_complaints    = Complaint.objects.filter(author=user).order_by('-created_at')[:3]
     pending_complaints = Complaint.objects.filter(author=user, status__in=['received','reviewing']).count()
-    unread_noti      = Notification.objects.filter(user=user, is_read=False).count()
+    unread_noti      = Notification.objects.filter(recipient=user, is_read=False).count()
     week_ago         = timezone.now() - timedelta(days=7)
     recent_posts     = Post.objects.filter(author=user, created_at__gte=week_ago).count()
 
