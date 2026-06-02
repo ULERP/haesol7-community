@@ -58,7 +58,7 @@
   .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; }
   .mob-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center; z-index:1; }
   .mob-hero-overlay { position:absolute; inset:0; z-index:2;
-    background: linear-gradient(to right, rgba(0,0,0,.45) 0%, rgba(0,0,0,.2) 55%, rgba(26,122,74,.85) 75%, #1a7a4a 100%); }
+    background: linear-gradient(to bottom, rgba(0,0,0,.3) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.5) 100%); }
   .mob-hero-deco { display:none; }
   .mob-hero-content { position:relative; z-index:3; padding:22px 16px 18px; }
   .mob-hero-greeting { font-size:0.78rem; color:rgba(255,255,255,.9); margin-bottom:2px; }
@@ -180,9 +180,8 @@
     <div class="feed">
 
       <!-- 단지 헤더 배너 -->
-      <!-- 모바일 히어로 (스크롤시 사라짐) -->
+      <!-- 모바일 히어로+퀵메뉴 통합 영역 -->
       <div class="mob-hero-wrap" id="mobHero" style="display:none;">
-        <div class="mob-hero-deco"></div>
         <div class="mob-hero-bg" id="mobHeroBg" style="background-color:#1a7a4a;{% if hero_image %}background-image:url('{{ hero_image }}');{% endif %}"></div>
         <div class="mob-hero-overlay"></div>
         <div class="mob-hero-content">
@@ -195,6 +194,17 @@
           <div class="mob-hero-name">지킴이 커뮤니티</div>
           <span class="mob-hero-badge">함께 만드는 우리 단지</span>
           {% endif %}
+          <!-- 모바일 퀵메뉴 (히어로 안으로 이동) -->
+          <div class="mob-icon-grid">
+            <a href="/chat/public/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-comments"></i></div><span>전체채팅</span></a>
+            <a href="/boards/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-clipboard-list"></i></div><span>게시판</span></a>
+            <a href="/notices/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-bell"></i></div><span>공지</span></a>
+            <a href="/complaints/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="bi bi-megaphone"></i></div><span>민원·건의</span></a>
+            <a href="/surveys/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-poll"></i></div><span>설문</span></a>
+            <a href="/volunteer/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-calendar-alt"></i></div><span>봉사</span></a>
+            <a href="/groups/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-users"></i></div><span>소모임</span></a>
+            <a href="/community/docs/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-file-alt"></i></div><span>단지정보</span></a>
+          </div>
         </div>
       </div>
 
