@@ -56,7 +56,7 @@
 
   /* 히어로 스크롤 효과 */
   .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; min-height:280px; }
-  .mob-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center bottom; z-index:1; }
+  .mob-hero-bg { position:absolute; top:0; left:0; right:0; height:72%; background-size:cover; background-position:center; z-index:1; }
   .mob-hero-overlay { position:absolute; inset:0; z-index:2;
     background: linear-gradient(to bottom, rgba(0,0,0,.3) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.5) 100%); }
   .mob-hero-deco { display:none; }
@@ -205,15 +205,19 @@
           <span class="mob-hero-badge">함께 만드는 우리 단지</span>
           {% endif %}
           <!-- 모바일 퀵메뉴 (히어로 안으로 이동) -->
-          <div class="mob-icon-grid">
-            <a href="/chat/public/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-comments"></i></div><span>전체채팅</span></a>
-            <a href="/boards/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-clipboard-list"></i></div><span>게시판</span></a>
-            <a href="/notices/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-bell"></i></div><span>공지</span></a>
-            <a href="/complaints/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="bi bi-megaphone"></i></div><span>민원·건의</span></a>
-            <a href="/surveys/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-poll"></i></div><span>설문</span></a>
-            <a href="/volunteer/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-calendar-alt"></i></div><span>봉사</span></a>
-            <a href="/groups/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-users"></i></div><span>소모임</span></a>
-            <a href="/community/docs/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-file-alt"></i></div><span>단지정보</span></a>
+          <div class="mob-icon-grid-wrap">
+            <div class="mob-icon-row1">
+              <a href="/chat/public/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-comments"></i></div><span>전체채팅</span></a>
+              <a href="/boards/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-clipboard-list"></i></div><span>게시판</span></a>
+              <a href="/notices/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-bell"></i></div><span>공지</span></a>
+              <a href="/complaints/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="bi bi-megaphone"></i></div><span>민원·건의</span></a>
+            </div>
+            <div class="mob-icon-row2">
+              <a href="/surveys/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-poll"></i></div><span>설문</span></a>
+              <a href="/volunteer/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-calendar-alt"></i></div><span>봉사</span></a>
+              <a href="/groups/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-users"></i></div><span>소모임</span></a>
+              <a href="/community/docs/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-file-alt"></i></div><span>단지정보</span></a>
+            </div>
           </div>
         </div>
       </div>
