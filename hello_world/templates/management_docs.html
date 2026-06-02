@@ -1,0 +1,69 @@
+{% extends "base_3panel.html" %}
+{% block title %}관리 문서 게시판{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">📂 관리 문서 게시판</h4>
+  {% if user.is_staff or user.grade >= 4 %}
+  <a href="{% url 'management_doc_upload' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg"></i> 문서 등록
+  </a>
+  {% endif %}
+</div>
+
+<!-- 검색/필터 -->
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-3">
+    <select name="category" class="form-select form-select-sm">
+      <option value="">전체 카테고리</option>
+      {% for cat in categories %}
+      <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-7">
+    <input type="text" name="q" value="{{ query }}" class="form-control form-control-sm" placeholder="제목 또는 내용 검색...">
+  </div>
+  <div class="col-md-2">
+    <button type="submit" class="btn btn-outline-primary btn-sm w-100">검색</button>
+  </div>
+</form>
+
+<!-- 카테고리 배지 필터 -->
+<div class="mb-3 d-flex flex-wrap gap-2">
+  <a href="{% url 'management_docs' %}" class="badge {% if not selected_category %}bg-primary{% else %}bg-secondary{% endif %} text-decoration-none fs-6">전체</a>
+  {% for cat in categories %}
+  <a href="?category={{ cat }}" class="badge {% if cat == selected_category %}bg-primary{% else %}bg-secondary{% endif %} text-decoration-none fs-6">{{ cat }}</a>
+  {% endfor %}
+</div>
+
+<!-- 문서 목록 -->
+{% if docs %}
+<div class="list-group">
+  {% for doc in docs %}
+  <a href="{% url 'management_doc_detail' doc.pk %}" class="list-group-item list-group-item-action">
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <span class="badge bg-info text-dark me-2">{{ doc.category }}</span>
+        <strong>{{ doc.title }}</strong>
+        {% if doc.file %}
+        <i class="bi bi-paperclip text-muted ms-1" title="첨부파일 있음"></i>
+        {% endif %}
+      </div>
+      <div class="text-end text-muted small">
+        <div>{{ doc.created_at|date:"Y.m.d" }}</div>
+        <div><i class="bi bi-eye"></i> {{ doc.view_count }}</div>
+      </div>
+    </div>
+    {% if doc.content %}
+    <p class="mb-0 mt-1 text-muted small text-truncate">{{ doc.content|truncatechars:80 }}</p>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+  <i class="bi bi-folder2-open fs-1 d-block mb-2"></i>
+  {% if query %}검색 결과가 없습니다.{% else %}등록된 문서가 없습니다.{% endif %}
+</div>
+{% endif %}
+{% endblock %}

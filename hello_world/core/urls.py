@@ -109,4 +109,10 @@ urlpatterns = [
     path('notices/', views_complaint.notice_list, name='notice_list'),
     path('notices/create/', views_complaint.notice_create, name='notice_create'),
     path('notices/<int:pk>/delete/', views_complaint.notice_delete, name='notice_delete'),
+
+    # 관리 문서 게시판
+    path('docs/', views.management_docs, name='management_docs'),
+    path('docs/<int:pk>/', views.management_doc_detail, name='management_doc_detail'),
+    path('docs/upload/', views.management_doc_upload, name='management_doc_upload'),
+    path('docs/<int:pk>/delete/', views.management_doc_delete, name='management_doc_delete'),
 ]

@@ -1,0 +1,47 @@
+{% extends "base_3panel.html" %}
+{% block title %}문서 등록{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="{% url 'management_docs' %}" class="btn btn-outline-secondary btn-sm me-3">← 목록</a>
+  <h4 class="mb-0">📄 관리 문서 등록</h4>
+</div>
+
+{% if messages %}
+{% for msg in messages %}
+<div class="alert alert-{{ msg.tags }} alert-dismissible fade show">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+{% endfor %}
+{% endif %}
+
+<div class="card">
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label fw-bold">카테고리 <span class="text-danger">*</span></label>
+        <select name="category" class="form-select" required>
+          {% for value, label in categories %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">제목 <span class="text-danger">*</span></label>
+        <input type="text" name="title" class="form-control" placeholder="문서 제목을 입력하세요" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">내용</label>
+        <textarea name="content" class="form-control" rows="8" placeholder="문서 내용을 입력하세요 (선택사항)"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-bold">첨부파일 (PDF, 문서 등)</label>
+        <input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.hwp,.xlsx,.xls,.ppt,.pptx">
+        <div class="form-text">PDF, Word, 한글, Excel, PowerPoint 파일 가능</div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i>등록</button>
+        <a href="{% url 'management_docs' %}" class="btn btn-outline-secondary">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -602,29 +602,6 @@ def search(request):
         results = Post.objects.filter(
             is_active=True
         ).filter(
-            models.Q(title__icontains=query) |
-            models.Q(content__icontains=query) |
-            models.Q(tag__icontains=query)
-        ).order_by('-created_at')
-    return render(request, 'search.html', {
-        'query': query,
-        'results': results,
-        'count': len(results) if results else 0,
-    })
-
-
-# ============================================================================
-# 검색
-# ============================================================================
-from django.db.models import Q
-
-def search(request):
-    query = request.GET.get('q', '').strip()
-    results = []
-    if query:
-        results = Post.objects.filter(
-            is_active=True
-        ).filter(
             Q(title__icontains=query) |
             Q(content__icontains=query) |
             Q(tag__icontains=query)
@@ -636,27 +613,6 @@ def search(request):
     })
 
 
-# ============================================================================
-# 검색
-# ============================================================================
-from django.db.models import Q
-
-def search(request):
-    query = request.GET.get('q', '').strip()
-    results = []
-    if query:
-        results = Post.objects.filter(
-            is_active=True
-        ).filter(
-            Q(title__icontains=query) |
-            Q(content__icontains=query) |
-            Q(tag__icontains=query)
-        ).order_by('-created_at')
-    return render(request, 'search.html', {
-        'query': query,
-        'results': results,
-        'count': results.count() if query else 0,
-    })
 
 
 # ============================================================================
@@ -818,8 +774,66 @@ def management_docs(request):
 def management_doc_detail(request, pk):
     from .models import ManagementDocument
     doc = get_object_or_404(ManagementDocument, pk=pk, is_active=True)
-    return render(request, 'management_doc_detail.html', {'doc': doc})
+    ManagementDocument.objects.filter(pk=pk).update(view_count=models.F('view_count') + 1)
+    doc.refresh_from_db()
+    related = ManagementDocument.objects.filter(
+        category=doc.category, is_active=True
+    ).exclude(pk=pk).order_by('-created_at')[:5]
+    return render(request, 'management_doc_detail.html', {'doc': doc, 'related': related})
 
+
+
+
+# ============================================================
+# 관리 문서 게시판 - 업로드/삭제
+# ============================================================
+@login_required
+def management_doc_upload(request):
+    from .models import ManagementDocument
+    if not (request.user.is_staff or get_user_grade(request.user) >= 4):
+        from django.contrib import messages
+        messages.error(request, '운영진 이상만 문서를 등록할 수 있습니다.')
+        return redirect('management_docs')
+    if request.method == 'POST':
+        title    = request.POST.get('title', '').strip()
+        category = request.POST.get('category', '기타')
+        content_text = request.POST.get('content', '').strip()
+        file     = request.FILES.get('file')
+        if not title:
+            from django.contrib import messages
+            messages.error(request, '제목을 입력해 주세요.')
+            return redirect('management_doc_upload')
+        doc = ManagementDocument.objects.create(
+            title=title,
+            category=category,
+            content=content_text,
+            author=request.user,
+        )
+        if file:
+            doc.file = file
+            doc.save()
+        from django.contrib import messages
+        messages.success(request, f'"{title}" 문서가 등록되었습니다.')
+        return redirect('management_doc_detail', pk=doc.pk)
+    categories = ManagementDocument.CATEGORY_CHOICES
+    return render(request, 'management_doc_upload.html', {'categories': categories})
+
+@login_required
+def management_doc_delete(request, pk):
+    from .models import ManagementDocument
+    doc = get_object_or_404(ManagementDocument, pk=pk)
+    if not (request.user.is_staff or request.user == doc.author):
+        from django.contrib import messages
+        messages.error(request, '삭제 권한이 없습니다.')
+        return redirect('management_doc_detail', pk=pk)
+    if request.method == 'POST':
+        title = doc.title
+        doc.is_active = False
+        doc.save()
+        from django.contrib import messages
+        messages.success(request, f'"{title}" 문서가 삭제되었습니다.')
+        return redirect('management_docs')
+    return render(request, 'management_doc_delete_confirm.html', {'doc': doc})
 
 # =====================================================
 # 채팅 시스템

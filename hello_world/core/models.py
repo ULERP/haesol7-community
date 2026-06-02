@@ -360,9 +360,20 @@ class ChatHistory(models.Model):
 
 
 class ManagementDocument(models.Model):
+    CATEGORY_CHOICES = [
+        ('공지',   '공지사항'),
+        ('규정',   '규정/내규'),
+        ('회의록', '회의록'),
+        ('예산',   '예산/결산'),
+        ('계획',   '연간계획'),
+        ('기타',   '기타'),
+    ]
     title      = models.CharField('제목', max_length=200)
-    content    = models.TextField('내용')
-    category   = models.CharField('카테고리', max_length=50)
+    content    = models.TextField('내용', blank=True)
+    category   = models.CharField('카테고리', max_length=50, choices=CATEGORY_CHOICES, default='기타')
+    file       = models.FileField('첨부파일', upload_to='docs/', blank=True, null=True)
+    author     = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='작성자')
+    view_count = models.PositiveIntegerField('조회수', default=0)
     embeddings = models.JSONField('임베딩', blank=True, null=True)
     is_active  = models.BooleanField('활성화', default=True)
     created_at = models.DateTimeField('등록일', auto_now_add=True)

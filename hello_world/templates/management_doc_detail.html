@@ -1,0 +1,63 @@
+{% extends "base_3panel.html" %}
+{% block title %}{{ doc.title }}{% endblock %}
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'management_docs' %}">관리 문서</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'management_docs' %}?category={{ doc.category }}">{{ doc.category }}</a></li>
+    <li class="breadcrumb-item active">{{ doc.title|truncatechars:30 }}</li>
+  </ol>
+</nav>
+
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <span class="badge bg-info text-dark me-2">{{ doc.category }}</span>
+      <strong class="fs-5">{{ doc.title }}</strong>
+    </div>
+    {% if user.is_staff or user == doc.author %}
+    <div class="d-flex gap-2">
+      <form method="post" action="{% url 'management_doc_delete' doc.pk %}" onsubmit="return confirm('삭제할까요?')">
+        {% csrf_token %}
+        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> 삭제</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <div class="text-muted small mb-3 d-flex gap-3">
+      <span><i class="bi bi-calendar3"></i> {{ doc.created_at|date:"Y년 m월 d일" }}</span>
+      {% if doc.author %}<span><i class="bi bi-person"></i> {{ doc.author.nickname|default:doc.author.username }}</span>{% endif %}
+      <span><i class="bi bi-eye"></i> {{ doc.view_count }}회</span>
+    </div>
+    {% if doc.content %}
+    <div class="border-top pt-3" style="white-space:pre-wrap; line-height:1.8;">{{ doc.content }}</div>
+    {% endif %}
+  </div>
+  {% if doc.file %}
+  <div class="card-footer">
+    <i class="bi bi-paperclip me-1"></i>
+    <a href="{{ doc.file.url }}" target="_blank" class="text-decoration-none">
+      {{ doc.file.name|cut:"docs/" }} 다운로드
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- 관련 문서 -->
+{% if related %}
+<h6 class="text-muted mb-2">같은 카테고리 문서</h6>
+<div class="list-group list-group-flush">
+  {% for r in related %}
+  <a href="{% url 'management_doc_detail' r.pk %}" class="list-group-item list-group-item-action py-2">
+    <small class="text-muted">{{ r.created_at|date:"y.m.d" }}</small>
+    <span class="ms-2">{{ r.title }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="mt-3">
+  <a href="{% url 'management_docs' %}" class="btn btn-outline-secondary btn-sm">← 목록으로</a>
+</div>
+{% endblock %}
