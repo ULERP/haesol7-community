@@ -252,4 +252,32 @@
   </div>
 
 </div>
+
+<!-- 모바일 하단 탭바 -->
+<nav style="display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid #e5e7eb;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,.06);" id="mob-tabbar">
+  <div style="display:flex;height:100%;">
+    <a href="/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
+      <i class="fas fa-home" style="font-size:1.2rem;"></i><span>홈</span>
+    </a>
+    <a href="/chat/public/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
+      <i class="fas fa-comments" style="font-size:1.2rem;"></i><span>소통</span>
+    </a>
+    <a href="/boards/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
+      <i class="fas fa-clipboard-list" style="font-size:1.2rem;"></i><span>게시판</span>
+    </a>
+    <a href="/volunteer/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
+      <i class="fas fa-calendar-alt" style="font-size:1.2rem;"></i><span>봉사</span>
+    </a>
+    <a href="/mypage/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
+      <i class="fas fa-user" style="font-size:1.2rem;"></i><span>내 정보</span>
+    </a>
+  </div>
+</nav>
+<style>
+@media (max-width:1024px) {
+  #mob-tabbar { display:block !important; }
+  .panel-center { padding-bottom: 70px !important; }
+}
+</style>
+
 {% endblock %}
