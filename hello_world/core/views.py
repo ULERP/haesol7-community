@@ -143,8 +143,8 @@ def index(request):
         month_end   = (month_start + timedelta(days=32)).replace(day=1)
         count = ActivityProof.objects.filter(
             status='approved',
-            created_at__gte=month_start,
-            created_at__lt=month_end
+            submitted_at__gte=month_start,
+            submitted_at__lt=month_end
         ).count()
         monthly_stats.append({'month': month_start.strftime('%m월'), 'count': count})
 
