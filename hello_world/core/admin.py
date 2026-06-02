@@ -429,7 +429,21 @@ class CalendarEventAdmin(admin.ModelAdmin):
 
 @admin.register(SiteConfig)
 class SiteConfigAdmin(admin.ModelAdmin):
-    list_display = ['site_name', 'hero_color', 'updated_at']
+    list_display  = ['site_name', 'hero_color', 'updated_at']
+    fields        = ['site_name', 'hero_color', 'hero_image']
+    readonly_fields = ['updated_at']
 
     def has_add_permission(self, request):
         return not SiteConfig.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        # 목록 대신 바로 편집 페이지로 이동
+        obj, _ = SiteConfig.objects.get_or_create(id=1)
+        from django.http import HttpResponseRedirect
+        from django.urls import reverse
+        return HttpResponseRedirect(
+            reverse('admin:core_siteconfig_change', args=[obj.pk])
+        )
