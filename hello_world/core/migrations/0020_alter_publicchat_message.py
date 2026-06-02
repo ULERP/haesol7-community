@@ -3,7 +3,7 @@ import django.db.models.fields
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('core', '0019_alter_complaint_options_alter_letter_options_and_more'),
+        ('core', '0019_complaintcategory_noticecategory_and_more'),
     ]
     operations = [
         migrations.AlterField(
