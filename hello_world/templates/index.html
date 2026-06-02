@@ -55,7 +55,7 @@
   .feed-section:nth-child(even) { background:#f0f7f3; border-top:1px solid #e8f2ec; border-bottom:1px solid #e8f2ec; }
 
   /* 히어로 스크롤 효과 */
-  .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; }
+  .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; min-height:280px; }
   .mob-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center; z-index:1; }
   .mob-hero-overlay { position:absolute; inset:0; z-index:2;
     background: linear-gradient(to bottom, rgba(0,0,0,.3) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.5) 100%); }
@@ -75,6 +75,12 @@
   @media (min-width:769px) {
     .mob-hero-wrap { display:none; }
   }
+  /* 모바일 히어로 내 퀵메뉴 */
+  .mob-icon-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:16px; padding:0 2px; }
+  .mob-icon-btn { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none; color:#fff; font-size:0.68rem; font-weight:600; }
+  .mob-icon-circle { width:46px; height:46px; border-radius:14px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center; transition:background .15s; }
+  .mob-icon-circle i { font-size:1.3rem; color:#fff; }
+  .mob-icon-btn:active .mob-icon-circle { background:rgba(255,255,255,.35); }
   .sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
   .sec-title { font-size:0.82rem; font-weight:700; color:#222; display:flex; align-items:center; gap:5px; }
   .sec-more { font-size:0.72rem; color:var(--g); text-decoration:none; font-weight:600; }
