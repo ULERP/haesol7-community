@@ -75,16 +75,15 @@
   @media (min-width:769px) {
     .mob-hero-wrap { display:none; }
   }
-  .mob-icon-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:16px; padding:0 2px; }
-  .mob-icon-btn { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none; color:#fff; font-size:0.68rem; font-weight:600; }
-  .mob-icon-circle { width:46px; height:46px; border-radius:14px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center; }
-  .mob-icon-circle i { font-size:1.3rem; color:#fff; }
-  /* 모바일 히어로 내 퀵메뉴 */
-  .mob-icon-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:16px; padding:0 2px; }
-  .mob-icon-btn { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none; color:#fff; font-size:0.68rem; font-weight:600; }
-  .mob-icon-circle { width:46px; height:46px; border-radius:14px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center; transition:background .15s; }
-  .mob-icon-circle i { font-size:1.3rem; color:#fff; }
-  .mob-icon-btn:active .mob-icon-circle { background:rgba(255,255,255,.35); }
+  /* 모바일 히어로 퀵메뉴 */
+  .mob-icon-grid-wrap { border-radius:16px; overflow:hidden; margin-top:12px; }
+  .mob-icon-row1 { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:10px 8px 8px; background:rgba(0,0,0,.25); }
+  .mob-icon-row2 { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:12px 8px 14px; background:#166b3f; position:relative; }
+  .mob-icon-row2::before { content:''; position:absolute; top:-10px; left:0; right:0; height:20px; background:#166b3f; clip-path:polygon(0 100%, 100% 0, 100% 100%); }
+  .mob-icon-btn { display:flex; flex-direction:column; align-items:center; gap:4px; text-decoration:none; color:#fff; font-size:0.66rem; font-weight:600; }
+  .mob-icon-circle { width:44px; height:44px; border-radius:13px; background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.35); display:flex; align-items:center; justify-content:center; transition:background .15s; }
+  .mob-icon-circle i { font-size:1.25rem; color:#fff; }
+  .mob-icon-btn:active .mob-icon-circle { background:rgba(255,255,255,.4); }
   .sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
   .sec-title { font-size:0.82rem; font-weight:700; color:#222; display:flex; align-items:center; gap:5px; }
   .sec-more { font-size:0.72rem; color:var(--g); text-decoration:none; font-weight:600; }
