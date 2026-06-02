@@ -258,19 +258,19 @@
 <nav id="mob-tabbar" style="display:none;position:fixed;bottom:0;left:0;right:0;height:64px;background:#fff;border-top:1px solid #e5e7eb;z-index:200;box-shadow:0 -2px 16px rgba(0,0,0,.08);">
   <div style="display:flex;height:100%;max-width:480px;margin:0 auto;">
     <a href="/" class="mob-tab {% block tab_home %}{% endblock %}" data-path="/">
-      <i class="fas fa-home"></i><span>홈</span>
+      <div class="mob-tab-icon"><i class="fas fa-home"></i></div><span>홈</span>
     </a>
     <a href="/chat/public/" class="mob-tab {% block tab_social %}{% endblock %}" data-path="/chat/">
-      <i class="fas fa-comments"></i><span>소통하기</span>
+      <div class="mob-tab-icon"><i class="fas fa-comments"></i></div><span>소통하기</span>
     </a>
     <a href="/boards/" class="mob-tab {% block tab_news %}{% endblock %}" data-path="/boards/">
-      <i class="fas fa-newspaper"></i><span>단지소식</span>
+      <div class="mob-tab-icon"><i class="fas fa-bell"></i></div><span>단지소식</span>
     </a>
     <a href="/volunteer/" class="mob-tab {% block tab_together %}{% endblock %}" data-path="/volunteer/">
-      <i class="fas fa-hands-helping"></i><span>함께하기</span>
+      <div class="mob-tab-icon"><i class="fas fa-hands-helping"></i></div><span>함께하기</span>
     </a>
     <a href="/mypage/" class="mob-tab {% block tab_more %}{% endblock %}" data-path="/mypage/">
-      <i class="fas fa-bars"></i><span>더보기</span>
+      <div class="mob-tab-icon"><i class="fas fa-user"></i></div><span>내 정보</span>
     </a>
   </div>
 </nav>
@@ -281,18 +281,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   text-decoration: none;
   color: #9ca3af;
-  font-size: 0.58rem;
+  font-size: 0.56rem;
   font-weight: 600;
-  padding: 6px 2px;
+  padding: 6px 2px 4px;
   transition: color .15s;
-  border-top: 2px solid transparent;
+  position: relative;
 }
-.mob-tab i { font-size: 1.25rem; }
+.mob-tab-icon {
+  width: 36px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  transition: background .15s;
+}
+.mob-tab i { font-size: 1.2rem; }
+.mob-tab.active .mob-tab-icon { background: #e8f5ee; }
 .mob-tab.active, .mob-tab:hover { color: var(--g); }
-.mob-tab.active { border-top-color: var(--g); }
+.mob-tab.active i { color: var(--g); }
 @media (max-width:1024px) {
   #mob-tabbar { display:flex !important; align-items:stretch; }
   .panel-center { padding-bottom: 74px !important; }

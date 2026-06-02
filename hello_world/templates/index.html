@@ -38,15 +38,21 @@
   .complex-name { font-size:1.15rem; font-weight:700; color:#fff; margin:0; line-height:1.3; }
   .complex-sub { font-size:0.75rem; color:rgba(255,255,255,.8); margin-top:3px; }
   .complex-badge { position:absolute; top:12px; right:12px; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.35); border-radius:20px; padding:4px 10px; font-size:0.72rem; color:#fff; font-weight:600; }
-  .icon-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:12px; flex-shrink:0; border-bottom:1px solid #f0f2f4; }
-  .icon-btn { display:flex; flex-direction:column; align-items:center; gap:5px; padding:11px 6px; border-radius:12px; text-decoration:none; color:#374151; font-size:0.72rem; font-weight:600; background:#ffffff; border:1px solid #e5e7eb; cursor:pointer; position:relative; transition:all .15s; box-shadow:0 1px 3px rgba(0,0,0,.04); }
-  .icon-btn:hover { background:var(--gl,#f0fdf7); color:var(--g,#1a7a4a); border-color:var(--gb,#c6e8d8); box-shadow:0 2px 8px rgba(26,122,74,.12); transform:translateY(-1px); }
-  .icon-btn i { font-size:1.4rem; color:var(--g); }
-  .icon-btn .bdot { position:absolute; top:7px; right:calc(50% - 16px); background:#e53935; color:#fff; border-radius:10px; font-size:0.58rem; font-weight:700; padding:1px 5px; min-width:14px; text-align:center; }
+  .icon-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:14px 12px; flex-shrink:0; border-bottom:1px solid #f0f2f4; background:#fff; }
+  .icon-btn { display:flex; flex-direction:column; align-items:center; gap:6px; padding:13px 6px 10px; border-radius:16px; text-decoration:none; color:#374151; font-size:0.7rem; font-weight:600; background:#f8fafb; border:1.5px solid #eef1f5; cursor:pointer; position:relative; transition:all .18s; }
+  .icon-btn:hover, .icon-btn:active { background:var(--gl); color:var(--g); border-color:var(--gb); transform:translateY(-2px); box-shadow:0 4px 12px rgba(26,122,74,.15); }
+  .icon-btn .icon-circle { width:44px; height:44px; border-radius:14px; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.08); margin-bottom:2px; }
+  .icon-btn i { font-size:1.5rem; color:var(--g); }
+  .icon-btn .bdot { position:absolute; top:8px; right:calc(50% - 18px); background:#e53935; color:#fff; border-radius:10px; font-size:0.55rem; font-weight:700; padding:1px 5px; min-width:14px; text-align:center; }
+  @media (max-width:768px) {
+    .icon-btn { border-radius:14px; padding:12px 4px 9px; }
+    .icon-btn .icon-circle { width:40px; height:40px; border-radius:12px; }
+    .icon-btn i { font-size:1.4rem; }
+  }
   .feed-section { padding:12px 14px; border-bottom:1px solid #f0f2f4; }
   .feed-section:last-child { border-bottom:none; }
   .feed-section:nth-child(odd)  { background:#ffffff; }
-  .feed-section:nth-child(even) { background:#f7fbf9; }
+  .feed-section:nth-child(even) { background:#f0f7f3; border-top:1px solid #e8f2ec; border-bottom:1px solid #e8f2ec; }
 
   /* 히어로 스크롤 효과 */
   .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; }
