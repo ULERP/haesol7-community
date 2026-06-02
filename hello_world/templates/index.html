@@ -335,13 +335,56 @@
 
       <!-- 단지 현황 -->
       <div class="feed-section">
-        <div class="sec-header"><div class="sec-title"><i class="fas fa-chart-bar" style="color:var(--g);"></i> 단지 현황</div><a href="/stats/" class="sec-more">자세히 →</a></div>
+        <div class="sec-header"><div class="sec-title"><i class="fas fa-chart-bar" style="color:var(--g);"></i> 단지 현황</div></div>
         <div class="stat-row">
           <div class="stat-item"><div class="stat-num">{{ total_users }}</div><div class="stat-lbl">전체 회원</div></div>
           <div class="stat-item"><div class="stat-num">{{ verified_users }}</div><div class="stat-lbl">인증 입주민</div></div>
           <div class="stat-item"><div class="stat-num">{{ groups_count }}</div><div class="stat-lbl">활성 소모임</div></div>
           <div class="stat-item"><div class="stat-num">{{ approved_activities_count }}</div><div class="stat-lbl">봉사 완료</div></div>
         </div>
+        <!-- 월별 봉사 활동 차트 -->
+        <div style="margin-top:10px;">
+          <div style="font-size:0.75rem;font-weight:700;color:#555;margin-bottom:6px;">📈 월별 봉사 활동 추이</div>
+          <canvas id="monthlyChart" height="80"></canvas>
+        </div>
+        <!-- 소모임 유형 차트 -->
+        <div style="margin-top:12px;">
+          <div style="font-size:0.75rem;font-weight:700;color:#555;margin-bottom:6px;">👥 소모임 유형 현황</div>
+          <canvas id="groupChart" height="80"></canvas>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+        <script>
+        (function(){
+          const ms = {{ monthly_stats_json|safe }};
+          const gs = {{ group_type_stats_json|safe }};
+          const green = '#1a7a4a';
+          const colors = ['#1a7a4a','#f39c12','#e74c3c','#3498db','#9b59b6','#1abc9c'];
+
+          new Chart(document.getElementById('monthlyChart'), {
+            type: 'bar',
+            data: {
+              labels: ms.map(d=>d.month),
+              datasets: [{ label:'봉사 완료', data: ms.map(d=>d.count),
+                backgroundColor: colors[0]+'99', borderColor: green, borderWidth:1, borderRadius:4 }]
+            },
+            options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}},grid:{color:'#f0f0f0'}},x:{ticks:{font:{size:10}}}}, responsive:true }
+          });
+
+          if (gs.length > 0) {
+            new Chart(document.getElementById('groupChart'), {
+              type: 'doughnut',
+              data: {
+                labels: gs.map(d=>d.label),
+                datasets: [{ data: gs.map(d=>d.cnt), backgroundColor: colors, borderWidth:2 }]
+              },
+              options: { plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12}}}, responsive:true, cutout:'60%' }
+            });
+          } else {
+            document.getElementById('groupChart').parentElement.innerHTML += '<div style="font-size:0.75rem;color:#bbb;text-align:center;">소모임이 없어요</div>';
+            document.getElementById('groupChart').style.display='none';
+          }
+        })();
+        </script>
       </div>
 
     </div>

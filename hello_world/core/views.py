@@ -135,6 +135,26 @@ def index(request):
     total_users    = User2.objects.filter(is_active=True).count()
     verified_users = User2.objects.filter(is_active=True, is_verified=True).count()
 
+    # 월별 봉사 활동 통계 (최근 6개월)
+    import json as _json
+    monthly_stats = []
+    for i in range(5, -1, -1):
+        month_start = (now - timedelta(days=30*i)).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        month_end   = (month_start + timedelta(days=32)).replace(day=1)
+        count = ActivityProof.objects.filter(
+            status='approved',
+            created_at__gte=month_start,
+            created_at__lt=month_end
+        ).count()
+        monthly_stats.append({'month': month_start.strftime('%m월'), 'count': count})
+
+    # 소모임 유형별 현황
+    from .models import Group as GroupModel
+    group_type_stats = list(GroupModel.objects.filter(is_active=True).values('group_type').annotate(cnt=Count('group_type')).order_by('-cnt'))
+    group_type_labels = {'hobby':'취미','pet':'반려동물','sports':'스포츠','volunteer':'봉사','learning':'학습','event':'행사'}
+    for g in group_type_stats:
+        g['label'] = group_type_labels.get(g['group_type'], g['group_type'])
+
     return render(request, 'index.html', {
         'boards': boards,
         'recent_posts': recent_posts,
@@ -157,6 +177,8 @@ def index(request):
         'upcoming_volunteer': upcoming_volunteer,
         'total_users': total_users,
         'verified_users': verified_users,
+        'monthly_stats_json': _json.dumps(monthly_stats, ensure_ascii=False),
+        'group_type_stats_json': _json.dumps(group_type_stats, ensure_ascii=False),
     })
 
 
