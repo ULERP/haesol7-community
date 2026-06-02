@@ -426,12 +426,6 @@ class CalendarEventAdmin(admin.ModelAdmin):
         self.message_user(request, f'{queryset.count()}개 일정이 승인되었습니다.')
     approve_events.short_description = '선택 일정 승인'
 
-@admin.register(SiteConfig)
-class SiteConfigAdmin(admin.ModelAdmin):
-    list_display = ['site_name', 'hero_color', 'updated_at']
-
-    def has_add_permission(self, request):
-        return not SiteConfig.objects.exists()
 
 @admin.register(SiteConfig)
 class SiteConfigAdmin(admin.ModelAdmin):
