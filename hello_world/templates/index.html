@@ -54,14 +54,14 @@
   .feed-section:nth-child(odd)  { background:#ffffff; }
   .feed-section:nth-child(even) { background:#f0f7f3; border-top:1px solid #e8f2ec; border-bottom:1px solid #e8f2ec; }
 
-  /* 히어로 영역 */
-  .mob-hero-wrap { position:relative; overflow:hidden; border-radius:14px; margin-bottom:0; }
-  .mob-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center 35%; z-index:1; }
-  .mob-hero-overlay { position:absolute; inset:0; z-index:2; background:linear-gradient(to bottom, rgba(0,0,0,.5) 0%, rgba(0,0,0,.3) 60%, rgba(0,0,0,.1) 100%); }
+  /* 히어로 스크롤 효과 */
+  .mob-hero-wrap { position:relative; overflow:visible; transition:height .3s ease, opacity .3s ease; background:transparent; padding-bottom:20px; }
+  .mob-hero-bg { position:absolute; top:0; left:0; right:0; height:200px; background-size:cover; background-position:center 20%; z-index:1; border-radius:14px 14px 0 0; }
+  .mob-hero-overlay { position:absolute; inset:0; z-index:2; background: linear-gradient(to bottom, rgba(0,0,0,.45) 0%, rgba(0,0,0,.2) 60%, transparent 100%); height:200px; }
   .mob-hero-deco { display:none; }
-  .mob-hero-content { position:relative; z-index:3; padding:16px 16px 20px; min-height:200px; display:flex; flex-direction:column; justify-content:flex-end; }
+  .mob-hero-content { position:relative; z-index:3; padding:22px 16px 18px; }
   .mob-hero-greeting { font-size:0.78rem; color:rgba(255,255,255,.9); margin-bottom:2px; }
-  .mob-hero-name { font-size:1.2rem; font-weight:700; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.5); }
+  .mob-hero-name { font-size:1.15rem; font-weight:700; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.5); }
   .mob-hero-badge { display:inline-block; margin-top:6px; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4); border-radius:20px; padding:3px 10px; font-size:0.7rem; color:#fff; }
 
   /* 모바일 퀵메뉴 개선 */
@@ -74,16 +74,15 @@
   @media (min-width:769px) {
     .mob-hero-wrap { display:none; }
   }
-  /* 모바일 퀵메뉴 카드 */
+  /* 모바일 히어로 퀵메뉴 */
   .mob-hero-triangle { display:none; }
-  .mob-icon-grid-wrap { position:relative; background:#fff; border-radius:0 0 16px 16px; padding:16px 14px 18px; margin-top:-2px; }
-  .mob-icon-row1 { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding-bottom:16px; }
-  .mob-icon-row2 { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding-top:4px; }
-  /* 사선 구분선 - 카드 외부 페이지 배경으로 */
-  .mob-icon-divider { height:22px; margin:0 -14px; background:#e8f5ee; clip-path:polygon(0 100%, 100% 0%, 100% 100%, 0% 100%); }
-  .mob-icon-btn { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none; color:#333; font-size:0.68rem; font-weight:600; }
-  .mob-icon-circle { width:46px; height:46px; border-radius:14px; background:#f0f7f3; border:1px solid #d0e8d8; display:flex; align-items:center; justify-content:center; transition:background .15s; }
-  .mob-icon-circle i { font-size:1.3rem; color:#1a7a4a; }
+  .mob-icon-grid-wrap { position:relative; z-index:3; margin:-30px 12px 0; background:#fff; border-radius:16px; padding:14px 10px 16px; box-shadow:0 4px 20px rgba(0,0,0,.1); }
+  .mob-icon-row1 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; position:relative; z-index:1; }
+  .mob-icon-row2 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; position:relative; z-index:1; }
+  .mob-icon-divider { height:16px; margin:8px -10px; background:#f0f7f3; clip-path:polygon(0 100%, 100% 0%, 100% 100%, 0% 100%); }
+  .mob-icon-btn { display:flex; flex-direction:column; align-items:center; gap:4px; text-decoration:none; color:#333; font-size:0.66rem; font-weight:600; }
+  .mob-icon-circle { width:44px; height:44px; border-radius:13px; background:#f0f7f3; border:1px solid #d0e8d8; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+  .mob-icon-circle i { font-size:1.25rem; color:#1a7a4a; }
   .mob-icon-btn:active .mob-icon-circle { background:#d0e8d8; }
   .sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
   .sec-title { font-size:0.82rem; font-weight:700; color:#222; display:flex; align-items:center; gap:5px; }
