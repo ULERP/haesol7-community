@@ -38,6 +38,10 @@ urlpatterns = [
     path('volunteer/',               views.volunteer_calendar, name='volunteer_calendar'),
     path('volunteer/<int:pk>/',      views.volunteer_detail,   name='volunteer_detail'),
     path('volunteer/<int:pk>/join/', views.volunteer_join,     name='volunteer_join'),
+    path('calendar/', views.integrated_calendar, name='integrated_calendar'),
+    path('calendar/create/', views.calendar_event_create, name='calendar_event_create'),
+    path('calendar/<int:pk>/delete/', views.calendar_event_delete, name='calendar_event_delete'),
+    path('calendar/<int:pk>/approve/', views.calendar_event_approve, name='calendar_event_approve'),
 
     path('post/<int:pk>/link/', views.link_related_post, name='link_related_post'),
 

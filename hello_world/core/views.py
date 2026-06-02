@@ -2217,3 +2217,180 @@ def error_404(request, exception=None):
 
 def error_500(request):
     return render(request, '500.html', status=500)
+
+
+# ============================================================================
+# 캘린더 일정 등록/수정/삭제/승인 API
+# ============================================================================
+@login_required
+def calendar_event_create(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    import json
+    from .models import CalendarEvent, Group
+    data = json.loads(request.body)
+
+    event_type = data.get('event_type', 'event')
+    group_id   = data.get('group_id')
+    group      = None
+
+    if group_id:
+        try:
+            group = Group.objects.get(id=group_id)
+        except Group.DoesNotExist:
+            return JsonResponse({'error': '소모임을 찾을 수 없습니다'}, status=404)
+
+    # 권한에 따라 visibility 결정
+    if request.user.is_staff or request.user.is_superuser:
+        visibility  = 'public'
+        is_approved = True
+        approved_by = request.user
+    elif event_type == 'group' and group:
+        visibility  = 'group'
+        is_approved = True
+        approved_by = request.user
+    else:
+        visibility  = 'pending'
+        is_approved = False
+        approved_by = None
+
+    from django.utils import timezone
+    from django.utils.dateparse import parse_datetime
+
+    event = CalendarEvent.objects.create(
+        title       = data.get('title', '').strip(),
+        description = data.get('description', '').strip(),
+        event_type  = event_type,
+        start_time  = parse_datetime(data.get('start_time')),
+        end_time    = parse_datetime(data.get('end_time')) if data.get('end_time') else None,
+        location    = data.get('location', '').strip(),
+        creator     = request.user,
+        group       = group,
+        visibility  = visibility,
+        is_approved = is_approved,
+        approved_by = approved_by,
+        approved_at = timezone.now() if is_approved else None,
+    )
+    return JsonResponse({'success': True, 'id': event.id, 'visibility': visibility})
+
+
+@login_required
+def calendar_event_delete(request, pk):
+    from .models import CalendarEvent
+    try:
+        event = CalendarEvent.objects.get(id=pk)
+    except CalendarEvent.DoesNotExist:
+        return JsonResponse({'error': '일정을 찾을 수 없습니다'}, status=404)
+
+    if event.creator != request.user and not request.user.is_staff:
+        return JsonResponse({'error': '권한이 없습니다'}, status=403)
+
+    event.delete()
+    return JsonResponse({'success': True})
+
+
+@login_required
+def calendar_event_approve(request, pk):
+    if not request.user.is_staff and not request.user.is_superuser:
+        return JsonResponse({'error': '권한이 없습니다'}, status=403)
+    from .models import CalendarEvent
+    from django.utils import timezone
+    try:
+        event = CalendarEvent.objects.get(id=pk)
+    except CalendarEvent.DoesNotExist:
+        return JsonResponse({'error': '일정을 찾을 수 없습니다'}, status=404)
+
+    event.is_approved = True
+    event.visibility  = 'public'
+    event.approved_by = request.user
+    event.approved_at = timezone.now()
+    event.save()
+    return JsonResponse({'success': True})
+
+
+# ============================================================================
+# 캘린더 일정 등록/수정/삭제/승인 API
+# ============================================================================
+@login_required
+def calendar_event_create(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    import json
+    from .models import CalendarEvent, Group
+    data = json.loads(request.body)
+
+    event_type = data.get('event_type', 'event')
+    group_id   = data.get('group_id')
+    group      = None
+
+    if group_id:
+        try:
+            group = Group.objects.get(id=group_id)
+        except Group.DoesNotExist:
+            return JsonResponse({'error': '소모임을 찾을 수 없습니다'}, status=404)
+
+    if request.user.is_staff or request.user.is_superuser:
+        visibility  = 'public'
+        is_approved = True
+        approved_by = request.user
+    elif event_type == 'group' and group:
+        visibility  = 'group'
+        is_approved = True
+        approved_by = request.user
+    else:
+        visibility  = 'pending'
+        is_approved = False
+        approved_by = None
+
+    from django.utils import timezone
+    from django.utils.dateparse import parse_datetime
+
+    event = CalendarEvent.objects.create(
+        title       = data.get('title', '').strip(),
+        description = data.get('description', '').strip(),
+        event_type  = event_type,
+        start_time  = parse_datetime(data.get('start_time')),
+        end_time    = parse_datetime(data.get('end_time')) if data.get('end_time') else None,
+        location    = data.get('location', '').strip(),
+        creator     = request.user,
+        group       = group,
+        visibility  = visibility,
+        is_approved = is_approved,
+        approved_by = approved_by,
+        approved_at = timezone.now() if is_approved else None,
+    )
+    return JsonResponse({'success': True, 'id': event.id, 'visibility': visibility})
+
+
+@login_required
+def calendar_event_delete(request, pk):
+    from .models import CalendarEvent
+    try:
+        event = CalendarEvent.objects.get(id=pk)
+    except CalendarEvent.DoesNotExist:
+        return JsonResponse({'error': '일정을 찾을 수 없습니다'}, status=404)
+
+    if event.creator != request.user and not request.user.is_staff:
+        return JsonResponse({'error': '권한이 없습니다'}, status=403)
+
+    event.delete()
+    return JsonResponse({'success': True})
+
+
+@login_required
+def calendar_event_approve(request, pk):
+    if not request.user.is_staff and not request.user.is_superuser:
+        return JsonResponse({'error': '권한이 없습니다'}, status=403)
+    from .models import CalendarEvent
+    from django.utils import timezone
+    try:
+        event = CalendarEvent.objects.get(id=pk)
+    except CalendarEvent.DoesNotExist:
+        return JsonResponse({'error': '일정을 찾을 수 없습니다'}, status=404)
+
+    event.is_approved = True
+    event.visibility  = 'public'
+    event.approved_by = request.user
+    event.approved_at = timezone.now()
+    event.save()
+    return JsonResponse({'success': True})
