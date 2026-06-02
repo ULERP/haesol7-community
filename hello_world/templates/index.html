@@ -232,7 +232,7 @@
       </div>
 
       <!-- 핵심 기능 아이콘 그리드 -->
-      <div class="icon-grid">
+      <div class="icon-grid d-md-grid" id="desktopIconGrid">
         <a href="/chat/public/" class="icon-btn"><div class="icon-circle"><i class="fas fa-comments"></i></div><span>전체채팅</span></a>
         <a href="/boards/" class="icon-btn"><div class="icon-circle"><i class="fas fa-clipboard-list"></i></div><span>게시판</span></a>
         <a href="/notices/" class="icon-btn"><div class="icon-circle"><i class="fas fa-bell"></i></div><span>공지</span>{% if recent_notices %}<span class="bdot">N</span>{% endif %}</a>
@@ -557,6 +557,14 @@ document.querySelectorAll('.mob-tab').forEach(tab => {
 </script>
 
 <script>
+// 모바일에서 데스크탑 퀵메뉴 숨기기
+(function(){
+  if(window.innerWidth <= 768) {
+    var el = document.getElementById('desktopIconGrid');
+    if(el) el.style.display = 'none';
+  }
+})();
+
 // 모바일 히어로 스크롤 효과
 (function(){
   var hero = document.getElementById('mobHero');
