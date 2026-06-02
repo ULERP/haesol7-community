@@ -76,8 +76,6 @@ urlpatterns = [
     path('chat/dm/list/',                  views.dm_list,              name='dm_list'),
     path('chat/group/<int:group_id>/',     views.group_chat,           name='group_chat'),
     path('chat/group/<int:group_id>/messages/', views.group_chat_messages, name='group_chat_messages'),
-    path('chatbot/',                       views.chatbot,              name='chatbot'),
-    path('chatbot/ask/',                   views.chatbot_ask,          name='chatbot_ask'),
     path('notifications/',                 views.notification_list,    name='notification_list'),
     path('notifications/count/',           views.notification_count,   name='notification_count'),
     path('api/', include(router.urls)),
