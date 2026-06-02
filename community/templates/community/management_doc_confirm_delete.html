@@ -1,0 +1,19 @@
+{% extends "base_3panel.html" %}
+{% block title %}문서 삭제 확인{% endblock %}
+{% block content %}
+<div class="card border-danger mx-auto" style="max-width:500px;margin-top:3rem;">
+  <div class="card-header bg-danger text-white">
+    <i class="bi bi-exclamation-triangle me-2"></i>문서 삭제 확인
+  </div>
+  <div class="card-body text-center py-4">
+    <p class="mb-1 text-muted">다음 문서를 삭제하시겠습니까?</p>
+    <p class="fs-5 fw-bold my-3">"{{ object.title }}"</p>
+    <p class="text-danger small">삭제된 문서는 복구할 수 없습니다.</p>
+    <form method="post" class="d-flex gap-2 justify-content-center mt-3">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>삭제</button>
+      <a href="{% url 'community:management_doc_detail' object.pk %}" class="btn btn-outline-secondary">취소</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

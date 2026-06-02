@@ -1,0 +1,28 @@
+{% extends "base_3panel.html" %}
+{% block title %}{% if object %}문서 수정{% else %}문서 등록{% endif %}{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center mb-4">
+  <a href="{% url 'community:management_doc_list' %}" class="btn btn-outline-secondary btn-sm me-3">← 목록</a>
+  <h4 class="mb-0">📄 {% if object %}문서 수정{% else %}관리 문서 등록{% endif %}</h4>
+</div>
+<div class="card">
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label fw-bold">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-save me-1"></i>{% if object %}저장{% else %}등록{% endif %}
+        </button>
+        <a href="{% url 'community:management_doc_list' %}" class="btn btn-outline-secondary">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
