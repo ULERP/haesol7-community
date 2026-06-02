@@ -55,13 +55,14 @@
   .feed-section:nth-child(even) { background:#f0f7f3; border-top:1px solid #e8f2ec; border-bottom:1px solid #e8f2ec; }
 
   /* 히어로 스크롤 효과 */
-  .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; min-height:130px; }
-  .mob-hero-bg { position:absolute; top:0; left:0; width:75%; height:100%; background-size:cover; background-position:center; z-index:1; clip-path:polygon(0 0, 100% 0, 85% 100%, 0% 100%); }
-  .mob-hero-overlay { position:absolute; top:0; left:0; width:75%; height:100%; background:linear-gradient(to right, rgba(0,0,0,.35) 0%, rgba(0,0,0,.1) 100%); z-index:2; clip-path:polygon(0 0, 100% 0, 85% 100%, 0% 100%); }
-  .mob-hero-deco { position:absolute; top:0; right:0; width:32%; height:100%; background:#1a7a4a; z-index:1; clip-path:polygon(20% 0, 100% 0, 100% 100%, 0% 100%); }
+  .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; }
+  .mob-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center; z-index:1; }
+  .mob-hero-overlay { position:absolute; inset:0; z-index:2;
+    background: linear-gradient(to right, rgba(0,0,0,.45) 0%, rgba(0,0,0,.2) 55%, rgba(26,122,74,.85) 75%, #1a7a4a 100%); }
+  .mob-hero-deco { display:none; }
   .mob-hero-content { position:relative; z-index:3; padding:22px 16px 18px; }
   .mob-hero-greeting { font-size:0.78rem; color:rgba(255,255,255,.9); margin-bottom:2px; }
-  .mob-hero-name { font-size:1.15rem; font-weight:700; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.4); }
+  .mob-hero-name { font-size:1.15rem; font-weight:700; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.5); }
   .mob-hero-badge { display:inline-block; margin-top:6px; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4); border-radius:20px; padding:3px 10px; font-size:0.7rem; color:#fff; }
 
   /* 모바일 퀵메뉴 개선 */
