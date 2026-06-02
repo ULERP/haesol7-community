@@ -6,7 +6,12 @@
   :root { --g:#1a7a4a; --gl:#e8f5ee; --gb:#a8d5b8; }
   body { background:#f8fafb; }
   .layout { display:grid; grid-template-columns:200px 1fr 220px; gap:10px; height:calc(100vh - 52px); padding:10px; }
-  @media (max-width:1024px) { .layout { grid-template-columns:1fr; height:auto; padding-bottom:70px; } .panel-left,.panel-right { display:none; } }
+  @media (max-width:1024px) {
+    .layout { grid-template-columns:1fr !important; height:auto; padding-bottom:74px; }
+    .panel-left { display:none !important; }
+    .panel-right { display:none !important; }
+    .panel-center { border-radius:0 !important; border:none !important; box-shadow:none !important; }
+  }
   .panel { background:#fff; border-radius:14px; border:1px solid var(--border,#e5e7eb); box-shadow:0 1px 3px rgba(0,0,0,.05); display:flex; flex-direction:column; overflow:hidden; }
   .ph { padding:10px 13px; border-bottom:1px solid #f0f2f4; background:#fafbfc; flex-shrink:0; }
   .ph-title { font-size:0.82rem; font-weight:700; color:#333; margin:0; }
