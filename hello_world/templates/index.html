@@ -40,6 +40,28 @@
   .icon-btn .bdot { position:absolute; top:7px; right:calc(50% - 16px); background:#e53935; color:#fff; border-radius:10px; font-size:0.58rem; font-weight:700; padding:1px 5px; min-width:14px; text-align:center; }
   .feed-section { padding:12px 14px; border-bottom:1px solid #f0f2f4; }
   .feed-section:last-child { border-bottom:none; }
+  .feed-section:nth-child(odd)  { background:#ffffff; }
+  .feed-section:nth-child(even) { background:#f7fbf9; }
+
+  /* 히어로 스크롤 효과 */
+  .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; }
+  .mob-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center; }
+  .mob-hero-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,.15) 0%,rgba(0,0,0,.6) 100%); }
+  .mob-hero-content { position:relative; z-index:1; padding:20px 16px 16px; }
+  .mob-hero-greeting { font-size:0.78rem; color:rgba(255,255,255,.85); margin-bottom:2px; }
+  .mob-hero-name { font-size:1.1rem; font-weight:700; color:#fff; }
+  .mob-hero-badge { display:inline-block; margin-top:6px; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.35); border-radius:20px; padding:3px 10px; font-size:0.7rem; color:#fff; }
+
+  /* 모바일 퀵메뉴 개선 */
+  @media (max-width:768px) {
+    .complex-banner { display:none; }
+    .mob-hero-wrap { display:block !important; }
+    .icon-btn { border-radius:14px; padding:13px 6px; }
+    .icon-btn i { font-size:1.5rem; }
+  }
+  @media (min-width:769px) {
+    .mob-hero-wrap { display:none; }
+  }
   .sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
   .sec-title { font-size:0.82rem; font-weight:700; color:#222; display:flex; align-items:center; gap:5px; }
   .sec-more { font-size:0.72rem; color:var(--g); text-decoration:none; font-weight:600; }
@@ -145,6 +167,24 @@
     <div class="feed">
 
       <!-- 단지 헤더 배너 -->
+      <!-- 모바일 히어로 (스크롤시 사라짐) -->
+      <div class="mob-hero-wrap" id="mobHero" style="display:none;">
+        <div class="mob-hero-bg" id="mobHeroBg" style="background-color:#1a7a4a;{% if hero_image %}background-image:url('{{ hero_image }}');{% endif %}"></div>
+        <div class="mob-hero-overlay"></div>
+        <div class="mob-hero-content">
+          {% if user.is_authenticated %}
+          <div class="mob-hero-greeting">안녕하세요 👋</div>
+          <div class="mob-hero-name">{{ user.nickname|default:user.username }}님</div>
+          <span class="mob-hero-badge">{{ user.unit_number|default:"해솔7단지 입주민" }}</span>
+          {% else %}
+          <div class="mob-hero-greeting">🌿 해솔마을 7단지</div>
+          <div class="mob-hero-name">지킴이 커뮤니티</div>
+          <span class="mob-hero-badge">함께 만드는 우리 단지</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- 데스크탑 배너 -->
       <div class="complex-banner">
         <div class="complex-banner-overlay"></div>
         <div class="complex-banner-content">
@@ -480,5 +520,26 @@ document.querySelectorAll('.mob-tab').forEach(tab => {
   else if (href === '/' && path === '/') tab.classList.add('active');
   else tab.classList.remove('active');
 });
+</script>
+
+<script>
+// 모바일 히어로 스크롤 효과
+(function(){
+  var hero = document.getElementById('mobHero');
+  if(!hero) return;
+  var panel = document.querySelector('.panel.panel-center .feed, .panel-center');
+  var scrollEl = document.querySelector('.feed') || window;
+
+  function onScroll(){
+    var scrollY = scrollEl === window ? window.scrollY : scrollEl.scrollTop;
+    var maxH = 120;
+    var newH = Math.max(0, maxH - scrollY * 1.5);
+    var opacity = newH / maxH;
+    hero.style.height = newH + 'px';
+    hero.style.opacity = opacity;
+    if(newH <= 0) hero.style.overflow = 'hidden';
+  }
+  scrollEl.addEventListener('scroll', onScroll, {passive:true});
+})();
 </script>
 {% endblock %}

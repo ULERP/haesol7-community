@@ -255,25 +255,60 @@
 </div>
 
 <!-- 모바일 하단 탭바 -->
-<nav style="display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid #e5e7eb;z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,.06);" id="mob-tabbar">
-  <div style="display:flex;height:100%;">
-    <a href="/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
-      <i class="fas fa-home" style="font-size:1.2rem;"></i><span>홈</span>
+<nav id="mob-tabbar" style="display:none;position:fixed;bottom:0;left:0;right:0;height:64px;background:#fff;border-top:1px solid #e5e7eb;z-index:200;box-shadow:0 -2px 16px rgba(0,0,0,.08);">
+  <div style="display:flex;height:100%;max-width:480px;margin:0 auto;">
+    <a href="/" class="mob-tab {% block tab_home %}{% endblock %}" data-path="/">
+      <i class="fas fa-home"></i><span>홈</span>
     </a>
-    <a href="/chat/public/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
-      <i class="fas fa-comments" style="font-size:1.2rem;"></i><span>소통</span>
+    <a href="/chat/public/" class="mob-tab {% block tab_social %}{% endblock %}" data-path="/chat/">
+      <i class="fas fa-comments"></i><span>소통하기</span>
     </a>
-    <a href="/boards/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
-      <i class="fas fa-clipboard-list" style="font-size:1.2rem;"></i><span>게시판</span>
+    <a href="/boards/" class="mob-tab {% block tab_news %}{% endblock %}" data-path="/boards/">
+      <i class="fas fa-newspaper"></i><span>단지소식</span>
     </a>
-    <a href="/volunteer/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
-      <i class="fas fa-calendar-alt" style="font-size:1.2rem;"></i><span>봉사</span>
+    <a href="/volunteer/" class="mob-tab {% block tab_together %}{% endblock %}" data-path="/volunteer/">
+      <i class="fas fa-hands-helping"></i><span>함께하기</span>
     </a>
-    <a href="/mypage/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;">
-      <i class="fas fa-user" style="font-size:1.2rem;"></i><span>내 정보</span>
+    <a href="/mypage/" class="mob-tab {% block tab_more %}{% endblock %}" data-path="/mypage/">
+      <i class="fas fa-bars"></i><span>더보기</span>
     </a>
   </div>
 </nav>
+<style>
+.mob-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-decoration: none;
+  color: #9ca3af;
+  font-size: 0.58rem;
+  font-weight: 600;
+  padding: 6px 2px;
+  transition: color .15s;
+  border-top: 2px solid transparent;
+}
+.mob-tab i { font-size: 1.25rem; }
+.mob-tab.active, .mob-tab:hover { color: var(--g); }
+.mob-tab.active { border-top-color: var(--g); }
+@media (max-width:1024px) {
+  #mob-tabbar { display:flex !important; align-items:stretch; }
+  .panel-center { padding-bottom: 74px !important; }
+}
+</style>
+<script>
+(function(){
+  var path = window.location.pathname;
+  document.querySelectorAll('.mob-tab').forEach(function(a){
+    var p = a.getAttribute('data-path');
+    if(p === '/' ? path === '/' : path.startsWith(p)){
+      a.classList.add('active');
+    }
+  });
+})();
+</script>
 <style>
 @media (max-width:1024px) {
   #mob-tabbar { display:block !important; }
