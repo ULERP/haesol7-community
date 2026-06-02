@@ -9,6 +9,7 @@
 .fc-button { font-size: 0.78rem !important; padding: 4px 10px !important; }
 .fc-daygrid-event { border-radius: 4px; font-size: 0.72rem; }
 .legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.fc-daygrid-day:hover { background: #f0f9f4 !important; cursor: pointer; }
 @media (max-width: 768px) {
   .fc-toolbar { flex-direction: column; gap: 8px; }
   .fc-toolbar-title { font-size: 0.9rem !important; }
@@ -19,28 +20,48 @@
 {% block panel_content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0">📅 통합 캘린더</h4>
-  <span class="badge bg-success">총 {{ total_events }}개 일정</span>
+  <div class="d-flex gap-2 align-items-center">
+    <span class="badge bg-success">총 {{ total_events }}개 일정</span>
+    {% if user.is_authenticated %}
+    <button class="btn btn-success btn-sm" onclick="openCreateModal()">
+      <i class="fas fa-plus me-1"></i>일정 등록
+    </button>
+    {% endif %}
+  </div>
 </div>
-
-<!-- 범례 -->
 <div class="d-flex gap-3 mb-3 flex-wrap">
   <span><span class="legend-dot" style="background:#1a7a4a;"></span> <small>봉사활동</small></span>
   <span><span class="legend-dot" style="background:#e74c3c;"></span> <small>단지행사</small></span>
   <span><span class="legend-dot" style="background:#f39c12;"></span> <small>소모임</small></span>
+  {% if user.is_authenticated %}
+  <span><span class="legend-dot" style="background:#aaa;"></span> <small>승인대기</small></span>
+  {% endif %}
 </div>
-
-<!-- 필터 버튼 -->
 <div class="btn-group mb-3 btn-group-sm" role="group">
   <button class="btn btn-outline-success active" onclick="filterEvents('all', this)">전체</button>
   <button class="btn btn-outline-success" onclick="filterEvents('봉사', this)">🤝 봉사</button>
   <button class="btn btn-outline-danger" onclick="filterEvents('행사', this)">📅 행사</button>
   <button class="btn btn-outline-warning" onclick="filterEvents('소모임', this)">👥 소모임</button>
 </div>
-
-<!-- 캘린더 -->
+{% if pending_events %}
+<div class="alert alert-warning py-2 mb-3">
+  <strong>⏳ 승인 대기 중인 일정 {{ pending_events|length }}건</strong>
+  <div class="mt-2">
+    {% for e in pending_events %}
+    <div class="d-flex justify-content-between align-items-center border-bottom py-1">
+      <div>
+        <small class="badge bg-secondary me-1">{{ e.event_type }}</small>
+        <small>{{ e.title }} — {{ e.creator__username }}</small>
+        <small class="text-muted ms-1">{{ e.start_time|date:"m/d H:i" }}</small>
+      </div>
+      <button class="btn btn-success btn-sm py-0 px-2" onclick="approveEvent({{ e.id }})">승인</button>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 <div id="calendar" style="background:#fff;border-radius:12px;padding:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);"></div>
 
-<!-- 일정 상세 모달 -->
 <div class="modal fade" id="eventModal" tabindex="-1">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
@@ -51,7 +72,65 @@
       <div class="modal-body py-2" id="eventModalBody"></div>
       <div class="modal-footer py-2">
         <a href="#" id="eventModalLink" class="btn btn-success btn-sm">자세히 보기</a>
+        <button type="button" id="eventModalDelete" class="btn btn-danger btn-sm d-none" onclick="deleteEvent()">삭제</button>
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="createModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header py-2 bg-success text-white">
+        <h6 class="modal-title">📅 일정 등록</h6>
+        <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label small fw-bold">제목 *</label>
+          <input type="text" id="newTitle" class="form-control form-control-sm" placeholder="일정 제목">
+        </div>
+        <div class="mb-2">
+          <label class="form-label small fw-bold">종류 *</label>
+          <select id="newType" class="form-select form-select-sm" onchange="toggleGroupSelect()">
+            <option value="event">📅 단지행사</option>
+            <option value="volunteer">🤝 봉사활동</option>
+            <option value="group">👥 소모임</option>
+          </select>
+        </div>
+        <div class="mb-2 d-none" id="groupSelectWrap">
+          <label class="form-label small fw-bold">소모임 선택</label>
+          <select id="newGroup" class="form-select form-select-sm">
+            <option value="">-- 소모임 선택 --</option>
+            {% for g in my_groups %}
+            <option value="{{ g.group__id }}">{{ g.group__name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="row mb-2">
+          <div class="col">
+            <label class="form-label small fw-bold">시작 *</label>
+            <input type="datetime-local" id="newStart" class="form-control form-control-sm">
+          </div>
+          <div class="col">
+            <label class="form-label small fw-bold">종료</label>
+            <input type="datetime-local" id="newEnd" class="form-control form-control-sm">
+          </div>
+        </div>
+        <div class="mb-2">
+          <label class="form-label small fw-bold">장소</label>
+          <input type="text" id="newLocation" class="form-control form-control-sm" placeholder="장소 입력">
+        </div>
+        <div class="mb-2">
+          <label class="form-label small fw-bold">내용</label>
+          <textarea id="newDesc" class="form-control form-control-sm" rows="2" placeholder="일정 내용"></textarea>
+        </div>
+        <div id="createNote" class="alert alert-info py-1 small mb-0 d-none"></div>
+      </div>
+      <div class="modal-footer py-2">
+        <button class="btn btn-success btn-sm" onclick="submitCreate()">등록하기</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
       </div>
     </div>
   </div>
@@ -59,43 +138,48 @@
 
 <script>
 const allEvents = {{ events_json|safe }};
+const isStaff = {{ user.is_staff|yesno:"true,false" }};
+const isAuth  = {{ user.is_authenticated|yesno:"true,false" }};
+const userId  = {{ user.pk|default:"null" }};
 let calendar;
+let currentCalId = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-  const calendarEl = document.getElementById('calendar');
-  calendar = new FullCalendar.Calendar(calendarEl, {
+  calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
     initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
     locale: 'ko',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,listMonth'
-    },
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
     buttonText: { today: '오늘', month: '월', list: '목록' },
     events: allEvents,
+    dateClick: function(info) {
+      if (!isAuth) return;
+      openCreateModal(info.dateStr);
+    },
     eventClick: function(info) {
       info.jsEvent.preventDefault();
       const p = info.event.extendedProps;
+      currentCalId = p.cal_id || null;
       document.getElementById('eventModalTitle').textContent = info.event.title;
+      let pendingBadge = p.visibility === 'pending' ? '<span class="badge bg-warning text-dark ms-1">승인대기</span>' : '';
       document.getElementById('eventModalBody').innerHTML = `
-        <div class="mb-1"><span class="badge bg-secondary">${p.type || ''}</span></div>
+        <div class="mb-1"><span class="badge bg-secondary">${p.type||''}</span>${pendingBadge}</div>
         ${p.location ? `<div class="small"><i class="fas fa-map-marker-alt text-danger me-1"></i>${p.location}</div>` : ''}
+        ${p.description ? `<div class="small mt-1 text-muted">${p.description}</div>` : ''}
         ${p.participants !== undefined ? `<div class="small mt-1"><i class="fas fa-users text-success me-1"></i>${p.participants}명 참여중</div>` : ''}
         ${p.group ? `<div class="small mt-1"><i class="fas fa-users text-warning me-1"></i>${p.group}</div>` : ''}
         ${p.status ? `<div class="small mt-1 text-muted">상태: ${p.status}</div>` : ''}
       `;
-      document.getElementById('eventModalLink').href = info.event.url || '#';
+      const linkEl = document.getElementById('eventModalLink');
+      if (info.event.url && info.event.url !== '#') { linkEl.href = info.event.url; linkEl.classList.remove('d-none'); }
+      else { linkEl.classList.add('d-none'); }
+      const delBtn = document.getElementById('eventModalDelete');
+      if (currentCalId && isAuth && (isStaff || p.creator_id == userId)) { delBtn.classList.remove('d-none'); }
+      else { delBtn.classList.add('d-none'); }
       new bootstrap.Modal(document.getElementById('eventModal')).show();
     },
-    eventMouseEnter: function(info) {
-      info.el.style.cursor = 'pointer';
-      info.el.style.opacity = '0.85';
-    },
-    eventMouseLeave: function(info) {
-      info.el.style.opacity = '1';
-    },
-    height: 'auto',
-    dayMaxEvents: 3,
+    eventMouseEnter: function(info) { info.el.style.cursor='pointer'; info.el.style.opacity='0.85'; },
+    eventMouseLeave: function(info) { info.el.style.opacity='1'; },
+    height: 'auto', dayMaxEvents: 3,
   });
   calendar.render();
 });
@@ -103,14 +187,85 @@ document.addEventListener('DOMContentLoaded', function() {
 function filterEvents(type, btn) {
   document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  if (type === 'all') {
-    calendar.removeAllEvents();
-    calendar.addEventSource(allEvents);
-  } else {
-    const filtered = allEvents.filter(e => e.extendedProps && e.extendedProps.type === type);
-    calendar.removeAllEvents();
-    calendar.addEventSource(filtered);
+  calendar.removeAllEvents();
+  calendar.addEventSource(type === 'all' ? allEvents : allEvents.filter(e => e.extendedProps && e.extendedProps.type === type));
+}
+
+function openCreateModal(dateStr) {
+  if (dateStr) {
+    document.getElementById('newStart').value = dateStr + 'T09:00';
+    document.getElementById('newEnd').value   = dateStr + 'T11:00';
   }
+  updateCreateNote();
+  new bootstrap.Modal(document.getElementById('createModal')).show();
+}
+
+function toggleGroupSelect() {
+  document.getElementById('groupSelectWrap').classList.toggle('d-none', document.getElementById('newType').value !== 'group');
+  updateCreateNote();
+}
+
+function updateCreateNote() {
+  const note = document.getElementById('createNote');
+  note.classList.remove('d-none');
+  if (isStaff) { note.textContent = '✅ 관리자 권한으로 즉시 전체 공개됩니다.'; }
+  else if (document.getElementById('newType').value === 'group') { note.textContent = '👥 소모임 멤버에게만 공개됩니다.'; }
+  else { note.textContent = '⏳ 등록 후 관리자 승인 후 전체 공개됩니다.'; }
+}
+
+function submitCreate() {
+  const title = document.getElementById('newTitle').value.trim();
+  const start = document.getElementById('newStart').value;
+  if (!title || !start) { alert('제목과 시작 시간은 필수입니다.'); return; }
+  const endVal = document.getElementById('newEnd').value;
+  const grpEl  = document.getElementById('newGroup');
+  fetch('/calendar/create/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    body: JSON.stringify({
+      title: title,
+      event_type: document.getElementById('newType').value,
+      start_time: start.replace('T',' ') + ':00',
+      end_time:   endVal ? endVal.replace('T',' ') + ':00' : null,
+      location:   document.getElementById('newLocation').value.trim(),
+      description:document.getElementById('newDesc').value.trim(),
+      group_id:   grpEl ? grpEl.value || null : null,
+    })
+  }).then(r => r.json()).then(res => {
+    if (res.success) {
+      bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
+      alert(res.visibility === 'pending' ? '등록되었습니다. 관리자 승인 후 공개됩니다.' :
+            res.visibility === 'group'   ? '소모임 멤버에게 공개됩니다.' : '일정이 등록되었습니다.');
+      location.reload();
+    } else { alert(res.error || '오류가 발생했습니다.'); }
+  });
+}
+
+function deleteEvent() {
+  if (!currentCalId || !confirm('일정을 삭제하시겠습니까?')) return;
+  fetch(`/calendar/${currentCalId}/delete/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+  }).then(r => r.json()).then(res => {
+    if (res.success) { bootstrap.Modal.getInstance(document.getElementById('eventModal')).hide(); location.reload(); }
+    else { alert(res.error || '오류가 발생했습니다.'); }
+  });
+}
+
+function approveEvent(id) {
+  if (!confirm('이 일정을 승인하시겠습니까?')) return;
+  fetch(`/calendar/${id}/approve/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+  }).then(r => r.json()).then(res => {
+    if (res.success) { location.reload(); }
+    else { alert(res.error || '오류가 발생했습니다.'); }
+  });
+}
+
+function getCookie(name) {
+  let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
 }
 </script>
 {% endblock %}

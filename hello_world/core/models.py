@@ -868,3 +868,37 @@ class NoticeCategory(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class CalendarEvent(models.Model):
+    TYPE_CHOICES = [
+        ('volunteer', '봉사'),
+        ('event',     '단지행사'),
+        ('group',     '소모임'),
+    ]
+    VISIBILITY_CHOICES = [
+        ('public',  '전체공개'),
+        ('group',   '소모임'),
+        ('pending', '승인대기'),
+    ]
+    title        = models.CharField('제목', max_length=200)
+    description  = models.TextField('내용', blank=True)
+    event_type   = models.CharField('종류', max_length=20, choices=TYPE_CHOICES, default='event')
+    start_time   = models.DateTimeField('시작')
+    end_time     = models.DateTimeField('종료', null=True, blank=True)
+    location     = models.CharField('장소', max_length=200, blank=True)
+    creator      = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='calendar_events', verbose_name='작성자')
+    group        = models.ForeignKey('Group', on_delete=models.SET_NULL, null=True, blank=True, related_name='calendar_events', verbose_name='소모임')
+    visibility   = models.CharField('공개범위', max_length=20, choices=VISIBILITY_CHOICES, default='pending')
+    is_approved  = models.BooleanField('승인여부', default=False)
+    approved_by  = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_events', verbose_name='승인자')
+    approved_at  = models.DateTimeField('승인일시', null=True, blank=True)
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['start_time']
+        verbose_name = '캘린더 일정'
+        verbose_name_plural = '캘린더 일정 목록'
+
+    def __str__(self):
+        return f"[{self.get_event_type_display()}] {self.title}"

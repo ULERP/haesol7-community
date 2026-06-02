@@ -10,6 +10,7 @@ from .models import (
     MemberGrade, BoardGradePermission,
     Survey, SurveyQuestion, SurveyResponse,
     PublicChat, DirectMessage, ChatHistory, ChatPoll,
+    CalendarEvent,
 )
 
 # ============================================================
@@ -410,3 +411,16 @@ class MemberGradeAdmin(admin.ModelAdmin):
     class Meta:
         verbose_name        = '회원 등급'
         verbose_name_plural = '회원 등급 목록'
+
+@admin.register(CalendarEvent)
+class CalendarEventAdmin(admin.ModelAdmin):
+    list_display  = ['title', 'event_type', 'start_time', 'creator', 'visibility', 'is_approved']
+    list_filter   = ['event_type', 'visibility', 'is_approved']
+    search_fields = ['title', 'creator__username']
+    actions       = ['approve_events']
+
+    def approve_events(self, request, queryset):
+        from django.utils import timezone
+        queryset.update(is_approved=True, visibility='public', approved_by=request.user, approved_at=timezone.now())
+        self.message_user(request, f'{queryset.count()}개 일정이 승인되었습니다.')
+    approve_events.short_description = '선택 일정 승인'
