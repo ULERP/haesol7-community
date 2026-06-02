@@ -2038,6 +2038,182 @@ def community_stats(request):
     })
 
 
+
+# ============================================================
+# 봉사활동 인증서 PDF 자동 발급
+# ============================================================
+@login_required
+def my_certificate(request):
+    """내 인증서 발급 페이지"""
+    from .models import ActivityProof, Activity
+    approved = ActivityProof.objects.filter(
+        user=request.user, status='approved'
+    ).select_related('activity').order_by('-submitted_at')
+    total_points   = sum(a.points_earned for a in approved)
+    total_hours    = sum(a.hours_spent or 0 for a in approved)
+    total_count    = approved.count()
+    return render(request, 'certificate.html', {
+        'approved_activities': approved,
+        'total_points':  total_points,
+        'total_hours':   total_hours,
+        'total_count':   total_count,
+    })
+
+
+@login_required
+def certificate_pdf(request, user_id):
+    """봉사활동 인증서 PDF 생성 및 다운로드"""
+    from django.http import HttpResponse
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    import io, os
+    from django.utils import timezone
+
+    # 권한 체크 (본인 또는 관리자)
+    if user_id != request.user.pk and not request.user.is_staff:
+        from django.contrib import messages
+        messages.error(request, '본인 인증서만 발급할 수 있습니다.')
+        return redirect('my_certificate')
+
+    target_user = get_object_or_404(CustomUser, pk=user_id)
+    approved = ActivityProof.objects.filter(
+        user=target_user, status='approved'
+    ).select_related('activity').order_by('submitted_at')
+
+    if not approved.exists():
+        from django.contrib import messages
+        messages.error(request, '승인된 활동이 없어 인증서를 발급할 수 없습니다.')
+        return redirect('my_certificate')
+
+    # 폰트 등록 (나눔고딕 없으면 기본 폰트 사용)
+    font_name = 'Helvetica'
+    font_bold = 'Helvetica-Bold'
+    nanum_path = '/usr/share/fonts/truetype/nanum/NanumGothic.ttf'
+    nanum_bold_path = '/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf'
+    if os.path.exists(nanum_path):
+        try:
+            pdfmetrics.registerFont(TTFont('NanumGothic', nanum_path))
+            pdfmetrics.registerFont(TTFont('NanumGothicBold', nanum_bold_path))
+            font_name = 'NanumGothic'
+            font_bold = 'NanumGothicBold'
+        except:
+            pass
+
+    # PDF 생성
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        rightMargin=20*mm, leftMargin=20*mm,
+        topMargin=20*mm, bottomMargin=20*mm
+    )
+
+    # 스타일
+    styles = getSampleStyleSheet()
+    title_style   = ParagraphStyle('title',   fontName=font_bold,  fontSize=26, alignment=TA_CENTER, textColor=colors.HexColor('#1a7a4a'), spaceAfter=4)
+    sub_style     = ParagraphStyle('sub',     fontName=font_name,  fontSize=12, alignment=TA_CENTER, textColor=colors.grey, spaceAfter=2)
+    name_style    = ParagraphStyle('name',    fontName=font_bold,  fontSize=18, alignment=TA_CENTER, textColor=colors.HexColor('#1a3a2a'), spaceAfter=2)
+    body_style    = ParagraphStyle('body',    fontName=font_name,  fontSize=11, alignment=TA_CENTER, spaceAfter=6)
+    section_style = ParagraphStyle('section', fontName=font_bold,  fontSize=12, textColor=colors.HexColor('#1a7a4a'), spaceAfter=4)
+
+    total_hours  = sum(a.hours_spent or 0 for a in approved)
+    total_points = sum(a.points_earned for a in approved)
+    total_count  = approved.count()
+    issue_date   = timezone.now().strftime('%Y년 %m월 %d일')
+    unit_info    = f"{target_user.dong}동 {target_user.ho}호" if target_user.dong else ""
+
+    story = []
+
+    # 헤더
+    story.append(Spacer(1, 10*mm))
+    story.append(Paragraph("🌿 봉사활동 인증서", title_style))
+    story.append(Paragraph("VOLUNTEER CERTIFICATE", sub_style))
+    story.append(HRFlowable(width="100%", thickness=2, color=colors.HexColor('#1a7a4a'), spaceAfter=8))
+    story.append(Spacer(1, 5*mm))
+
+    # 수상자 정보
+    nickname = target_user.nickname or target_user.username
+    story.append(Paragraph(f"{nickname} 님", name_style))
+    if unit_info:
+        story.append(Paragraph(unit_info, body_style))
+    story.append(Spacer(1, 3*mm))
+    story.append(Paragraph(
+        f"위 분은 해솔마을 7단지 지킴이 커뮤니티에서<br/>"
+        f"총 <b>{total_count}회</b>의 봉사활동에 참여하여<br/>"
+        f"<b>{total_hours}시간</b>의 봉사를 성실히 수행하셨기에<br/>"
+        f"이 인증서를 드립니다.",
+        body_style
+    ))
+    story.append(Spacer(1, 5*mm))
+
+    # 요약 통계 표
+    summary_data = [
+        ['총 활동 횟수', '총 봉사 시간', '획득 포인트'],
+        [f'{total_count}회', f'{total_hours}시간', f'{total_points}P'],
+    ]
+    summary_table = Table(summary_data, colWidths=[55*mm, 55*mm, 55*mm])
+    summary_table.setStyle(TableStyle([
+        ('BACKGROUND',  (0,0), (-1,0), colors.HexColor('#1a7a4a')),
+        ('TEXTCOLOR',   (0,0), (-1,0), colors.white),
+        ('FONTNAME',    (0,0), (-1,0), font_bold),
+        ('FONTNAME',    (0,1), (-1,1), font_bold),
+        ('FONTSIZE',    (0,0), (-1,-1), 12),
+        ('ALIGN',       (0,0), (-1,-1), 'CENTER'),
+        ('VALIGN',      (0,0), (-1,-1), 'MIDDLE'),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.HexColor('#f0f8f4')]),
+        ('GRID',        (0,0), (-1,-1), 0.5, colors.HexColor('#c8e6c9')),
+        ('TOPPADDING',  (0,0), (-1,-1), 8),
+        ('BOTTOMPADDING',(0,0),(-1,-1), 8),
+        ('ROUNDEDCORNERS', [3]),
+    ]))
+    story.append(summary_table)
+    story.append(Spacer(1, 6*mm))
+
+    # 활동 내역 표
+    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#c8e6c9'), spaceAfter=4))
+    story.append(Paragraph("활동 내역", section_style))
+
+    act_data = [['활동명', '날짜', '시간', '포인트']]
+    for a in approved:
+        act_data.append([
+            Paragraph(a.activity.name if a.activity else '-', ParagraphStyle('td', fontName=font_name, fontSize=9)),
+            a.submitted_at.strftime('%Y.%m.%d'),
+            f"{a.hours_spent or 0}h",
+            f"{a.points_earned}P",
+        ])
+    act_table = Table(act_data, colWidths=[80*mm, 35*mm, 25*mm, 25*mm])
+    act_table.setStyle(TableStyle([
+        ('BACKGROUND',   (0,0), (-1,0), colors.HexColor('#e8f5e9')),
+        ('FONTNAME',     (0,0), (-1,0), font_bold),
+        ('FONTNAME',     (0,1), (-1,-1), font_name),
+        ('FONTSIZE',     (0,0), (-1,-1), 9),
+        ('ALIGN',        (1,0), (-1,-1), 'CENTER'),
+        ('ROWBACKGROUNDS',(0,1),(-1,-1), [colors.white, colors.HexColor('#f9fef9')]),
+        ('GRID',         (0,0), (-1,-1), 0.3, colors.HexColor('#dcedc8')),
+        ('TOPPADDING',   (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING',(0,0),(-1,-1), 5),
+    ]))
+    story.append(act_table)
+    story.append(Spacer(1, 8*mm))
+
+    # 발급일 + 발급처
+    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#1a7a4a'), spaceAfter=6))
+    story.append(Paragraph(f"발급일: {issue_date}", body_style))
+    story.append(Paragraph("해솔마을 7단지 지킴이 커뮤니티", ParagraphStyle('issuer', fontName=font_bold, fontSize=13, alignment=TA_CENTER, textColor=colors.HexColor('#1a7a4a'))))
+
+    doc.build(story)
+    buffer.seek(0)
+
+    filename = f"봉사인증서_{nickname}_{timezone.now().strftime('%Y%m%d')}.pdf"
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
 def error_404(request, exception=None):
     return render(request, '404.html', status=404)
 

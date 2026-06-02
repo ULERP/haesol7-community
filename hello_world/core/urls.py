@@ -105,6 +105,10 @@ urlpatterns = [
     path('complaints/admin/', views_complaint.complaint_admin, name='complaint_admin'),
     path('complaints/<int:pk>/reply/', views_complaint.complaint_reply, name='complaint_reply'),
 
+
+    # 봉사 인증서 PDF
+    path('certificate/<int:user_id>/', views.certificate_pdf, name='certificate_pdf'),
+    path('certificate/my/', views.my_certificate, name='my_certificate'),
     # 빠른 공지
     path('notices/', views_complaint.notice_list, name='notice_list'),
     path('notices/create/', views_complaint.notice_create, name='notice_create'),
