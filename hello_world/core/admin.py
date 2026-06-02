@@ -432,3 +432,10 @@ class SiteConfigAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return not SiteConfig.objects.exists()
+
+@admin.register(SiteConfig)
+class SiteConfigAdmin(admin.ModelAdmin):
+    list_display = ['site_name', 'hero_color', 'updated_at']
+
+    def has_add_permission(self, request):
+        return not SiteConfig.objects.exists()

@@ -134,6 +134,8 @@ def index(request):
     User2 = get_user_model()
     from .models import SiteConfig as SC
     site_cfg = SC.get()
+    from .models import SiteConfig as SC
+    site_cfg = SC.get()
     total_users    = User2.objects.filter(is_active=True).count()
     verified_users = User2.objects.filter(is_active=True, is_verified=True).count()
 
@@ -177,6 +179,8 @@ def index(request):
         'recent_notices': recent_notices,
         'recent_chats': recent_chats,
         'upcoming_volunteer': upcoming_volunteer,
+        'hero_image': site_cfg.hero_image.url if site_cfg.hero_image else None,
+        'hero_color': site_cfg.hero_color,
         'hero_image': site_cfg.hero_image.url if site_cfg.hero_image else None,
         'hero_color': site_cfg.hero_color,
         'total_users': total_users,
