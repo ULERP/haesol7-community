@@ -532,19 +532,25 @@ document.querySelectorAll('.mob-tab').forEach(tab => {
 (function(){
   var hero = document.getElementById('mobHero');
   if(!hero) return;
-  var panel = document.querySelector('.panel.panel-center .feed, .panel-center');
-  var scrollEl = document.querySelector('.feed') || window;
+  if(window.innerWidth > 768) return;
+
+  var maxH = 130;
+  hero.style.height = maxH + 'px';
 
   function onScroll(){
-    var scrollY = scrollEl === window ? window.scrollY : scrollEl.scrollTop;
-    var maxH = 120;
-    var newH = Math.max(0, maxH - scrollY * 1.5);
-    var opacity = newH / maxH;
+    var scrollY = window.scrollY || document.documentElement.scrollTop;
+    var newH = Math.max(0, maxH - scrollY * 1.8);
+    var opacity = Math.max(0, newH / maxH);
     hero.style.height = newH + 'px';
     hero.style.opacity = opacity;
-    if(newH <= 0) hero.style.overflow = 'hidden';
   }
-  scrollEl.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', function(){
+    if(window.innerWidth > 768) {
+      hero.style.height = '';
+      hero.style.opacity = '';
+    }
+  });
 })();
 </script>
 {% endblock %}
