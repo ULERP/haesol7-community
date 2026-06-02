@@ -55,9 +55,9 @@
   .feed-section:nth-child(even) { background:#f0f7f3; border-top:1px solid #e8f2ec; border-bottom:1px solid #e8f2ec; }
 
   /* 히어로 스크롤 효과 */
-  .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; min-height:280px; }
-  .mob-hero-bg { position:absolute; inset:0; background-size:cover; background-position:center; z-index:1; }
-  .mob-hero-overlay { position:absolute; inset:0; z-index:2; background: linear-gradient(to bottom, rgba(0,0,0,.5) 0%, rgba(0,0,0,.3) 35%, rgba(0,0,0,.1) 60%, transparent 100%); }
+  .mob-hero-wrap { position:relative; overflow:visible; transition:height .3s ease, opacity .3s ease; background:transparent; }
+  .mob-hero-bg { position:absolute; top:0; left:0; right:0; height:185px; background-size:cover; background-position:center 30%; z-index:1; border-radius:14px 14px 0 0; }
+  .mob-hero-overlay { position:absolute; inset:0; z-index:2; background: linear-gradient(to bottom, rgba(0,0,0,.45) 0%, rgba(0,0,0,.2) 60%, transparent 100%); height:185px; }
   .mob-hero-deco { display:none; }
   .mob-hero-content { position:relative; z-index:3; padding:22px 16px 18px; }
   .mob-hero-greeting { font-size:0.78rem; color:rgba(255,255,255,.9); margin-bottom:2px; }
@@ -75,10 +75,11 @@
     .mob-hero-wrap { display:none; }
   }
   /* 모바일 히어로 퀵메뉴 */
-  .mob-hero-triangle { position:absolute; bottom:0; left:0; right:0; height:52%; background:linear-gradient(to bottom, transparent 0%, #f0f7f3 30%); z-index:2; }
-  .mob-icon-grid-wrap { position:relative; z-index:3; margin:12px 10px 0; background:#fff; border-radius:16px; padding:14px 10px; box-shadow:none; }
-  .mob-icon-row1 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:10px; }
-  .mob-icon-row2 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .mob-hero-triangle { display:none; }
+  .mob-icon-grid-wrap { position:relative; z-index:3; margin:0 12px; background:#fff; border-radius:16px; padding:14px 10px; overflow:hidden; }
+  .mob-icon-row1 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px; position:relative; z-index:1; }
+  .mob-icon-row2 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; position:relative; z-index:1; }
+  .mob-icon-divider { position:relative; height:20px; margin:0 -10px; z-index:0; background:#f0f7f3; clip-path:polygon(0 100%, 100% 0, 100% 100%); }
   .mob-icon-btn { display:flex; flex-direction:column; align-items:center; gap:4px; text-decoration:none; color:#333; font-size:0.66rem; font-weight:600; }
   .mob-icon-circle { width:44px; height:44px; border-radius:13px; background:#f0f7f3; border:1px solid #d0e8d8; display:flex; align-items:center; justify-content:center; transition:background .15s; }
   .mob-icon-circle i { font-size:1.25rem; color:#1a7a4a; }
@@ -211,6 +212,7 @@
               <a href="/notices/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-bell"></i></div><span>공지</span></a>
               <a href="/complaints/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="bi bi-megaphone"></i></div><span>민원·건의</span></a>
             </div>
+            <div class="mob-icon-divider"></div>
             <div class="mob-icon-row2">
               <a href="/surveys/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-poll"></i></div><span>설문</span></a>
               <a href="/volunteer/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-calendar-alt"></i></div><span>봉사</span></a>
