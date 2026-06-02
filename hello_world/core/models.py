@@ -902,3 +902,22 @@ class CalendarEvent(models.Model):
 
     def __str__(self):
         return f"[{self.get_event_type_display()}] {self.title}"
+
+
+class SiteConfig(models.Model):
+    hero_image   = models.ImageField('히어로 배경사진', upload_to='site/', blank=True, null=True)
+    hero_color   = models.CharField('히어로 배경색', max_length=20, default='#1a7a4a')
+    site_name    = models.CharField('단지명', max_length=100, default='해솔마을 7단지 지킴이')
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = '사이트 설정'
+        verbose_name_plural = '사이트 설정'
+
+    def __str__(self):
+        return '사이트 설정'
+
+    @classmethod
+    def get(cls):
+        obj, _ = cls.objects.get_or_create(id=1)
+        return obj

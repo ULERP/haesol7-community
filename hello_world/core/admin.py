@@ -11,6 +11,7 @@ from .models import (
     Survey, SurveyQuestion, SurveyResponse,
     PublicChat, DirectMessage, ChatHistory, ChatPoll,
     CalendarEvent,
+    SiteConfig,
 )
 
 # ============================================================
@@ -424,3 +425,10 @@ class CalendarEventAdmin(admin.ModelAdmin):
         queryset.update(is_approved=True, visibility='public', approved_by=request.user, approved_at=timezone.now())
         self.message_user(request, f'{queryset.count()}개 일정이 승인되었습니다.')
     approve_events.short_description = '선택 일정 승인'
+
+@admin.register(SiteConfig)
+class SiteConfigAdmin(admin.ModelAdmin):
+    list_display = ['site_name', 'hero_color', 'updated_at']
+
+    def has_add_permission(self, request):
+        return not SiteConfig.objects.exists()
