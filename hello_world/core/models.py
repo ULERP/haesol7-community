@@ -37,7 +37,7 @@ class Badge(models.Model):
     ]
     title               = models.CharField(max_length=50, unique=True)
     description         = models.TextField()
-    icon                = models.ImageField(upload_to='badges/')
+    icon                = models.ImageField(upload_to='badges/', blank=True, null=True)
     category            = models.CharField(max_length=20, choices=BADGE_CATEGORY)
     required_points     = models.IntegerField(default=100)
     required_activities = models.IntegerField(default=5)
