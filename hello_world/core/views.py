@@ -2214,6 +2214,95 @@ def certificate_pdf(request, user_id):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
+
+# ============================================================
+# 통합 캘린더 (봉사 + 소모임 + 단지행사)
+# ============================================================
+def integrated_calendar(request):
+    from .models import Meetup, Event, Group
+    import json
+    from django.utils import timezone
+
+    events = []
+
+    # 1. 봉사 일정 (Meetup)
+    meetups = Meetup.objects.filter(
+        status__in=['recruiting', 'confirmed', 'planned']
+    ).select_related('creator').prefetch_related('participants')
+    for m in meetups:
+        if m.scheduled_at:
+            events.append({
+                'id': f'meetup_{m.id}',
+                'title': f'🤝 {m.title}',
+                'start': m.scheduled_at.isoformat(),
+                'url': f'/volunteer/{m.id}/',
+                'backgroundColor': '#1a7a4a',
+                'borderColor': '#1a7a4a',
+                'extendedProps': {
+                    'type': '봉사',
+                    'location': m.location,
+                    'participants': m.participants.count(),
+                    'max': m.max_participants if hasattr(m, 'max_participants') else 0,
+                    'status': m.get_status_display(),
+                }
+            })
+
+    # 2. 단지 행사 (Event - Post 연결)
+    events_qs = Event.objects.filter(
+        start_time__isnull=False
+    ).select_related('post')
+    for e in events_qs:
+        events.append({
+            'id': f'event_{e.id}',
+            'title': f'📅 {e.post.title}',
+            'start': e.start_time.isoformat(),
+            'end': e.end_time.isoformat() if e.end_time else None,
+            'url': f'/posts/{e.post.id}/',
+            'backgroundColor': '#e74c3c',
+            'borderColor': '#e74c3c',
+            'extendedProps': {
+                'type': '행사',
+                'location': e.location,
+            }
+        })
+
+    # 3. 소모임 일정 (Meetup 중 group이 있는 것)
+    group_meetups = Meetup.objects.filter(
+        group__isnull=False,
+        status__in=['recruiting', 'confirmed', 'planned']
+    ).select_related('group', 'creator')
+    for m in group_meetups:
+        if m.scheduled_at:
+            # 이미 추가된 것 제외
+            if not any(e['id'] == f'meetup_{m.id}' for e in events):
+                events.append({
+                    'id': f'group_{m.id}',
+                    'title': f'👥 [{m.group.name}] {m.title}',
+                    'start': m.scheduled_at.isoformat(),
+                    'url': f'/groups/{m.group.id}/',
+                    'backgroundColor': '#f39c12',
+                    'borderColor': '#f39c12',
+                    'extendedProps': {
+                        'type': '소모임',
+                        'location': m.location,
+                        'group': m.group.name,
+                    }
+                })
+
+    # 내 일정 (로그인시)
+    my_events = []
+    if request.user.is_authenticated:
+        my_meetups = request.user.joined_meetups.filter(
+            scheduled_at__isnull=False
+        ).values('id', 'title', 'scheduled_at')
+        my_events = [m['id'] for m in my_meetups]
+
+    return render(request, 'integrated_calendar.html', {
+        'events_json': json.dumps(events, ensure_ascii=False, default=str),
+        'my_events_json': json.dumps(my_events, ensure_ascii=False),
+        'total_events': len(events),
+    })
+
 def error_404(request, exception=None):
     return render(request, '404.html', status=404)
 
