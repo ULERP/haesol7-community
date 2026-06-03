@@ -104,6 +104,15 @@
     .navbar-brand { color:#fff!important; }
     .nav-link { color:rgba(255,255,255,.85)!important; }
     .nav-link:hover, .nav-link.active { color:#fff!important; }
+  /* 사이드바 섹션 폴딩 */
+  .sb-label{font-size:0.93rem;font-weight:700;color:#6b7280;text-transform:none;letter-spacing:.01em;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-radius:8px;transition:all .15s;background:#f3f4f6;margin-bottom:2px;}
+  .sb-label:hover{background:#e9f5ee;color:#1a7a4a;}
+  .sb-label.folded{background:#f9fafb;color:#9ca3af;}
+  .sb-label.folded:hover{background:#f0fdf7;color:#1a7a4a;}
+  .sb-label .sb-fold-icon{font-size:0.6rem;transition:transform 0.2s;opacity:0.5;}
+  .sb-label.folded .sb-fold-icon{transform:rotate(-90deg);}
+  .sb-section{overflow:hidden;transition:max-height 0.25s ease;}
+  .sb-section.folded{max-height:0!important;}
   </style>
   {% block extra_head %}{% endblock %}
 </head>
