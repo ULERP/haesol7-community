@@ -291,10 +291,22 @@ function toggleSection(id) {
   const sec = document.getElementById(id);
   const label = sec ? sec.previousElementSibling : null;
   if (!sec) return;
-  const folded = sec.classList.toggle('folded');
-  if (label) label.classList.toggle('folded', folded);
-  // localStorage 저장
-  try { localStorage.setItem('sb_fold_' + id, folded ? '1' : '0'); } catch(e) {}
+  if (sec.classList.contains('folded')) {
+    // 펼치기
+    sec.classList.remove('folded');
+    sec.style.maxHeight = sec.scrollHeight + 'px';
+    if (label) label.classList.remove('folded');
+    try { localStorage.setItem('sb_fold_' + id, '0'); } catch(e) {}
+  } else {
+    // 접기
+    sec.style.maxHeight = sec.scrollHeight + 'px';
+    requestAnimationFrame(() => {
+      sec.style.maxHeight = '0';
+    });
+    sec.classList.add('folded');
+    if (label) label.classList.add('folded');
+    try { localStorage.setItem('sb_fold_' + id, '1'); } catch(e) {}
+  }
 }
 
 // 페이지 로드시 폴딩 상태 복원 (기본값: 접힘)
