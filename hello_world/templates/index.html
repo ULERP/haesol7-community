@@ -49,18 +49,18 @@
     .icon-btn .icon-circle { width:40px; height:40px; border-radius:12px; }
     .icon-btn i { font-size:1.4rem; }
   }
-  .feed-section { padding:12px 14px; border-bottom:1px solid #f0f2f4; }
+  .feed-section { padding:14px 14px; border-bottom:1px solid #f0f2f4; }
   .feed-section:last-child { border-bottom:none; }
   .feed-section:nth-child(odd)  { background:#ffffff; }
   .feed-section:nth-child(even) { background:#ffffff; }
 
   /* 히어로 스크롤 효과 */
-  .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; min-height:280px; padding-bottom:16px; }
+  .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; padding-bottom:16px; }
   .mob-hero-bg { position:absolute; top:0; left:0; right:0; height:65%; background-size:cover; background-position:center; z-index:1; }
   .mob-hero-overlay { position:absolute; inset:0; z-index:2;
     background: linear-gradient(to bottom, rgba(0,0,0,.3) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.5) 100%); }
   .mob-hero-deco { display:none; }
-  .mob-hero-content { position:relative; z-index:3; padding:22px 16px 18px; }
+  .mob-hero-content { position:relative; z-index:3; padding:22px 16px 12px; }
   .mob-hero-greeting { font-size:0.78rem; color:rgba(255,255,255,.9); margin-bottom:2px; }
   .mob-hero-name { font-size:1.15rem; font-weight:700; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.5); }
   .mob-hero-badge { display:inline-block; margin-top:6px; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4); border-radius:20px; padding:3px 10px; font-size:0.7rem; color:#fff; }
@@ -76,14 +76,15 @@
     .mob-hero-wrap { display:none; }
   }
   /* 모바일 히어로 퀵메뉴 */
-  .mob-hero-triangle { position:absolute; bottom:0; left:0; right:0; height:50%; background:#ffffff; clip-path:polygon(0 45%, 100% 0%, 100% 100%, 0% 100%); z-index:2; }
-  .mob-icon-grid-wrap { position:relative; z-index:3; margin:12px 10px 0; background:#fff; border-radius:16px; padding:14px 10px; box-shadow:0 2px 8px rgba(0,0,0,.08); margin-bottom:0; }
+  .mob-hero-triangle { display:none; }
+  .mob-icon-grid-wrap { position:relative; z-index:3; margin:10px 10px 0; background:#e8f5ee; border-radius:16px; padding:14px 10px 16px; box-shadow:0 2px 8px rgba(0,0,0,.08); margin-bottom:16px; }
   .mob-icon-row1 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:10px; }
   .mob-icon-row2 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
   .mob-icon-btn { display:flex; flex-direction:column; align-items:center; gap:4px; text-decoration:none; color:#333; font-size:0.66rem; font-weight:600; }
-  .mob-icon-circle { width:44px; height:44px; border-radius:13px; background:#f0f7f3; border:1px solid #d0e8d8; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+  .mob-icon-circle { width:44px; height:44px; border-radius:13px; background:#ffffff; border:1px solid #d0e8d8; display:flex; align-items:center; justify-content:center; transition:background .15s; }
   .mob-icon-circle i { font-size:1.25rem; color:#1a7a4a; }
   .mob-icon-btn:active .mob-icon-circle { background:#d0e8d8; }
+  .mob-hero-bottom { background:#ffffff; padding:4px 0 0; border-bottom:1px solid #f0f2f4; }
   .sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
   .sec-title { font-size:0.82rem; font-weight:700; color:#222; display:flex; align-items:center; gap:5px; }
   .sec-more { font-size:0.72rem; color:var(--g); text-decoration:none; font-weight:600; }
@@ -198,7 +199,7 @@
           {% if user.is_authenticated %}
           <div class="mob-hero-greeting">안녕하세요 👋</div>
           <div class="mob-hero-name">{{ user.nickname|default:user.username }}님</div>
-          <span class="mob-hero-badge">{{ user.unit_number|default:"해솔7단지 입주민" }}</span>
+          <span class="mob-hero-badge">{% if user.dong %}{{ user.dong }}동 {{ user.ho }}호{% else %}해솔7단지 입주민{% endif %}</span>
           {% else %}
           <div class="mob-hero-greeting">🌿 해솔마을 7단지</div>
           <div class="mob-hero-name">지킴이 커뮤니티</div>
@@ -575,14 +576,9 @@ document.querySelectorAll('.mob-tab').forEach(tab => {
   if(!hero) return;
   if(window.innerWidth > 768) return;
 
-  var maxH = 130;
-  hero.style.height = maxH + 'px';
-
   function onScroll(){
     var scrollY = window.scrollY || document.documentElement.scrollTop;
-    var newH = Math.max(0, maxH - scrollY * 1.8);
-    var opacity = Math.max(0, newH / maxH);
-    hero.style.height = newH + 'px';
+    var opacity = Math.max(0, 1 - scrollY / 200);
     hero.style.opacity = opacity;
   }
   window.addEventListener('scroll', onScroll, {passive:true});

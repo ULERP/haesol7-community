@@ -14,6 +14,7 @@ if 'CODESPACE_NAME' in os.environ:
     CSRF_TRUSTED_ORIGINS = [
         f'https://{codespace_name}-8000.{codespace_domain}',
         'https://*.app.github.dev',
+        'https://*.github.dev',
         'https://localhost:8000',
         'http://localhost:8000',
     ]
