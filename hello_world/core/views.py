@@ -323,16 +323,22 @@ def board_detail(request, board_id):
             'board': board,
             'reason': reason,
         })
-    tag   = request.GET.get('tag', '')
+    tag = request.GET.get('tag', '')
+    q   = request.GET.get('q', '')
     posts = Post.objects.filter(board=board, is_active=True)
     if tag:
         posts = posts.filter(tag=tag)
+    if q:
+        posts = posts.filter(title__icontains=q) | posts.filter(content__icontains=q)
+    posts = posts.order_by('-is_pinned', '-created_at')
     return render(request, 'board_detail.html', {
-        'board': board,
-        'posts': posts,
-        'tags': board.get_tags_list(),
+        'board':       board,
+        'posts':       posts,
+        'total_count': posts.count(),
+        'tags':        board.get_tags_list(),
         'selected_tag': tag,
-        'can_write': check_board_permission(request.user, board, 'write'),
+        'q':           q,
+        'can_write':   check_board_permission(request.user, board, 'write'),
         'can_comment': check_board_permission(request.user, board, 'comment'),
     })
 

@@ -177,6 +177,13 @@ class Board(models.Model):
         TRADE      = 'trade',      '나눔/장터'
         QNA        = 'qna',        'Q&A'
 
+    LAYOUT_CHOICES = [
+        ('list',   '리스트형'),
+        ('gallery','사진형'),
+        ('card',   '사진설명형'),
+        ('market', '중고마켓형'),
+    ]
+
     PERMISSION_CHOICES = [
         ('all',    '전체'),
         ('member', '회원'),
@@ -191,6 +198,7 @@ class Board(models.Model):
     order            = models.PositiveIntegerField(default=0, db_index=True)
     allowed_tags     = models.CharField(max_length=200, blank=True)
     write_permission = models.CharField(max_length=20, choices=PERMISSION_CHOICES, default='all')
+    layout_type      = models.CharField('레이아웃', max_length=20, choices=LAYOUT_CHOICES, default='list')
     is_active        = models.BooleanField(default=True)
     created_at       = models.DateTimeField(auto_now_add=True)
 
