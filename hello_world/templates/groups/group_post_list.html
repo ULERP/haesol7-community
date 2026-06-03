@@ -1,7 +1,7 @@
-{% extends 'base_3panel.html' %}
+{% extends 'base_2panel.html' %}
 {% block menu_groups %}active{% endblock %}
 {% block title %}{{ group.name }} 게시판{% endblock %}
-{% block panel_content %}
+{% block content %}
   <div class="d-flex align-items-center gap-3 mb-4">
     <a href="/groups/{{ group.pk }}/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i></a>
     <div>

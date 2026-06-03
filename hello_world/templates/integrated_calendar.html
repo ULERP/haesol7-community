@@ -1,4 +1,4 @@
-{% extends "base_3panel.html" %}
+{% extends 'base_2panel.html' %}
 {% block title %}통합 캘린더{% endblock %}
 {% block panel_extra_head %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.10/index.global.min.css" rel="stylesheet">
@@ -17,7 +17,7 @@
 </style>
 {% endblock %}
 
-{% block panel_content %}
+{% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0">📅 통합 캘린더</h4>
   <div class="d-flex gap-2 align-items-center">
