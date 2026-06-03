@@ -151,10 +151,10 @@
     <div class="sb-divider"></div>
     <div class="sb-label" onclick="toggleSection('sec-record')">📋 기록하기<i class="fas fa-chevron-down sb-fold-icon"></i></div>
     <div class="sb-section" id="sec-record">
-    {% for b in sb_boards %}
-    <a href="/boards/{{ b.id }}/" class="sb-item" data-tooltip="{{ b.name }}"><i class="{{ b.icon }}"></i><span class="sb-text">{{ b.name }}</span></a>
+    {% for board in sb_boards %}
+    <a href="/boards/{{ board.id }}/" class="sb-item" data-tooltip="{{ board.name }}"><i class="{{ board.icon }}"></i><span class="sb-text">{{ board.name }}</span></a>
     {% empty %}
-    <a href="/boards/" class="sb-item {% block menu_boards %}{% endblock %}" data-tooltip="게시판"><i class="fas fa-clipboard-list"></i><span class="sb-text">게시판</span></a>
+    <a href="/boards/" class="sb-item" data-tooltip="게시판"><i class="fas fa-clipboard-list"></i><span class="sb-text">게시판</span></a>
     {% endfor %}
     </div>
     <div class="sb-divider"></div>
