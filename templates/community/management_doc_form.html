@@ -1,31 +1,55 @@
-{% extends 'base_3panel.html' %}
-{% block menu_docs %}active{% endblock %}
-{% block title %}{% if form.instance.pk %}문서 수정{% else %}문서 등록{% endif %}{% endblock %}
-{% block panel_content %}
-  <h4 class="mb-4 fw-bold">
-    <i class="fas fa-file-alt me-2 text-primary"></i>
-    {% if form.instance.pk %}관리 문서 수정{% else %}관리 문서 등록{% endif %}
-  </h4>
-  <div class="card shadow-sm border-0">
-    <div class="card-body p-4">
-      <form method="post">
+{% extends 'base.html' %}
+{% block title %}{% if object %}문서 수정{% else %}문서 등록{% endif %} — 해솔7 지킴이{% endblock %}
+{% block content %}
+<div style="max-width:680px;margin:0 auto;padding:16px;">
+  <div class="page-header mb-3">
+    <h2 style="font-size:1.1rem;font-weight:700;">
+      <i class="fas fa-file-alt me-2" style="color:#1a7a4a;"></i>
+      {% if object %}문서 수정{% else %}새 문서 등록{% endif %}
+    </h2>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-3">
-          <label class="form-label fw-semibold">카테고리 <span class="text-danger">*</span></label>
-          <input type="text" name="category" class="form-control" placeholder="예: 주차, 펫, 소음, 생활규칙" value="{{ form.category.value|default:'' }}" required>
-          <div class="form-text">기존 카테고리와 동일하게 입력하면 같은 분류로 묶입니다.</div>
+          <label class="form-label">카테고리 *</label>
+          <select name="category" class="form-select" required>
+            {% for val, label in form.fields.category.choices %}
+            <option value="{{ val }}" {% if form.instance.category == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
         </div>
         <div class="mb-3">
-          <label class="form-label fw-semibold">제목 <span class="text-danger">*</span></label>
-          <input type="text" name="title" class="form-control" placeholder="문서 제목을 입력하세요" value="{{ form.title.value|default:'' }}" required>
+          <label class="form-label">제목 *</label>
+          <input type="text" name="title" class="form-control"
+            value="{{ form.instance.title|default:'' }}" required
+            placeholder="문서 제목을 입력하세요">
         </div>
-        <div class="mb-4">
-          <label class="form-label fw-semibold">내용 <span class="text-danger">*</span></label>
-          <textarea name="content" class="form-control" rows="16" placeholder="관리 규약 또는 안내 내용을 입력하세요..." required>{{ form.content.value|default:'' }}</textarea>
+        <div class="mb-3">
+          <label class="form-label">내용</label>
+          <textarea name="content" class="form-control" rows="10"
+            placeholder="문서 내용을 입력하세요">{{ form.instance.content|default:'' }}</textarea>
         </div>
-        <div class="d-flex gap-2 justify-content-end">
+        <div class="mb-3">
+          <label class="form-label">첨부파일</label>
+          <input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.hwp,.xlsx,.xls,.ppt,.pptx">
+          {% if form.instance.file %}
+          <div class="form-text">현재 파일: {{ form.instance.file.name }}</div>
+          {% endif %}
+        </div>
+        <div class="mb-3">
+          <div class="form-check">
+            <input type="checkbox" name="is_active" class="form-check-input" id="is_active"
+              {% if form.instance.is_active or not object %}checked{% endif %}>
+            <label class="form-check-label" for="is_active">공개</label>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-1"></i>{% if object %}저장{% else %}등록{% endif %}
+          </button>
           <a href="{% url 'community:management_doc_list' %}" class="btn btn-outline-secondary">취소</a>
-          <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>저장</button>
         </div>
       </form>
     </div>

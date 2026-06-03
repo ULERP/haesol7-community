@@ -1,98 +1,146 @@
-{% extends 'base_3panel.html' %}
-{% block menu_docs %}active{% endblock %}
-{% block title %}관리 문서 게시판{% endblock %}
-{% block panel_content %}
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-file-alt me-2 text-primary"></i>관리 문서 게시판</h2>
+{% extends 'base.html' %}
+{% block title %}관리 문서 — 해솔7 지킴이{% endblock %}
+{% block extra_head %}
+<style>
+.doc-wrap { max-width: 860px; margin: 0 auto; padding: 16px; }
+.doc-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.doc-header h2 { font-size:1.1rem; font-weight:700; margin:0; color:#111; }
+.filter-bar { background:#fff; border-radius:12px; padding:12px 16px; margin-bottom:16px;
+  border:1px solid #e5e7eb; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.cat-chip { display:inline-block; padding:5px 12px; border-radius:20px; font-size:0.78rem;
+  font-weight:600; text-decoration:none; border:1.5px solid #e5e7eb; color:#6b7280;
+  transition:all .15s; }
+.cat-chip:hover, .cat-chip.active { background:#1a7a4a; color:#fff; border-color:#1a7a4a; }
+.search-input { flex:1; min-width:160px; padding:7px 12px; border:1.5px solid #e5e7eb;
+  border-radius:20px; font-size:0.83rem; outline:none; }
+.search-input:focus { border-color:#1a7a4a; }
+.doc-card { background:#fff; border-radius:14px; border:1px solid #e5e7eb;
+  padding:16px; margin-bottom:10px; display:flex; gap:14px; align-items:flex-start;
+  text-decoration:none; color:inherit; transition:all .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.05); }
+.doc-card:hover { border-color:#1a7a4a; background:#f0fdf7; box-shadow:0 2px 8px rgba(26,122,74,.1); }
+.doc-icon { width:44px; height:44px; border-radius:12px; background:#e8f5ee;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.doc-icon i { font-size:1.2rem; color:#1a7a4a; }
+.doc-body { flex:1; min-width:0; }
+.doc-title { font-size:0.92rem; font-weight:700; color:#111; margin-bottom:4px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.doc-meta { font-size:0.75rem; color:#9ca3af; display:flex; gap:10px; flex-wrap:wrap; }
+.doc-cat { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.7rem;
+  font-weight:600; background:#e8f5ee; color:#1a7a4a; }
+.doc-cat-규정 { background:#fef3c7; color:#92400e; }
+.doc-cat-회의록 { background:#ede9fe; color:#6d28d9; }
+.doc-cat-예산 { background:#fee2e2; color:#991b1b; }
+.doc-cat-계획 { background:#dbeafe; color:#1d4ed8; }
+.doc-cat-기타 { background:#f3f4f6; color:#374151; }
+.lock-banner { background:linear-gradient(135deg,#1a7a4a,#1e9158); border-radius:14px;
+  padding:20px; text-align:center; margin-bottom:16px; }
+.lock-banner h5 { color:#fff; font-weight:700; margin-bottom:6px; font-size:0.95rem; }
+.lock-banner p { color:rgba(255,255,255,.85); font-size:0.8rem; margin-bottom:14px; }
+.btn-w { background:#fff; color:#1a7a4a; padding:9px 20px; border-radius:50px;
+  font-size:0.85rem; font-weight:700; text-decoration:none; display:inline-block; margin:3px; }
+.btn-g { background:rgba(255,255,255,.2); color:#fff; padding:9px 18px; border-radius:50px;
+  font-size:0.85rem; font-weight:600; text-decoration:none; display:inline-block; margin:3px;
+  border:1px solid rgba(255,255,255,.4); }
+.empty-state { text-align:center; padding:48px 20px; color:#9ca3af; }
+.empty-state i { font-size:3rem; display:block; margin-bottom:12px; opacity:.3; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="doc-wrap">
+
+  <div class="doc-header">
+    <h2><i class="fas fa-file-alt me-2" style="color:#1a7a4a;"></i>관리 문서 게시판</h2>
     {% if user.is_staff %}
-    <a href="{% url 'community:management_doc_create' %}" class="btn btn-primary">
-      <i class="fas fa-plus me-1"></i> 문서 등록
+    <a href="{% url 'community:management_doc_create' %}" class="btn btn-success btn-sm">
+      <i class="fas fa-plus me-1"></i>문서 등록
     </a>
     {% endif %}
   </div>
 
-  <div class="card mb-4 shadow-sm">
-    <div class="card-body">
-      <form method="get" class="row g-2 align-items-end">
-        <div class="col-md-4">
-          <label class="form-label small text-muted">카테고리</label>
-          <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="">전체 카테고리</option>
-            {% for cat in categories %}
-            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label small text-muted">검색</label>
-          <div class="input-group input-group-sm">
-            <input type="text" name="q" class="form-control" placeholder="제목 또는 내용 검색..." value="{{ q }}">
-            <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
-          </div>
-        </div>
-        {% if selected_category or q %}
-        <div class="col-md-2">
-          <a href="{% url 'community:management_doc_list' %}" class="btn btn-outline-secondary btn-sm w-100">초기화</a>
-        </div>
-        {% endif %}
-      </form>
-    </div>
-  </div>
-
-  {% if documents %}
-  <div class="row row-cols-1 row-cols-md-2 g-3">
-    {% for doc in documents %}
-    <div class="col">
-      <div class="card h-100 shadow-sm border-0">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">{{ doc.category }}</span>
-            <small class="text-muted">{{ doc.updated_at|date:"Y.m.d" }}</small>
-          </div>
-          <h6 class="card-title fw-bold mb-2">
-            <a href="{% url 'community:management_doc_detail' doc.pk %}" class="text-decoration-none text-dark stretched-link">
-              {{ doc.title }}
-            </a>
-          </h6>
-          <p class="card-text text-muted small">{{ doc.content|truncatechars:80 }}</p>
-        </div>
-        {% if user.is_staff %}
-        <div class="card-footer bg-transparent border-0 d-flex gap-2">
-          <a href="{% url 'community:management_doc_edit' doc.pk %}" class="btn btn-outline-secondary btn-sm">수정</a>
-          <a href="{% url 'community:management_doc_delete' doc.pk %}" class="btn btn-outline-danger btn-sm">삭제</a>
-        </div>
-        {% endif %}
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-
-  {% if is_paginated %}
-  <nav class="mt-4">
-    <ul class="pagination justify-content-center">
-      {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&category={{ selected_category }}&q={{ q }}">이전</a></li>
-      {% endif %}
-      {% for num in page_obj.paginator.page_range %}
-      <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-        <a class="page-link" href="?page={{ num }}&category={{ selected_category }}&q={{ q }}">{{ num }}</a>
-      </li>
-      {% endfor %}
-      {% if page_obj.has_next %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&category={{ selected_category }}&q={{ q }}">다음</a></li>
-      {% endif %}
-    </ul>
-  </nav>
-  {% endif %}
-
-  {% else %}
-  <div class="text-center py-5 text-muted">
-    <i class="fas fa-folder-open fa-3x mb-3 d-block"></i>
-    <p>등록된 문서가 없습니다.</p>
-    {% if user.is_staff %}
-    <a href="{% url 'community:management_doc_create' %}" class="btn btn-primary btn-sm">첫 문서 등록하기</a>
+  <!-- 잠금 배너 -->
+  {% if is_locked %}
+  <div class="lock-banner">
+    <div style="font-size:1.8rem;margin-bottom:8px;">📂</div>
+    {% if reason == 'login' %}
+    <h5>로그인 후 문서를 열람할 수 있어요</h5>
+    <p>단지 관리 규약, 회의록, 예산 등 공식 문서를<br>입주민 커뮤니티 회원만 확인할 수 있어요</p>
+    <a href="/accounts/login/?next={{ request.path }}" class="btn-w"><i class="fas fa-sign-in-alt me-1"></i>로그인</a>
+    <a href="/accounts/signup/" class="btn-g">회원가입</a>
+    {% else %}
+    <h5>입주민 인증 후 문서를 열람할 수 있어요</h5>
+    <p>관리자 승인이 완료되면 모든 관리 문서를<br>자유롭게 확인할 수 있어요</p>
+    <a href="/verify/request/" class="btn-w"><i class="fas fa-id-card me-1"></i>인증 신청</a>
+    <a href="/mypage/" class="btn-g">승인 현황</a>
     {% endif %}
   </div>
   {% endif %}
+
+  <!-- 카테고리 + 검색 필터 -->
+  <form method="get" class="filter-bar">
+    <a href="{% url 'community:management_doc_list' %}"
+       class="cat-chip {% if not selected_category %}active{% endif %}">전체</a>
+    {% for val, label in categories %}
+    <a href="?category={{ val }}{% if q %}&q={{ q }}{% endif %}"
+       class="cat-chip doc-cat-{{ val }} {% if selected_category == val %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+    <div style="flex:1;display:flex;gap:6px;min-width:200px;">
+      <input type="text" name="q" class="search-input" placeholder="검색..." value="{{ q }}">
+      {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+      <button type="submit" style="background:#1a7a4a;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:0.82rem;cursor:pointer;">검색</button>
+    </div>
+  </form>
+
+  <!-- 문서 목록 -->
+  {% if documents %}
+    {% for doc in documents %}
+    <a href="{% url 'community:management_doc_detail' doc.pk %}" class="doc-card">
+      <div class="doc-icon">
+        {% if doc.file %}<i class="fas fa-file-pdf"></i>
+        {% else %}<i class="fas fa-file-alt"></i>{% endif %}
+      </div>
+      <div class="doc-body">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <span class="doc-cat doc-cat-{{ doc.category }}">{{ doc.category }}</span>
+          {% if doc.file %}<span style="font-size:0.68rem;color:#9ca3af;"><i class="fas fa-paperclip me-1"></i>첨부</span>{% endif %}
+        </div>
+        <div class="doc-title">{{ doc.title }}</div>
+        <div class="doc-meta">
+          <span><i class="fas fa-eye me-1"></i>{{ doc.view_count }}</span>
+          <span><i class="fas fa-clock me-1"></i>{{ doc.updated_at|date:"Y.m.d" }}</span>
+          {% if doc.author %}<span><i class="fas fa-user me-1"></i>{{ doc.author.nickname|default:doc.author.username }}</span>{% endif %}
+        </div>
+      </div>
+      {% if is_locked %}
+      <div style="flex-shrink:0;"><i class="fas fa-lock" style="color:#d1d5db;font-size:0.9rem;"></i></div>
+      {% endif %}
+    </a>
+    {% endfor %}
+
+    <!-- 페이지네이션 -->
+    {% if is_paginated %}
+    <nav class="mt-3 d-flex justify-content-center">
+      <ul class="pagination pagination-sm mb-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&category={{ selected_category }}&q={{ q }}">이전</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&category={{ selected_category }}&q={{ q }}">다음</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-folder-open"></i>
+    <p>{% if q or selected_category %}검색 결과가 없어요{% else %}등록된 문서가 없어요{% endif %}</p>
+    {% if user.is_staff %}
+    <a href="{% url 'community:management_doc_create' %}" class="btn btn-success btn-sm mt-2">첫 문서 등록하기</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
 </div>
 {% endblock %}

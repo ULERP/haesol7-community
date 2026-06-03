@@ -43,10 +43,25 @@ class ManagementDocumentListView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class ManagementDocumentDetailView(LoginRequiredMixin, DetailView):
+class ManagementDocumentDetailView(DetailView):
     model = ManagementDocument
     template_name = 'community/management_doc_detail.html'
     context_object_name = 'document'
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            from django.shortcuts import render
+            doc = self.get_object()
+            return render(request, 'community/management_doc_teaser.html',
+                         {'document': doc, 'reason': 'login'})
+        if not request.user.is_verified and not request.user.is_staff:
+            from django.shortcuts import render
+            doc = self.get_object()
+            return render(request, 'community/management_doc_teaser.html',
+                         {'document': doc, 'reason': 'verify'})
+        self.object = self.get_object()
+        ManagementDocument.objects.filter(pk=self.object.pk).update(
+            view_count=self.object.view_count + 1)
+        return super().get(request, *args, **kwargs)
 
 
 class ManagementDocumentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
