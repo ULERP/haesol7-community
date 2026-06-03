@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}{{ document.title }} — 해솔7 지킴이{% endblock %}
+{% block extra_head %}
+<style>
+.wrap{max-width:680px;margin:0 auto;padding:16px;}
+.doc-header-card{background:#fff;border-radius:14px;padding:20px;margin-bottom:14px;border:1px solid #e5e7eb;}
+.doc-title{font-size:1.05rem;font-weight:700;color:#111;margin-bottom:8px;}
+.doc-meta{font-size:0.78rem;color:#9ca3af;display:flex;gap:12px;flex-wrap:wrap;}
+.blurred{position:relative;border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.blurred-inner{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:20px;
+  filter:blur(5px);user-select:none;pointer-events:none;min-height:180px;}
+.blurred-overlay{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:10;
+  background:linear-gradient(to bottom,rgba(255,255,255,0) 0%,rgba(255,255,255,.95) 55%);}
+.lock-icon{font-size:2.5rem;margin-bottom:10px;}
+.lock-msg{font-size:0.95rem;font-weight:700;color:#111;margin-bottom:4px;}
+.lock-sub{font-size:0.82rem;color:#6b7280;margin-bottom:18px;text-align:center;}
+.cta-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.btn-p{background:#1a7a4a;color:#fff;padding:10px 24px;border-radius:50px;
+  font-size:0.88rem;font-weight:700;text-decoration:none;}
+.btn-s{background:#fff;color:#1a7a4a;padding:10px 22px;border-radius:50px;
+  font-size:0.88rem;font-weight:600;text-decoration:none;border:1.5px solid #1a7a4a;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="doc-header-card">
+    <div style="margin-bottom:8px;">
+      <span style="background:#e8f5ee;color:#1a7a4a;padding:3px 10px;border-radius:10px;font-size:0.75rem;font-weight:600;">{{ document.category }}</span>
+      {% if document.file %}<span style="font-size:0.73rem;color:#9ca3af;margin-left:8px;"><i class="fas fa-paperclip me-1"></i>첨부파일 있음</span>{% endif %}
+    </div>
+    <div class="doc-title">{{ document.title }}</div>
+    <div class="doc-meta">
+      <span><i class="fas fa-eye me-1"></i>{{ document.view_count }}</span>
+      <span><i class="fas fa-clock me-1"></i>{{ document.updated_at|date:"Y.m.d" }}</span>
+    </div>
+  </div>
+
+  <div class="blurred">
+    <div class="blurred-inner">
+      <p>이 문서의 내용을 확인하려면 입주민 인증이 필요합니다.</p>
+      <p>단지 관리 규약, 회의록, 예산 등 공식 문서를 확인하세요.</p>
+      <p>입주민 여러분의 권리와 의무를 함께 확인해요.</p>
+    </div>
+    <div class="blurred-overlay">
+      <div class="lock-icon">🔒</div>
+      {% if reason == 'login' %}
+      <div class="lock-msg">로그인이 필요해요</div>
+      <div class="lock-sub">입주민 커뮤니티 회원만<br>관리 문서를 열람할 수 있어요</div>
+      <div class="cta-btns">
+        <a href="/accounts/login/?next={{ request.path }}" class="btn-p"><i class="fas fa-sign-in-alt me-1"></i>로그인</a>
+        <a href="/accounts/signup/" class="btn-s">회원가입</a>
+      </div>
+      {% else %}
+      <div class="lock-msg">입주민 인증이 필요해요</div>
+      <div class="lock-sub">관리자 승인 후<br>모든 관리 문서를 열람할 수 있어요</div>
+      <div class="cta-btns">
+        <a href="/verify/request/" class="btn-p"><i class="fas fa-id-card me-1"></i>인증 신청</a>
+        <a href="/mypage/" class="btn-s">승인 현황</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:8px;">
+    <a href="{% url 'community:management_doc_list' %}" style="color:#1a7a4a;font-size:0.83rem;font-weight:600;text-decoration:none;">
+      <i class="fas fa-arrow-left me-1"></i>목록으로
+    </a>
+  </div>
+</div>
+{% endblock %}
