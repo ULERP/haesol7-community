@@ -43,6 +43,21 @@
       </div>
     </div>
     <div class="card-body py-4">
+      <!-- 수정/삭제 버튼 -->
+      {% if user.is_authenticated %}{% if user == post.author or user.is_staff %}
+      <div class="d-flex justify-content-end gap-2 mb-3">
+        <a href="{% url 'post_edit' post.pk %}" class="btn btn-outline-secondary btn-sm" style="border-radius:20px;font-size:0.78rem;">
+          <i class="fas fa-pen me-1"></i>수정
+        </a>
+        <form method="post" action="{% url 'post_delete' post.pk %}" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius:20px;font-size:0.78rem;"
+                  onclick="return confirm('정말 삭제하시겠어요?')">
+            <i class="fas fa-trash me-1"></i>삭제
+          </button>
+        </form>
+      </div>
+      {% endif %}{% endif %}
       <div class="post-content ql-editor" style="padding:0;line-height:1.85;font-size:0.95rem;">{{ post.content|safe }}</div>
       <style>
         .post-content img { max-width:100%; border-radius:10px; margin:8px 0; }

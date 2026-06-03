@@ -3093,3 +3093,91 @@ def friend_list(request):
         'following': following,
         'followers': followers,
     })
+
+
+# ============================================================================
+# 소모임 유저 검색 + 초대
+# ============================================================================
+@login_required
+def group_invite(request, pk):
+    """닉네임/ID로 유저 검색 후 소모임 초대"""
+    from .models import Group, GroupMember, GroupLeaderLog, Notification
+    from django.utils import timezone
+    group = get_object_or_404(Group, pk=pk)
+    my_membership = GroupMember.objects.filter(
+        group=group, user=request.user, is_active=True
+    ).first()
+    if not my_membership or my_membership.role not in ('leader', 'moderator'):
+        messages.error(request, '방장/운영진만 초대할 수 있어요.')
+        return redirect('group_detail', pk=pk)
+
+    search_results = []
+    q = request.GET.get('q', '').strip()
+    if q:
+        search_results = CustomUser.objects.filter(
+            is_verified=True
+        ).filter(
+            models.Q(nickname__icontains=q) | models.Q(username__icontains=q)
+        ).exclude(pk=request.user.pk).exclude(
+            pk__in=GroupMember.objects.filter(
+                group=group, is_active=True
+            ).values_list('user_id', flat=True)
+        )[:10]
+
+    if request.method == 'POST':
+        target_id = request.POST.get('user_id')
+        target = get_object_or_404(CustomUser, pk=target_id)
+        existing = GroupMember.objects.filter(group=group, user=target).first()
+        if existing and existing.is_active:
+            messages.warning(request, f'{target.nickname or target.username}님은 이미 멤버예요.')
+        else:
+            GroupMember.objects.update_or_create(
+                group=group, user=target,
+                defaults={'join_status': 'approved', 'is_active': True,
+                          'role': 'member', 'approved_at': timezone.now(),
+                          'approved_by': request.user}
+            )
+            GroupLeaderLog.objects.create(
+                group=group, actor=request.user, target=target, action='invite'
+            )
+            Notification.objects.create(
+                recipient=target,
+                title=f'[{group.name}] 소모임 초대',
+                message=f'{request.user.nickname or request.user.username}님이 "{group.name}" 소모임에 초대했어요!',
+                notification_type='community',
+            )
+            messages.success(request, f'{target.nickname or target.username}님을 초대했어요!')
+            return redirect('group_detail', pk=pk)
+
+    return render(request, 'group_invite.html', {
+        'group': group,
+        'search_results': search_results,
+        'q': q,
+    })
+
+
+@login_required
+def user_search_api(request):
+    """유저 검색 API (소모임 초대용)"""
+    from django.http import JsonResponse
+    q = request.GET.get('q', '').strip()
+    exclude_group = request.GET.get('group_id')
+    if len(q) < 1:
+        return JsonResponse({'results': []})
+    qs = CustomUser.objects.filter(
+        is_verified=True
+    ).filter(
+        models.Q(nickname__icontains=q) | models.Q(username__icontains=q)
+    ).exclude(pk=request.user.pk)
+    if exclude_group:
+        qs = qs.exclude(
+            pk__in=GroupMember.objects.filter(
+                group_id=exclude_group, is_active=True
+            ).values_list('user_id', flat=True)
+        )
+    results = [
+        {'id': u.pk, 'name': u.nickname or u.username,
+         'dong': u.dong or '', 'initial': (u.nickname or u.username)[0].upper()}
+        for u in qs[:8]
+    ]
+    return JsonResponse({'results': results})
