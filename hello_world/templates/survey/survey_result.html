@@ -1,4 +1,4 @@
-{% extends 'base_3panel.html' %}
+{% extends 'base_2panel.html' %}
 {% block menu_surveys %}active{% endblock %}
 {% block title %}{{ survey.title }} — 결과{% endblock %}
 {% block extra_head %}
@@ -24,7 +24,7 @@
 .chart-toggle button.active { background:var(--g); color:#fff; border-color:var(--g); }
 </style>
 {% endblock %}
-{% block panel_content %}
+{% block content %}
 <div style="max-width:999px;display:none;"><div style="max-width:800px;">
   <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">

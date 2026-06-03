@@ -1,751 +1,733 @@
 {% extends 'base.html' %}
 {% block title %}해솔7 지킴이 — 홈{% endblock %}
-
 {% block extra_head %}
 <style>
-  :root { --g:#1a7a4a; --gl:#e8f5ee; --gb:#a8d5b8; }
-  body { background:#f8fafb; }
-  .layout { display:grid; grid-template-columns:200px 1fr 220px; gap:10px; height:calc(100vh - 52px); padding:10px; }
-  @media (max-width:1024px) {
-    .layout { grid-template-columns:1fr !important; height:auto; padding-bottom:74px; }
-    .panel-left { display:none !important; }
-    .panel-right { display:none !important; }
-    .panel-center { border-radius:0 !important; border:none !important; box-shadow:none !important; }
-  }
-  .panel { background:#fff; border-radius:14px; border:1px solid var(--border,#e5e7eb); box-shadow:0 1px 3px rgba(0,0,0,.05); display:flex; flex-direction:column; overflow:hidden; }
-  .ph { padding:10px 13px; border-bottom:1px solid #f0f2f4; background:#fafbfc; flex-shrink:0; }
-  .ph-title { font-size:0.82rem; font-weight:700; color:#333; margin:0; }
-  .pb { flex:1; overflow-y:auto; padding:10px; }
-  .pb::-webkit-scrollbar { width:3px; }
-  .pb::-webkit-scrollbar-thumb { background:#ddd; border-radius:3px; }
-  .sec-label { font-size:0.67rem; color:#aaa; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:8px 4px 4px; }
-  .res-item { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:8px; text-decoration:none; color:inherit; transition:background .12s; }
-  .res-item:hover { background:var(--gl); }
-  .res-av { width:28px; height:28px; border-radius:50%; background:var(--g); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.72rem; flex-shrink:0; }
-  .online-dot { width:7px; height:7px; border-radius:50%; background:#28a745; flex-shrink:0; }
-  .grp-item { display:flex; align-items:center; gap:7px; padding:6px 8px; border-radius:8px; text-decoration:none; color:inherit; font-size:0.8rem; transition:background .12s; }
-  .grp-item:hover { background:var(--gl); }
-  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:4px; }
-  .stat-box { background:#f8fafb; border-radius:8px; padding:8px; text-align:center; border:1px solid #eef1f5; }
-  .stat-n { font-size:1.1rem; font-weight:700; color:var(--g); }
-  .stat-l { font-size:0.68rem; color:#999; }
-  .feed { flex:1; overflow-y:auto; }
-  .feed::-webkit-scrollbar { width:3px; }
-  .feed::-webkit-scrollbar-thumb { background:#ddd; border-radius:3px; }
-  .complex-banner { position:relative; height:150px; overflow:hidden; flex-shrink:0; background:linear-gradient(135deg,#1a7a4a 0%,#1e9158 40%,#166b3f 100%); }
-  .complex-banner-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,.05) 0%,rgba(0,0,0,.55) 100%); }
-  .complex-banner-content { position:absolute; bottom:0; left:0; right:0; padding:14px 16px; }
-  .complex-name { font-size:1.15rem; font-weight:700; color:#fff; margin:0; line-height:1.3; }
-  .complex-sub { font-size:0.75rem; color:rgba(255,255,255,.8); margin-top:3px; }
-  .complex-badge { position:absolute; top:12px; right:12px; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.35); border-radius:20px; padding:4px 10px; font-size:0.72rem; color:#fff; font-weight:600; }
-  .icon-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:14px 12px; flex-shrink:0; border-bottom:1px solid #f0f2f4; background:#fff; }
-  .icon-btn { display:flex; flex-direction:column; align-items:center; gap:6px; padding:13px 6px 10px; border-radius:16px; text-decoration:none; color:#374151; font-size:0.7rem; font-weight:600; background:#f8fafb; border:1.5px solid #eef1f5; cursor:pointer; position:relative; transition:all .18s; }
-  .icon-btn:hover, .icon-btn:active { background:var(--gl); color:var(--g); border-color:var(--gb); transform:translateY(-2px); box-shadow:0 4px 12px rgba(26,122,74,.15); }
-  .icon-btn .icon-circle { width:44px; height:44px; border-radius:14px; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.08); margin-bottom:2px; }
-  .icon-btn i { font-size:1.5rem; color:var(--g); }
-  .icon-btn .bdot { position:absolute; top:8px; right:calc(50% - 18px); background:#e53935; color:#fff; border-radius:10px; font-size:0.55rem; font-weight:700; padding:1px 5px; min-width:14px; text-align:center; }
-  @media (max-width:768px) {
-    .icon-btn { border-radius:14px; padding:12px 4px 9px; }
-    .icon-btn .icon-circle { width:40px; height:40px; border-radius:12px; }
-    .icon-btn i { font-size:1.4rem; }
-  }
-  .feed-section { padding:12px 14px; border-bottom:1px solid #f0f2f4; }
-  .feed-section:last-child { border-bottom:none; }
-  .feed-section:nth-child(odd)  { background:#ffffff; }
-  .feed-section:nth-child(even) { background:#f0f7f3; border-top:1px solid #e8f2ec; border-bottom:1px solid #e8f2ec; }
+:root{--g:#1a7a4a;--gl:#e8f5ee;--gb:#a8d5b8;--g2:#15623c;
+  --sidebar-w:220px;--rpanel-w:280px;--nav-h:52px;
+  --border:#e5e7eb;--bg:#f8fafb;--shadow:0 1px 3px rgba(0,0,0,.06);}
 
-  /* 히어로 스크롤 효과 */
-  .mob-hero-wrap { position:relative; overflow:hidden; transition:height .3s ease, opacity .3s ease; background:#1a7a4a; min-height:280px; }
-  .mob-hero-bg { position:absolute; top:0; left:0; right:0; height:65%; background-size:cover; background-position:center; z-index:1; }
-  .mob-hero-overlay { position:absolute; inset:0; z-index:2;
-    background: linear-gradient(to bottom, rgba(0,0,0,.3) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.5) 100%); }
-  .mob-hero-deco { display:none; }
-  .mob-hero-content { position:relative; z-index:3; padding:22px 16px 18px; }
-  .mob-hero-greeting { font-size:0.78rem; color:rgba(255,255,255,.9); margin-bottom:2px; }
-  .mob-hero-name { font-size:1.15rem; font-weight:700; color:#fff; text-shadow:0 1px 6px rgba(0,0,0,.5); }
-  .mob-hero-badge { display:inline-block; margin-top:6px; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4); border-radius:20px; padding:3px 10px; font-size:0.7rem; color:#fff; }
+/* ── 전체 레이아웃 ── */
+.home-layout{display:grid;grid-template-columns:var(--sidebar-w) 1fr var(--rpanel-w);
+  gap:0;min-height:calc(100vh - var(--nav-h));transition:grid-template-columns .25s ease;}
+.home-layout.hide-left{grid-template-columns:44px 1fr var(--rpanel-w);}
+.home-layout.hide-right{grid-template-columns:var(--sidebar-w) 1fr 44px;}
+.home-layout.hide-both{grid-template-columns:44px 1fr 44px;}
 
-  /* 모바일 퀵메뉴 개선 */
-  @media (max-width:768px) {
-    .complex-banner { display:none; }
-    .mob-hero-wrap { display:block !important; }
-    .icon-btn { border-radius:14px; padding:13px 6px; }
-    .icon-btn i { font-size:1.5rem; }
-  }
-  @media (min-width:769px) {
-    .mob-hero-wrap { display:none; }
-  }
-  /* 모바일 히어로 퀵메뉴 */
-  .mob-hero-triangle { position:absolute; bottom:0; left:0; right:0; height:50%; background:#ffffff; clip-path:polygon(0 45%, 100% 0%, 100% 100%, 0% 100%); z-index:2; }
-  .mob-icon-grid-wrap { position:relative; z-index:3; margin:12px 10px 0; background:#fff; border-radius:16px; padding:14px 10px; box-shadow:0 2px 12px rgba(0,0,0,.12); }
-  .mob-icon-row1 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:10px; }
-  .mob-icon-row2 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-  .mob-icon-btn { display:flex; flex-direction:column; align-items:center; gap:4px; text-decoration:none; color:#333; font-size:0.66rem; font-weight:600; }
-  .mob-icon-circle { width:44px; height:44px; border-radius:13px; background:#f0f7f3; border:1px solid #d0e8d8; display:flex; align-items:center; justify-content:center; transition:background .15s; }
-  .mob-icon-circle i { font-size:1.25rem; color:#1a7a4a; }
-  .mob-icon-btn:active .mob-icon-circle { background:#d0e8d8; }
-  .sec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-  .sec-title { font-size:0.82rem; font-weight:700; color:#222; display:flex; align-items:center; gap:5px; }
-  .sec-more { font-size:0.72rem; color:var(--g); text-decoration:none; font-weight:600; }
-  .notice-card { display:flex; align-items:center; gap:8px; padding:10px 12px; background:#fff; border-radius:10px; margin-bottom:6px; text-decoration:none; color:inherit; transition:all .15s; border-left:3px solid var(--g,#1a7a4a); border:1px solid #e5e7eb; border-left:3px solid var(--g,#1a7a4a); box-shadow:0 1px 2px rgba(0,0,0,.04); }
-  .notice-card:hover { background:var(--gl,#f0fdf7); border-color:var(--gb,#c6e8d8); }
-  .notice-card:last-child { margin-bottom:0; }
-  .notice-title { font-size:0.82rem; font-weight:600; flex:1; }
-  .notice-date { font-size:0.7rem; color:#aaa; flex-shrink:0; }
-  .post-card { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; background:#fff; border-radius:10px; margin-bottom:6px; text-decoration:none; color:inherit; transition:all .15s; border:1px solid #e5e7eb; box-shadow:0 1px 2px rgba(0,0,0,.04); }
-  .post-card:hover { background:var(--gl,#f0fdf7); border-color:var(--gb,#c6e8d8); }
-  .post-card:last-child { margin-bottom:0; }
-  .post-rank { font-size:1rem; font-weight:700; color:var(--g); width:20px; flex-shrink:0; text-align:center; line-height:1.6; }
-  .post-body { flex:1; min-width:0; }
-  .post-title { font-size:0.82rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .post-meta { font-size:0.7rem; color:#aaa; margin-top:2px; display:flex; gap:6px; align-items:center; }
-  .post-like { color:#e74c3c; }
-  .chat-preview { background:#fff; border-radius:10px; padding:12px; border:1px solid #e5e7eb; }
-  .chat-row { display:flex; align-items:flex-start; gap:7px; margin-bottom:6px; }
-  .chat-row:last-child { margin-bottom:0; }
-  .chat-av { width:26px; height:26px; border-radius:50%; background:var(--g); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.7rem; flex-shrink:0; }
-  .chat-msg { flex:1; min-width:0; }
-  .chat-nick { font-size:0.7rem; color:#888; }
-  .chat-text { font-size:0.8rem; color:#333; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .chat-time { font-size:0.68rem; color:#bbb; flex-shrink:0; }
-  .stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
-  .stat-item { background:#fff; border-radius:10px; padding:12px; text-align:center; border:1px solid #e5e7eb; }
-  .stat-num { font-size:1.2rem; font-weight:700; color:var(--g); }
-  .stat-lbl { font-size:0.68rem; color:#888; margin-top:2px; }
-  .info-sec { margin-bottom:12px; }
-  .info-sec-title { font-size:0.68rem; color:#aaa; font-weight:700; letter-spacing:.03em; margin-bottom:5px; }
-  .info-card { display:block; background:#fff; border-radius:9px; padding:9px 12px; margin-bottom:5px; font-size:0.78rem; text-decoration:none; color:inherit; transition:all .15s; border:1px solid #e5e7eb; }
-  .info-card:hover { background:var(--gl,#f0fdf7); border-color:var(--gb,#c6e8d8); }
-  .info-card-t { font-weight:600; color:#222; font-size:0.79rem; margin-bottom:1px; }
-  .info-card-s { color:#999; font-size:0.72rem; }
-  .suggest-card { background:#fff; border:1px solid #e4e6ea; border-radius:10px; padding:9px 11px; margin-bottom:5px; display:flex; align-items:center; gap:9px; text-decoration:none; color:inherit; transition:border-color .15s; }
-  .suggest-card:hover { border-color:var(--gb); }
-  .suggest-icon { width:34px; height:34px; border-radius:9px; background:var(--gl); display:flex; align-items:center; justify-content:font-size:1rem; flex-shrink:0; }
-  /* 모바일 하단 탭바 */
-  .mob-tabbar { display:none; position:fixed; bottom:0; left:0; right:0; height:60px; background:#fff; border-top:1px solid var(--border,#e5e7eb); z-index:200; box-shadow:0 -2px 12px rgba(0,0,0,.06); }
-  .mob-tabbar-inner { display:flex; height:100%; }
-  .mob-tab { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; text-decoration:none; color:#9ca3af; font-size:0.6rem; font-weight:600; transition:color .15s; border:none; background:none; cursor:pointer; padding:0; }
-  .mob-tab i { font-size:1.2rem; }
-  .mob-tab.active { color:var(--g); }
-  @media (max-width:1024px) { .mob-tabbar { display:block; } }
-  /* 더보기 슬라이드업 패널 */
-  .more-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:300; }
-  .more-backdrop.show { display:block; }
-  .more-panel { position:fixed; bottom:-100%; left:0; right:0; background:#fff;
-    border-radius:20px 20px 0 0; z-index:301; transition:bottom .3s ease;
-    padding-bottom:env(safe-area-inset-bottom); max-height:85vh; overflow-y:auto; }
-  .more-panel.show { bottom:0; }
-  .more-handle { width:36px; height:4px; background:#e5e7eb; border-radius:2px;
-    margin:10px auto 4px; }
-  .more-header { padding:8px 20px 12px; border-bottom:1px solid #f0f2f4; }
-  .more-header-title { font-size:0.88rem; font-weight:700; color:#111; }
-  .more-section { padding:12px 16px; }
-  .more-section-title { font-size:0.68rem; font-weight:700; color:#9ca3af;
-    text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; padding:0 4px; }
-  .more-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-  .more-item { display:flex; flex-direction:column; align-items:center; gap:5px;
-    text-decoration:none; color:#374151; padding:12px 4px 10px;
-    border-radius:12px; background:#f8fafb; border:1px solid #eef1f5;
-    font-size:0.66rem; font-weight:600; transition:all .15s; }
-  .more-item:active { background:#e8f5ee; color:#1a7a4a; }
-  .more-item i { font-size:1.3rem; color:#1a7a4a; }
-  .more-divider { height:1px; background:#f0f2f4; margin:4px 0; }
-  /* 로그인/로그아웃 영역 */
-  .more-user { display:flex; align-items:center; gap:12px; padding:12px 16px;
-    border-bottom:1px solid #f0f2f4; }
-  .more-user-av { width:40px; height:40px; border-radius:50%; background:#1a7a4a;
-    color:#fff; display:flex; align-items:center; justify-content:center;
-    font-weight:700; font-size:1rem; flex-shrink:0; }
-  .more-user-info { flex:1; }
-  .more-user-name { font-size:0.88rem; font-weight:700; color:#111; }
-  .more-user-sub { font-size:0.73rem; color:#9ca3af; }
+/* ── 사이드바 (좌측) ── */
+.sidebar-l{position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));
+  overflow:hidden;border-right:1px solid var(--border);background:#fff;
+  display:flex;flex-direction:column;transition:width .25s ease;}
+.sidebar-l.collapsed{width:44px;overflow:hidden;}
+.sidebar-l .sb-inner{padding:12px 8px;overflow-y:auto;flex:1;min-width:var(--sidebar-w);}
+.sidebar-l.collapsed .sb-inner{padding:8px 4px;}
+.sidebar-l.collapsed .sb-label,.sidebar-l.collapsed .sb-text,
+.sidebar-l.collapsed .sb-user-info,.sidebar-l.collapsed .sb-stats,
+.sidebar-l.collapsed .sb-divider{display:none;}
+.sidebar-l.collapsed .sb-item{justify-content:center;padding:10px 0;}
+.sidebar-l.collapsed .sb-item i{width:auto;}
+.sidebar-l .sb-toggle{position:absolute;bottom:12px;left:0;right:0;
+  display:flex;justify-content:center;}
+
+/* ── 우측 라이브 패널 ── */
+.sidebar-r{position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));
+  overflow:hidden;border-left:1px solid var(--border);background:#fff;
+  display:flex;flex-direction:column;transition:all .25s ease;}
+.sidebar-r.collapsed{width:44px;overflow:hidden;}
+.sidebar-r .rp-inner{flex:1;overflow-y:auto;min-width:var(--rpanel-w);}
+.sidebar-r.collapsed .rp-inner{display:none;}
+.sidebar-r .rp-toggle{padding:10px;display:flex;justify-content:center;border-bottom:1px solid var(--border);}
+
+/* ── 메인 콘텐츠 ── */
+.home-main{padding:0;overflow-y:auto;background:var(--bg);}
+
+/* ── 사이드바 공통 ── */
+.sb-user{background:var(--gl);border-radius:10px;padding:10px;margin-bottom:8px;
+  display:block;text-decoration:none;color:inherit;}
+.sb-user:hover{background:var(--gb);}
+.sb-user-av{width:36px;height:36px;border-radius:50%;background:var(--g);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;}
+.sb-user-name{font-size:0.82rem;font-weight:700;color:#111;}
+.sb-user-sub{font-size:0.68rem;color:#6b7280;}
+.sb-stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px;}
+.sb-stat{background:#fff;border-radius:7px;padding:5px;text-align:center;border:1px solid var(--border);}
+.sb-stat-n{font-size:0.95rem;font-weight:700;color:var(--g);}
+.sb-stat-l{font-size:0.6rem;color:#9ca3af;}
+.sb-label{font-size:0.62rem;font-weight:700;color:#9ca3af;text-transform:uppercase;
+  letter-spacing:.06em;padding:8px 8px 3px;}
+.sb-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;
+  text-decoration:none;color:#374151;font-size:0.81rem;font-weight:500;
+  transition:all .12s;border:none;background:none;width:100%;cursor:pointer;}
+.sb-item:hover{background:var(--gl);color:var(--g);}
+.sb-item.active{background:var(--gl);color:var(--g);font-weight:700;}
+.sb-item i{width:15px;text-align:center;color:var(--g);font-size:0.85rem;flex-shrink:0;}
+.sb-divider{height:1px;background:var(--border);margin:5px 4px;}
+.sb-text{display:inline;}
+
+/* ── 홈 히어로 ── */
+.home-hero{position:relative;height:180px;overflow:hidden;
+  background:linear-gradient(135deg,#1a7a4a 0%,#1e9158 50%,#166b3f 100%);}
+.home-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:1;}
+.home-hero-overlay{position:absolute;inset:0;z-index:2;
+  background:linear-gradient(to bottom,rgba(0,0,0,.1) 0%,rgba(0,0,0,.5) 100%);}
+.home-hero-content{position:relative;z-index:3;padding:20px 24px;height:100%;
+  display:flex;flex-direction:column;justify-content:flex-end;}
+.home-hero-title{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:4px;text-shadow:0 1px 8px rgba(0,0,0,.4);}
+.home-hero-sub{font-size:0.8rem;color:rgba(255,255,255,.85);}
+.home-hero-stats{position:absolute;top:16px;right:16px;z-index:3;
+  display:flex;gap:8px;}
+.hero-stat{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+  border-radius:10px;padding:6px 12px;text-align:center;}
+.hero-stat-n{font-size:1.1rem;font-weight:700;color:#fff;line-height:1;}
+.hero-stat-l{font-size:0.62rem;color:rgba(255,255,255,.8);}
+
+/* ── 퀵 액션 바 ── */
+.quick-bar{display:flex;gap:8px;padding:12px 16px;background:#fff;
+  border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;}
+.quick-bar::-webkit-scrollbar{display:none;}
+.qb-btn{display:flex;flex-direction:column;align-items:center;gap:4px;
+  text-decoration:none;color:#374151;font-size:0.68rem;font-weight:600;
+  padding:8px 12px;border-radius:12px;background:var(--bg);
+  border:1.5px solid var(--border);white-space:nowrap;transition:all .15s;flex-shrink:0;}
+.qb-btn:hover{background:var(--gl);color:var(--g);border-color:var(--gb);}
+.qb-btn i{font-size:1.1rem;color:var(--g);}
+
+/* ── 2컬럼 대시보드 ── */
+.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 16px;}
+.dash-col{display:flex;flex-direction:column;gap:12px;}
+
+/* ── 위젯 카드 ── */
+.widget{background:#fff;border-radius:14px;border:1px solid var(--border);
+  box-shadow:var(--shadow);overflow:hidden;}
+.widget-header{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;border-bottom:1px solid #f0f2f4;background:#fafbfc;}
+.widget-title{font-size:0.8rem;font-weight:700;color:#111;display:flex;align-items:center;gap:6px;}
+.widget-more{font-size:0.72rem;color:var(--g);text-decoration:none;font-weight:600;}
+.widget-more:hover{text-decoration:underline;}
+.widget-body{padding:12px 14px;}
+
+/* 공지 아이템 */
+.notice-item{display:flex;align-items:center;gap:8px;padding:8px 0;
+  border-bottom:1px solid #f8fafb;text-decoration:none;color:inherit;}
+.notice-item:last-child{border-bottom:none;}
+.notice-item:hover .ni-title{color:var(--g);}
+.ni-badge{font-size:0.62rem;padding:2px 6px;border-radius:6px;font-weight:600;
+  background:#fef3c7;color:#92400e;flex-shrink:0;}
+.ni-title{font-size:0.82rem;font-weight:600;flex:1;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.ni-date{font-size:0.68rem;color:#9ca3af;flex-shrink:0;}
+
+/* 인기글 */
+.hot-item{display:flex;align-items:center;gap:8px;padding:8px 0;
+  border-bottom:1px solid #f8fafb;text-decoration:none;color:inherit;}
+.hot-item:last-child{border-bottom:none;}
+.hot-item:hover .hi-title{color:var(--g);}
+.hi-rank{font-size:1rem;font-weight:800;color:var(--gb);width:18px;text-align:center;flex-shrink:0;}
+.hi-rank.top{color:var(--g);}
+.hi-body{flex:1;min-width:0;}
+.hi-title{font-size:0.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hi-meta{font-size:0.7rem;color:#9ca3af;display:flex;gap:6px;}
+
+/* 활동 현황 게이지 */
+.gauge-row{margin-bottom:10px;}
+.gauge-label{display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:3px;}
+.gauge-bar{height:7px;background:#f0f2f4;border-radius:4px;overflow:hidden;}
+.gauge-fill{height:100%;border-radius:4px;transition:width 1s;}
+
+/* 채팅 미리보기 */
+.chat-item{display:flex;align-items:flex-start;gap:7px;padding:7px 0;
+  border-bottom:1px solid #f8fafb;}
+.chat-item:last-child{border-bottom:none;}
+.chat-av{width:26px;height:26px;border-radius:50%;background:var(--g);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;}
+.chat-msg{flex:1;min-width:0;}
+.chat-nick{font-size:0.68rem;color:#9ca3af;}
+.chat-text{font-size:0.79rem;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.chat-time{font-size:0.65rem;color:#bbb;flex-shrink:0;}
+
+/* 소모임 아이템 */
+.grp-item{display:flex;align-items:center;gap:8px;padding:7px 0;
+  border-bottom:1px solid #f8fafb;text-decoration:none;color:inherit;}
+.grp-item:last-child{border-bottom:none;}
+.grp-av{width:30px;height:30px;border-radius:8px;background:var(--g);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;}
+.grp-info{flex:1;min-width:0;}
+.grp-name{font-size:0.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.grp-sub{font-size:0.7rem;color:#9ca3af;}
+
+/* 설문 */
+.survey-item{background:var(--gl);border-radius:10px;padding:10px 12px;margin-bottom:7px;}
+.survey-item:last-child{margin-bottom:0;}
+.survey-title{font-size:0.83rem;font-weight:600;color:#111;margin-bottom:4px;}
+.survey-meta{font-size:0.72rem;color:var(--g);}
+
+/* 봉사 일정 */
+.vol-item{display:flex;align-items:center;gap:10px;padding:8px 0;
+  border-bottom:1px solid #f8fafb;text-decoration:none;color:inherit;}
+.vol-item:last-child{border-bottom:none;}
+.vol-date{width:36px;height:36px;border-radius:8px;background:#fee2e2;color:#dc2626;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.vol-date-m{font-size:0.58rem;font-weight:600;}
+.vol-date-d{font-size:0.95rem;font-weight:800;line-height:1;}
+.vol-title{font-size:0.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* CTA 로그인 배너 */
+.cta-banner{background:linear-gradient(135deg,var(--g),#1e9158);border-radius:14px;
+  padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;}
+.cta-text{color:#fff;flex:1;}
+.cta-title{font-size:0.9rem;font-weight:700;margin-bottom:2px;}
+.cta-sub{font-size:0.75rem;opacity:.85;}
+.cta-btns{display:flex;gap:6px;flex-shrink:0;}
+.btn-cta-w{background:#fff;color:var(--g);padding:7px 14px;border-radius:20px;
+  font-size:0.78rem;font-weight:700;text-decoration:none;}
+.btn-cta-g{background:rgba(255,255,255,.2);color:#fff;padding:7px 12px;border-radius:20px;
+  font-size:0.78rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.3);}
+
+/* 우측 라이브 패널 */
+.rp-header{padding:10px 14px;border-bottom:1px solid var(--border);background:#fafbfc;
+  display:flex;align-items:center;justify-content:space-between;}
+.rp-title{font-size:0.8rem;font-weight:700;color:#111;}
+.rp-tabs{display:flex;gap:2px;padding:8px;border-bottom:1px solid var(--border);}
+.rp-tab{flex:1;padding:5px;border-radius:8px;font-size:0.72rem;font-weight:600;
+  color:#9ca3af;border:none;background:none;cursor:pointer;transition:all .15s;}
+.rp-tab.active{background:var(--gl);color:var(--g);}
+.rp-content{padding:10px 12px;}
+.rp-section{display:none;}
+.rp-section.active{display:block;}
+
+/* 온라인 입주민 */
+.online-item{display:flex;align-items:center;gap:7px;padding:5px 0;}
+.online-av{width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;flex-shrink:0;}
+.online-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0;}
+.online-name{font-size:0.78rem;font-weight:600;flex:1;}
+.online-unit{font-size:0.68rem;color:#9ca3af;}
+
+/* 반응형 */
+@media(max-width:1200px){:root{--rpanel-w:240px;}}
+@media(max-width:1024px){
+  .home-layout{grid-template-columns:var(--sidebar-w) 1fr!important;}
+  .sidebar-r{display:none;}
+  .dashboard{grid-template-columns:1fr;}
+}
+@media(max-width:768px){
+  .home-layout{grid-template-columns:1fr!important;}
+  .sidebar-l{display:none;}
+  .home-hero{height:auto;}
+}
 </style>
 {% endblock %}
 
 {% block full_content %}
-<div class="layout">
+<div class="home-layout" id="homeLayout">
 
-  <!-- 왼쪽 사이드바 -->
-  <div class="panel panel-left">
-    <div class="ph"><p class="ph-title"><i class="fas fa-users me-1" style="color:var(--g)"></i>입주민</p></div>
-    <div class="pb">
-      <div class="sec-label">온라인 이웃</div>
-      {% for u in online_users %}
-      <a href="/chat/dm/{{ u.id }}/" class="res-item">
-        <div class="res-av">{{ u.nickname|default:u.username|first|upper }}</div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:600;font-size:0.81rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.nickname|default:u.username }}</div>
-          <div style="font-size:0.7rem;color:#999;">{{ u.dong|default:"입주민" }}{% if u.dong %}동{% endif %}</div>
-        </div>
-        <div class="online-dot"></div>
-      </a>
-      {% empty %}
-      <div style="font-size:0.77rem;color:#ccc;padding:6px 4px;text-align:center;">접속자 없음</div>
-      {% endfor %}
-      <div class="sec-label">내 소모임</div>
-      <a href="/groups/create/" class="grp-item" style="background:var(--gl);color:var(--g);font-weight:700;margin-bottom:4px;"><i class="fas fa-plus" style="font-size:0.75rem;"></i>소모임 만들기</a>
-      {% for g in my_groups %}
-      <a href="/chat/group/{{ g.id }}/" class="grp-item">
-        <div style="width:22px;height:22px;border-radius:6px;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0;">{{ g.name|first|upper }}</div>
-        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.8rem;">{{ g.name }}</span>
-      </a>
-      {% empty %}
-      <div style="font-size:0.75rem;color:#ccc;padding:4px;text-align:center;">소모임 없음</div>
-      {% endfor %}
-      <div class="sec-label" style="margin-top:8px;">단지 현황</div>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="stat-n">{{ total_users }}</div><div class="stat-l">회원</div></div>
-        <div class="stat-box"><div class="stat-n">{{ verified_users }}</div><div class="stat-l">인증</div></div>
-        <div class="stat-box"><div class="stat-n">{{ groups_count }}</div><div class="stat-l">소모임</div></div>
-        <div class="stat-box"><div class="stat-n">{{ approved_activities_count }}</div><div class="stat-l">봉사</div></div>
-      </div>
+  <!-- ══ 좌측 사이드바 ══ -->
+  <aside class="sidebar-l" id="sidebarL">
+    <div class="sb-inner" id="sbLInner">
+
       {% if user.is_authenticated %}
-      <div style="margin-top:10px;background:#fff;border:1px solid #e4e6ea;border-radius:12px;padding:10px;">
-        <a href="/mypage/" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit;margin-bottom:8px;">
-          <div class="res-av" style="width:32px;height:32px;">{{ user.nickname|default:user.username|first|upper }}</div>
-          <div style="min-width:0;flex:1;"><div style="font-weight:700;font-size:0.82rem;">{{ user.nickname|default:user.username }}</div><div style="font-size:0.68rem;color:#999;">{{ user.unit_number|default:"입주민" }}</div></div>
-        </a>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
-          <div class="stat-box"><div class="stat-n" style="font-size:0.95rem;">{{ user.mileage_points }}</div><div class="stat-l">🏅 마일리지</div></div>
-          <div class="stat-box"><div class="stat-n" style="font-size:0.95rem;">{{ user.manners_score|floatformat:0 }}</div><div class="stat-l">❤️ 온기</div></div>
-        </div>
-        <a href="/mypage/" style="display:block;text-align:center;margin-top:8px;font-size:0.75rem;color:var(--g);font-weight:600;text-decoration:none;background:var(--gl);border-radius:8px;padding:5px;">마이페이지 →</a>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-
-  <!-- 중앙 피드 -->
-  <div class="panel" style="overflow:hidden;">
-    <div class="feed">
-
-      <!-- 단지 헤더 배너 -->
-      <!-- 모바일 히어로+퀵메뉴 통합 영역 -->
-      <div class="mob-hero-wrap" id="mobHero" style="display:none;">
-        <div class="mob-hero-triangle"></div>
-        <div class="mob-hero-bg" id="mobHeroBg" style="background-color:#1a7a4a;{% if hero_image %}background-image:url('{{ hero_image }}');{% endif %}"></div>
-        <div class="mob-hero-overlay"></div>
-        <div class="mob-hero-content">
-          {% if user.is_authenticated %}
-          <div class="mob-hero-greeting">안녕하세요 👋</div>
-          <div class="mob-hero-name">{{ user.nickname|default:user.username }}님</div>
-          <span class="mob-hero-badge">{{ user.unit_number|default:"해솔7단지 입주민" }}</span>
-          {% else %}
-          <div class="mob-hero-greeting">🌿 해솔마을 7단지</div>
-          <div class="mob-hero-name">지킴이 커뮤니티</div>
-          <span class="mob-hero-badge">함께 만드는 우리 단지</span>
-          {% endif %}
-          <!-- 모바일 퀵메뉴 (히어로 안으로 이동) -->
-          <div class="mob-icon-grid-wrap">
-            <div class="mob-icon-row1">
-              <a href="/chat/public/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-comments"></i></div><span>전체채팅</span></a>
-              <a href="/boards/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-clipboard-list"></i></div><span>게시판</span></a>
-              <a href="/notices/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-bell"></i></div><span>공지</span></a>
-              <a href="/complaints/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="bi bi-megaphone"></i></div><span>민원·건의</span></a>
-            </div>
-            <div class="mob-icon-row2">
-              <a href="/surveys/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-poll"></i></div><span>설문</span></a>
-              <a href="/volunteer/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-calendar-alt"></i></div><span>봉사</span></a>
-              <a href="/groups/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-users"></i></div><span>소모임</span></a>
-              <a href="/community/docs/" class="mob-icon-btn"><div class="mob-icon-circle"><i class="fas fa-file-alt"></i></div><span>단지정보</span></a>
+      <a href="/mypage/" class="sb-user">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div class="sb-user-av">{{ user.nickname|default:user.username|first|upper }}</div>
+          <div class="sb-user-info">
+            <div class="sb-user-name">{{ user.nickname|default:user.username }}</div>
+            <div class="sb-user-sub">
+              {% if user.dong %}{{ user.dong }}동 {{ user.ho }}호 · {% endif %}
+              {% if user.is_verified %}<span style="color:var(--g);">✓ 인증</span>{% else %}<span style="color:#f59e0b;">미인증</span>{% endif %}
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- 데스크탑 배너 -->
-      <div class="complex-banner">
-        <div class="complex-banner-overlay"></div>
-        <div class="complex-banner-content">
-          <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;"><i class="fas fa-map-marker-alt" style="color:rgba(255,255,255,.75);font-size:0.75rem;"></i><span style="font-size:0.72rem;color:rgba(255,255,255,.8);">경기 파주시 목동동</span></div>
-          <p class="complex-name">해솔마을 7단지 롯데캐슬</p>
-          <p class="complex-sub">🏘️ 함께 만드는 더 좋은 우리 단지</p>
+        <div class="sb-stats">
+          <div class="sb-stat"><div class="sb-stat-n">{{ user.mileage_points }}</div><div class="sb-stat-l">🏅 포인트</div></div>
+          <div class="sb-stat"><div class="sb-stat-n">{{ user.manners_score|floatformat:0 }}</div><div class="sb-stat-l">❤️ 온기</div></div>
         </div>
-        {% if user.is_authenticated %}
-        <div class="complex-badge"><i class="fas fa-check-circle me-1" style="font-size:0.65rem;"></i>{% if user.is_verified %}{{ user.dong }}동 입주민{% else %}미인증{% endif %}</div>
-        {% endif %}
-      </div>
-
-      <!-- 핵심 기능 아이콘 그리드 -->
-      <div class="icon-grid d-md-grid" id="desktopIconGrid">
-        <a href="/chat/public/" class="icon-btn"><div class="icon-circle"><i class="fas fa-comments"></i></div><span>전체채팅</span></a>
-        <a href="/boards/" class="icon-btn"><div class="icon-circle"><i class="fas fa-clipboard-list"></i></div><span>게시판</span></a>
-        <a href="/notices/" class="icon-btn"><div class="icon-circle"><i class="fas fa-bell"></i></div><span>공지</span>{% if recent_notices %}<span class="bdot">N</span>{% endif %}</a>
-        <a href="/complaints/" class="icon-btn"><div class="icon-circle"><i class="bi bi-megaphone"></i></div><span>민원·건의</span></a>
-        <a href="/surveys/" class="icon-btn"><div class="icon-circle"><i class="fas fa-poll"></i></div><span>설문</span></a>
-        <a href="/volunteer/" class="icon-btn"><div class="icon-circle"><i class="fas fa-calendar-alt"></i></div><span>봉사</span></a>
-        <a href="/groups/" class="icon-btn"><div class="icon-circle"><i class="fas fa-users"></i></div><span>소모임</span></a>
-        <a href="/community/docs/" class="icon-btn"><div class="icon-circle"><i class="fas fa-file-alt"></i></div><span>단지정보</span></a>
-      </div>
-
-      <!-- 비로그인 -->
-      {% if not user.is_authenticated %}
-      <div class="feed-section">
-        <div style="background:var(--g);border-radius:12px;padding:16px;text-align:center;color:#fff;">
-          <div style="font-size:1rem;font-weight:700;margin-bottom:5px;">해솔7단지 이웃이신가요? 👋</div>
-          <div style="font-size:0.8rem;opacity:.9;margin-bottom:12px;">가입하고 이웃들과 소통해보세요!</div>
-          <div style="display:flex;gap:8px;justify-content:center;">
-            <a href="/accounts/signup/" style="background:#fff;color:var(--g);padding:7px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;text-decoration:none;">회원가입</a>
-            <a href="/accounts/login/" style="background:rgba(255,255,255,.2);color:#fff;padding:7px 16px;border-radius:20px;font-size:0.82rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.4);">로그인</a>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- 단지 공지 -->
-      {% if recent_notices %}
-      <div class="feed-section">
-        <div class="sec-header"><div class="sec-title"><i class="fas fa-bell" style="color:#e53935;"></i> 단지 공지</div><a href="/notices/" class="sec-more">전체보기 →</a></div>
-        {% for n in recent_notices %}
-        <a href="/notices/" class="notice-card">
-          {% if n.is_pinned %}<span style="font-size:0.65rem;background:#e53935;color:#fff;padding:1px 5px;border-radius:3px;flex-shrink:0;">고정</span>{% endif %}
-          {% if n.notice_type %}<span style="font-size:0.65rem;background:var(--gl);color:var(--g);padding:1px 5px;border-radius:3px;flex-shrink:0;">{{ n.notice_type.name }}</span>{% endif %}
-          <span class="notice-title">{{ n.title|truncatechars:30 }}</span>
-          <span class="notice-date">{{ n.created_at|date:"m.d" }}</span>
-        </a>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <!-- 인기글 -->
-      <div class="feed-section">
-        <div class="sec-header"><div class="sec-title">🔥 이번주 인기글</div><a href="/boards/" class="sec-more">전체보기 →</a></div>
-
-      <!-- ▶ 활동 진행률 게이지 -->
-      <div style="background:#fff;border-radius:14px;border:1px solid #e5e7eb;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);">
-        <div style="font-size:0.82rem;font-weight:700;color:#1a7a4a;margin-bottom:10px;"><i class="fas fa-chart-line me-1"></i>이번 달 활동 현황</div>
-        <!-- 봉사 참여율 -->
-        <div class="d-flex justify-content-between mb-1" style="font-size:0.75rem;">
-          <span>🤝 봉사 승인 건수</span>
-          <span class="fw-bold text-success">{{ approved_activities_count }}건</span>
-        </div>
-        <div style="height:8px;background:#e8f5e9;border-radius:4px;margin-bottom:10px;overflow:hidden;">
-          <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,#a8d5b8,#1a7a4a);width:{% if approved_activities_count %}{% widthratio approved_activities_count 100 100 %}%{% else %}5%{% endif %};transition:width 1s;"></div>
-        </div>
-        <!-- 입주민 인증률 -->
-        <div class="d-flex justify-content-between mb-1" style="font-size:0.75rem;">
-          <span>✅ 입주민 인증률</span>
-          <span class="fw-bold text-primary">{% if total_users %}{% widthratio verified_users total_users 100 %}%{% else %}0%{% endif %}</span>
-        </div>
-        <div style="height:8px;background:#e3f2fd;border-radius:4px;margin-bottom:10px;overflow:hidden;">
-          <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,#90caf9,#1565c0);width:{% if total_users %}{% widthratio verified_users total_users 100 %}%{% else %}0%{% endif %};transition:width 1s;"></div>
-        </div>
-        <!-- 소모임 활성도 -->
-        <div class="d-flex justify-content-between mb-1" style="font-size:0.75rem;">
-          <span>👥 운영중인 소모임</span>
-          <span class="fw-bold text-warning">{{ groups_count }}개</span>
-        </div>
-        <div style="height:8px;background:#fff8e1;border-radius:4px;overflow:hidden;">
-          <div style="height:100%;border-radius:4px;background:linear-gradient(90deg,#ffe082,#f57f17);width:{% if groups_count %}{% widthratio groups_count 20 100 %}%{% else %}5%{% endif %};max-width:100%;transition:width 1s;"></div>
-        </div>
-      </div>
-
-      <!-- ▶ 오늘의 봉사 일정 -->
-      {% if upcoming_volunteer %}
-      <div style="background:#fff;border-radius:14px;border:1px solid #e5e7eb;padding:14px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span style="font-size:0.82rem;font-weight:700;color:#e74c3c;"><i class="fas fa-calendar-day me-1"></i>다가오는 봉사 일정</span>
-          <a href="/volunteer/" style="font-size:0.72rem;color:#1a7a4a;text-decoration:none;">전체보기 →</a>
-        </div>
-        {% for ev in upcoming_volunteer %}
-        <a href="/volunteer/{{ ev.pk }}/" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:#fff5f5;border:1px solid #ffcdd2;text-decoration:none;color:inherit;margin-bottom:6px;">
-          <div style="width:36px;height:36px;background:#e74c3c;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="fas fa-heart" style="color:#fff;font-size:0.9rem;"></i>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:0.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ ev.post.title|truncatechars:22 }}</div>
-            <div style="font-size:0.7rem;color:#e74c3c;">📅 {{ ev.start_time|date:"m월 d일 H:i" }}</div>
-          </div>
-          <span style="font-size:0.68rem;background:#e74c3c;color:#fff;padding:2px 7px;border-radius:10px;flex-shrink:0;">신청</span>
-        </a>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <!-- ▶ 배지 현황 -->
-      <div style="background:linear-gradient(135deg,#fff8e1,#fffde7);border-radius:14px;border:1px solid #ffe082;padding:14px 16px;margin-bottom:12px;">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span style="font-size:0.82rem;font-weight:700;color:#f57f17;"><i class="fas fa-medal me-1"></i>배지 & 포인트</span>
-          <a href="/certificate/my/" style="font-size:0.72rem;color:#1a7a4a;text-decoration:none;">인증서 발급 →</a>
-        </div>
-        {% if user.is_authenticated %}
-        <div class="d-flex align-items-center gap-3">
-          <div style="text-align:center;">
-            <div style="font-size:1.4rem;font-weight:700;color:#f57f17;">{{ user.mileage_points }}</div>
-            <div style="font-size:0.68rem;color:#aaa;">포인트</div>
-          </div>
-          <div style="flex:1;">
-            <a href="/activity/submit/" class="btn btn-sm btn-warning w-100" style="font-size:0.75rem;border-radius:8px;">
-              <i class="fas fa-camera me-1"></i>활동 인증 제출
-            </a>
-          </div>
-        </div>
-        {% else %}
-        <div style="font-size:0.78rem;color:#aaa;text-align:center;padding:8px 0;">
-          로그인하면 포인트와 배지를 확인할 수 있어요
-        </div>
-        {% endif %}
-      </div>
-        {% for post in hot_posts %}
-        <a href="/posts/{{ post.pk }}/" class="post-card">
-          <div class="post-rank">{{ forloop.counter }}</div>
-          <div class="post-body">
-            <div class="post-title">{{ post.title|truncatechars:30 }}</div>
-            <div class="post-meta"><span>{{ post.author.nickname|default:"익명" }}</span><span>{{ post.board.name|default:"" }}</span><span class="post-like"><i class="fas fa-heart"></i> {{ post.like_count }}</span></div>
-          </div>
-          <span style="font-size:0.7rem;color:#bbb;flex-shrink:0;">{{ post.created_at|date:"m.d" }}</span>
-        </a>
-        {% empty %}
-        <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:14px 0;">아직 인기 게시글이 없어요</div>
-        {% endfor %}
-      </div>
-
-      <!-- 채팅 미리보기 -->
-      <div class="feed-section">
-        <div class="sec-header"><div class="sec-title">👋 지금 우리단지 채팅</div><a href="/chat/public/" class="sec-more">대화 참여 →</a></div>
-        <div class="chat-preview">
-          {% for chat in recent_chats %}
-          <div class="chat-row">
-            <div class="chat-av">{{ chat.author.nickname|default:chat.author.username|first|upper }}</div>
-            <div class="chat-msg"><div class="chat-nick">{{ chat.author.nickname|default:chat.author.username }}</div><div class="chat-text">{{ chat.message|truncatechars:40 }}</div></div>
-            <div class="chat-time">{{ chat.created_at|date:"H:i" }}</div>
-          </div>
-          {% empty %}
-          <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:12px 0;">아직 아무도 없어요.<br><a href="/chat/public/" style="color:var(--g);font-weight:600;">첫 대화를 시작해보세요!</a></div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- 진행중인 설문 -->
-      {% if active_surveys %}
-      <div class="feed-section">
-        <div class="sec-header"><div class="sec-title"><i class="fas fa-poll" style="color:#3498db;"></i> 진행중인 설문</div><a href="/surveys/" class="sec-more">전체보기 →</a></div>
-        {% for survey in active_surveys %}
-        <a href="/surveys/{{ survey.pk }}/" class="notice-card" style="border-left-color:#3498db;">
-          <span class="notice-title">{{ survey.title|truncatechars:28 }}</span>
-          <span style="font-size:0.72rem;color:#3498db;flex-shrink:0;">{{ survey.resp_count }}명 참여</span>
-        </a>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <!-- 봉사 일정 -->
-      {% if upcoming_volunteer %}
-      <div class="feed-section">
-        <div class="sec-header"><div class="sec-title"><i class="fas fa-heart" style="color:#e74c3c;"></i> 봉사활동 일정</div><a href="/volunteer/" class="sec-more">전체보기 →</a></div>
-        {% for ev in upcoming_volunteer %}
-        <a href="/volunteer/{{ ev.pk }}/" class="notice-card" style="border-left-color:#e74c3c;">
-          <span class="notice-title">{{ ev.post.title|truncatechars:25 }}</span>
-          <span class="notice-date">{{ ev.start_time|date:"m/d" }}</span>
-        </a>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <!-- 단지 현황 -->
-      <div class="feed-section">
-        <div class="sec-header"><div class="sec-title"><i class="fas fa-chart-bar" style="color:var(--g);"></i> 단지 현황</div></div>
-        <div class="stat-row">
-          <div class="stat-item"><div class="stat-num">{{ total_users }}</div><div class="stat-lbl">전체 회원</div></div>
-          <div class="stat-item"><div class="stat-num">{{ verified_users }}</div><div class="stat-lbl">인증 입주민</div></div>
-          <div class="stat-item"><div class="stat-num">{{ groups_count }}</div><div class="stat-lbl">활성 소모임</div></div>
-          <div class="stat-item"><div class="stat-num">{{ approved_activities_count }}</div><div class="stat-lbl">봉사 완료</div></div>
-        </div>
-        <!-- 월별 봉사 활동 차트 -->
-        <div style="margin-top:10px;">
-          <div style="font-size:0.75rem;font-weight:700;color:#555;margin-bottom:6px;">📈 월별 봉사 활동 추이</div>
-          <canvas id="monthlyChart" height="80"></canvas>
-        </div>
-        <!-- 소모임 유형 차트 -->
-        <div style="margin-top:12px;">
-          <div style="font-size:0.75rem;font-weight:700;color:#555;margin-bottom:6px;">👥 소모임 유형 현황</div>
-          <canvas id="groupChart" height="80" style="max-height:120px;max-width:200px;margin:0 auto;display:block;"></canvas>
-        </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-        <script>
-        (function(){
-          const ms = {{ monthly_stats_json|safe }};
-          const gs = {{ group_type_stats_json|safe }};
-          const green = '#1a7a4a';
-          const colors = ['#1a7a4a','#f39c12','#e74c3c','#3498db','#9b59b6','#1abc9c'];
-
-          new Chart(document.getElementById('monthlyChart'), {
-            type: 'bar',
-            data: {
-              labels: ms.map(d=>d.month),
-              datasets: [{ label:'봉사 완료', data: ms.map(d=>d.count),
-                backgroundColor: colors[0]+'99', borderColor: green, borderWidth:1, borderRadius:4 }]
-            },
-            options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}},grid:{color:'#f0f0f0'}},x:{ticks:{font:{size:10}}}}, responsive:true }
-          });
-
-          if (gs.length > 0) {
-            new Chart(document.getElementById('groupChart'), {
-              type: 'doughnut',
-              data: {
-                labels: gs.map(d=>d.label),
-                datasets: [{ data: gs.map(d=>d.cnt), backgroundColor: colors, borderWidth:2 }]
-              },
-              options: { plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12}}}, responsive:true, maintainAspectRatio:true, cutout:'60%' }
-            });
-          } else {
-            document.getElementById('groupChart').parentElement.innerHTML += '<div style="font-size:0.75rem;color:#bbb;text-align:center;">소모임이 없어요</div>';
-            document.getElementById('groupChart').style.display='none';
-          }
-        })();
-        </script>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 오른쪽 패널 -->
-  <div class="panel panel-right">
-    <div class="ph"><p class="ph-title"><i class="fas fa-th-large me-1" style="color:var(--g)"></i>정보 패널</p></div>
-    <div class="pb">
-      <div class="info-sec">
-        <div class="info-sec-title">📢 최신 공지</div>
-        {% for post in notice_posts %}
-        <a href="/posts/{{ post.id }}/" class="info-card"><div class="info-card-t">{{ post.title|truncatechars:22 }}</div><div class="info-card-s">{{ post.created_at|date:"m.d" }}</div></a>
-        {% empty %}
-        <div class="info-card" style="color:#bbb;text-align:center;cursor:default;"><div style="font-size:0.9rem;margin-bottom:3px;">📭</div><div style="font-size:0.75rem;">새 공지가 없어요</div></div>
-        {% endfor %}
-        <a href="/boards/" style="font-size:0.73rem;color:var(--g);display:block;text-align:right;text-decoration:none;margin-top:2px;">전체 게시판 →</a>
-      </div>
-      <div class="info-sec">
-        <div class="info-sec-title">📋 관리 문서</div>
-        {% for doc in recent_docs %}
-        <a href="/community/docs/{{ doc.id }}/" class="info-card"><div class="info-card-t">{{ doc.title|truncatechars:20 }}</div><div class="info-card-s">{{ doc.category }}</div></a>
-        {% empty %}
-        <a href="/community/docs/" class="info-card" style="text-align:center;"><div style="font-size:0.9rem;margin-bottom:3px;">📂</div><div style="font-size:0.75rem;color:var(--g);font-weight:600;">관리 문서 보러가기</div></a>
-        {% endfor %}
-      </div>
-      <div class="info-sec">
-        <div class="info-sec-title">🌿 봉사 일정</div>
-        {% for m in upcoming_meetups %}
-        <a href="/volunteer/{{ m.id }}/" class="info-card"><div class="info-card-t">{{ m.title|truncatechars:20 }}</div><div class="info-card-s">{{ m.scheduled_at|date:"m월 d일 H시" }}</div></a>
-        {% empty %}
-        <div style="font-size:0.75rem;color:#999;padding:0 2px;margin-bottom:6px;">예정된 일정이 없어요.</div>
-        {% for act in random_activities %}
-        <a href="/volunteer/" class="suggest-card"><div class="suggest-icon">{{ act.icon }}</div><div><div style="font-size:0.8rem;font-weight:600;color:#333;">{{ act.name }}</div><div style="font-size:0.72rem;color:#999;">{{ act.desc }}</div></div></a>
-        {% endfor %}
-        <a href="/volunteer/" style="font-size:0.73rem;color:var(--g);display:block;text-align:center;text-decoration:none;margin-top:4px;font-weight:600;">+ 봉사 일정 만들기</a>
-        {% endfor %}
-      </div>
-      {% if active_surveys %}
-      <div class="info-sec">
-        <div class="info-sec-title">📊 진행 중인 설문</div>
-        {% for s in active_surveys %}
-        <a href="/surveys/{{ s.pk }}/" class="info-card"><div class="info-card-t">{{ s.title|truncatechars:22 }}</div><div class="info-card-s">{{ s.total_responses }}명 참여 중</div></a>
-        {% endfor %}
-        <a href="/surveys/" style="font-size:0.73rem;color:var(--g);display:block;text-align:right;text-decoration:none;margin-top:2px;">전체 설문 →</a>
-      </div>
-      {% endif %}
-      {% if user.is_authenticated %}
-      <div class="info-sec">
-        <div class="info-sec-title">👤 내 정보</div>
-        <div class="info-card" style="cursor:default;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <div class="res-av" style="width:32px;height:32px;">{{ user.nickname|default:user.username|first|upper }}</div>
-            <div><div style="font-weight:700;font-size:0.82rem;">{{ user.nickname|default:user.username }}</div><div style="font-size:0.7rem;color:#999;">{{ user.unit_number|default:"입주민" }}</div></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
-            <div class="stat-box"><div class="stat-n" style="font-size:0.95rem;">{{ user.mileage_points }}</div><div class="stat-l">🏅 마일리지</div></div>
-            <div class="stat-box"><div class="stat-n" style="font-size:0.95rem;">{{ user.manners_score|floatformat:0 }}</div><div class="stat-l">❤️ 온기</div></div>
-          </div>
-          <a href="/mypage/" style="display:block;text-align:center;margin-top:8px;font-size:0.75rem;color:var(--g);font-weight:600;text-decoration:none;background:var(--gl);border-radius:8px;padding:5px;">마이페이지 →</a>
-        </div>
-      </div>
+      </a>
       {% else %}
-      <div class="info-sec">
-        <a href="/accounts/login/" class="info-card" style="text-align:center;background:var(--g);color:#fff;"><div style="font-weight:700;font-size:0.85rem;">로그인</div><div style="font-size:0.73rem;opacity:.85;margin-top:2px;">입주민 커뮤니티 참여하기</div></a>
-        <a href="/accounts/signup/" class="info-card" style="text-align:center;border:1.5px solid var(--g);color:var(--g);"><div style="font-weight:700;font-size:0.85rem;">회원가입</div><div style="font-size:0.73rem;color:#999;margin-top:2px;">해솔7단지 이웃이신가요?</div></a>
+      <div style="background:linear-gradient(135deg,var(--g),#1e9158);border-radius:10px;padding:12px;margin-bottom:8px;text-align:center;">
+        <div style="color:#fff;font-weight:700;font-size:0.82rem;margin-bottom:6px;">해솔7단지 이웃이세요?</div>
+        <div style="display:flex;gap:5px;">
+          <a href="/accounts/login/" style="flex:1;background:#fff;color:var(--g);border-radius:7px;padding:5px;font-size:0.73rem;font-weight:700;text-align:center;text-decoration:none;">로그인</a>
+          <a href="/accounts/signup/" style="flex:1;background:rgba(255,255,255,.2);color:#fff;border-radius:7px;padding:5px;font-size:0.73rem;font-weight:600;text-align:center;text-decoration:none;border:1px solid rgba(255,255,255,.3);">회원가입</a>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="sb-label sb-text">메뉴</div>
+      <a href="/" class="sb-item active"><i class="fas fa-home"></i><span class="sb-text">홈</span></a>
+      <a href="/boards/" class="sb-item"><i class="fas fa-clipboard-list"></i><span class="sb-text">게시판</span></a>
+      <a href="/chat/public/" class="sb-item"><i class="fas fa-comments"></i><span class="sb-text">전체채팅</span></a>
+      <a href="/notices/" class="sb-item"><i class="fas fa-bell"></i><span class="sb-text">공지사항</span></a>
+      <a href="/complaints/" class="sb-item"><i class="bi bi-megaphone"></i><span class="sb-text">민원·건의</span></a>
+
+      <div class="sb-divider"></div>
+      <div class="sb-label sb-text">함께하기</div>
+      <a href="/groups/" class="sb-item"><i class="fas fa-users"></i><span class="sb-text">소모임</span></a>
+      <a href="/volunteer/" class="sb-item"><i class="fas fa-heart"></i><span class="sb-text">봉사활동</span></a>
+      <a href="/surveys/" class="sb-item"><i class="fas fa-poll"></i><span class="sb-text">설문조사</span></a>
+      <a href="/calendar/" class="sb-item"><i class="fas fa-calendar-alt"></i><span class="sb-text">캘린더</span></a>
+
+      <div class="sb-divider"></div>
+      <div class="sb-label sb-text">단지 정보</div>
+      <a href="/community/docs/" class="sb-item"><i class="fas fa-file-alt"></i><span class="sb-text">관리 문서</span></a>
+      <a href="/search/" class="sb-item"><i class="fas fa-search"></i><span class="sb-text">검색</span></a>
+
+      {% if user.is_authenticated %}
+      <div class="sb-divider"></div>
+      <div class="sb-label sb-text">내 활동</div>
+      <a href="/mypage/" class="sb-item"><i class="fas fa-user-circle"></i><span class="sb-text">마이페이지</span></a>
+      <a href="/activity/submit/" class="sb-item"><i class="fas fa-camera"></i><span class="sb-text">활동 인증</span></a>
+      <a href="/notifications/" class="sb-item"><i class="fas fa-bell"></i><span class="sb-text">알림</span><span id="noti-dot" style="display:none;width:6px;height:6px;border-radius:50%;background:#ef4444;margin-left:auto;"></span></a>
+      {% if user.is_staff %}
+      <div class="sb-divider"></div>
+      <a href="/admin/" class="sb-item"><i class="fas fa-cog"></i><span class="sb-text">관리자</span></a>
+      <a href="/verify/admin/" class="sb-item"><i class="fas fa-id-card"></i><span class="sb-text">인증 관리</span></a>
+      {% endif %}
+      <div style="margin-top:auto;padding:8px 0 4px;">
+        <form method="post" action="/accounts/logout/">
+          {% csrf_token %}
+          <button type="submit" class="sb-item" style="color:#ef4444;width:100%;">
+            <i class="fas fa-sign-out-alt" style="color:#ef4444;"></i>
+            <span class="sb-text">로그아웃</span>
+          </button>
+        </form>
       </div>
       {% endif %}
     </div>
-  </div>
 
-</div>
+    <!-- 사이드바 토글 버튼 -->
+    <div class="sb-toggle">
+      <button onclick="toggleLeft()" style="background:var(--gl);border:1px solid var(--gb);
+        border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--g);font-size:0.75rem;font-weight:600;">
+        <i class="fas fa-chevron-left" id="sbLIcon"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══ 메인 콘텐츠 ══ -->
+  <div class="home-main">
+
+    <!-- 히어로 배너 -->
+    <div class="home-hero">
+      <div class="home-hero-bg" style="{% if hero_image %}background-image:url('{{ hero_image }}');{% endif %}background-color:#1a7a4a;"></div>
+      <div class="home-hero-overlay"></div>
+      <div class="home-hero-stats">
+        <div class="hero-stat"><div class="hero-stat-n">{{ total_users }}</div><div class="hero-stat-l">전체 회원</div></div>
+        <div class="hero-stat"><div class="hero-stat-n">{{ verified_users }}</div><div class="hero-stat-l">인증 입주민</div></div>
+        <div class="hero-stat"><div class="hero-stat-n">{{ groups_count }}</div><div class="hero-stat-l">소모임</div></div>
+      </div>
+      <div class="home-hero-content">
+        {% if user.is_authenticated %}
+        <div class="home-hero-title">안녕하세요, {{ user.nickname|default:user.username }}님 👋</div>
+        <div class="home-hero-sub">{% if user.dong %}{{ user.dong }}동 {{ user.ho }}호 · {% endif %}{% if user.is_verified %}입주민 인증 완료 ✓{% else %}⚠ 입주민 인증이 필요해요{% endif %}</div>
+        {% else %}
+        <div class="home-hero-title">🌿 해솔마을 7단지 지킴이</div>
+        <div class="home-hero-sub">함께 만드는 더 좋은 우리 단지 · 경기 파주시 목동동</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 퀵 액션 바 -->
+    <div class="quick-bar">
+      <a href="/chat/public/" class="qb-btn"><i class="fas fa-comments"></i>전체채팅</a>
+      <a href="/boards/" class="qb-btn"><i class="fas fa-clipboard-list"></i>게시판</a>
+      <a href="/notices/" class="qb-btn"><i class="fas fa-bell"></i>공지</a>
+      <a href="/complaints/" class="qb-btn"><i class="bi bi-megaphone"></i>민원·건의</a>
+      <a href="/surveys/" class="qb-btn"><i class="fas fa-poll"></i>설문</a>
+      <a href="/volunteer/" class="qb-btn"><i class="fas fa-calendar-alt"></i>봉사</a>
+      <a href="/groups/" class="qb-btn"><i class="fas fa-users"></i>소모임</a>
+      <a href="/community/docs/" class="qb-btn"><i class="fas fa-file-alt"></i>단지정보</a>
+      {% if user.is_authenticated %}
+      <a href="/activity/submit/" class="qb-btn"><i class="fas fa-camera"></i>활동인증</a>
+      <a href="/calendar/" class="qb-btn"><i class="fas fa-calendar"></i>캘린더</a>
+      {% endif %}
+    </div>
+
+    <!-- 2컬럼 대시보드 -->
+    <div class="dashboard">
+
+      <!-- 왼쪽 컬럼 -->
+      <div class="dash-col">
+
+        <!-- 비로그인 CTA -->
+        {% if not user.is_authenticated %}
+        <div class="cta-banner">
+          <div class="cta-text">
+            <div class="cta-title">해솔7단지 이웃이신가요? 👋</div>
+            <div class="cta-sub">가입하고 이웃들과 소통해보세요!</div>
+          </div>
+          <div class="cta-btns">
+            <a href="/accounts/signup/" class="btn-cta-w">회원가입</a>
+            <a href="/accounts/login/" class="btn-cta-g">로그인</a>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- 단지 공지 -->
+        {% if recent_notices %}
+        <div class="widget">
+          <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-bell" style="color:#ef4444;"></i>단지 공지</div>
+            <a href="/notices/" class="widget-more">전체보기 →</a>
+          </div>
+          <div class="widget-body">
+            {% for n in recent_notices %}
+            <a href="/notices/" class="notice-item">
+              {% if n.is_pinned %}<span class="ni-badge" style="background:#fee2e2;color:#dc2626;">고정</span>{% endif %}
+              {% if n.notice_type %}<span class="ni-badge">{{ n.notice_type.name }}</span>{% endif %}
+              <span class="ni-title">{{ n.title|truncatechars:28 }}</span>
+              <span class="ni-date">{{ n.created_at|date:"m.d" }}</span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- 이번주 인기글 -->
+        <div class="widget">
+          <div class="widget-header">
+            <div class="widget-title">🔥 이번주 인기글</div>
+            <a href="/boards/" class="widget-more">전체보기 →</a>
+          </div>
+          <div class="widget-body">
+            {% for post in hot_posts %}
+            <a href="/posts/{{ post.pk }}/" class="hot-item">
+              <div class="hi-rank {% if forloop.counter <= 3 %}top{% endif %}">{{ forloop.counter }}</div>
+              <div class="hi-body">
+                <div class="hi-title">{{ post.title|truncatechars:28 }}</div>
+                <div class="hi-meta">
+                  <span>{{ post.author.nickname|default:"익명" }}</span>
+                  <span>{{ post.board.name|default:"" }}</span>
+                  <span style="color:#ef4444;">❤ {{ post.like_count }}</span>
+                </div>
+              </div>
+              <span style="font-size:0.68rem;color:#bbb;">{{ post.created_at|date:"m.d" }}</span>
+            </a>
+            {% empty %}
+            <div style="text-align:center;color:#ccc;font-size:0.8rem;padding:14px 0;">아직 인기 게시글이 없어요</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- 채팅 미리보기 -->
+        <div class="widget">
+          <div class="widget-header">
+            <div class="widget-title">💬 지금 우리단지 채팅</div>
+            <a href="/chat/public/" class="widget-more">참여하기 →</a>
+          </div>
+          <div class="widget-body">
+            {% for chat in recent_chats %}
+            <div class="chat-item">
+              <div class="chat-av">{{ chat.author.nickname|default:chat.author.username|first|upper }}</div>
+              <div class="chat-msg">
+                <div class="chat-nick">{{ chat.author.nickname|default:chat.author.username }}</div>
+                <div class="chat-text">{{ chat.message|truncatechars:38 }}</div>
+              </div>
+              <div class="chat-time">{{ chat.created_at|date:"H:i" }}</div>
+            </div>
+            {% empty %}
+            <div style="text-align:center;color:#ccc;font-size:0.8rem;padding:12px 0;">
+              아직 채팅이 없어요.<br>
+              <a href="/chat/public/" style="color:var(--g);font-weight:600;">첫 대화를 시작해보세요!</a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div><!-- /왼쪽 컬럼 -->
+
+      <!-- 오른쪽 컬럼 -->
+      <div class="dash-col">
+
+        <!-- 단지 활동 현황 -->
+        <div class="widget">
+          <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-chart-bar" style="color:var(--g);"></i>단지 활동 현황</div>
+          </div>
+          <div class="widget-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div class="sb-stat" style="padding:10px;">
+                <div style="font-size:1.4rem;font-weight:800;color:var(--g);">{{ total_users }}</div>
+                <div style="font-size:0.68rem;color:#9ca3af;">전체 회원</div>
+              </div>
+              <div class="sb-stat" style="padding:10px;">
+                <div style="font-size:1.4rem;font-weight:800;color:#2563eb;">{{ verified_users }}</div>
+                <div style="font-size:0.68rem;color:#9ca3af;">인증 입주민</div>
+              </div>
+              <div class="sb-stat" style="padding:10px;">
+                <div style="font-size:1.4rem;font-weight:800;color:#7c3aed;">{{ groups_count }}</div>
+                <div style="font-size:0.68rem;color:#9ca3af;">운영 소모임</div>
+              </div>
+              <div class="sb-stat" style="padding:10px;">
+                <div style="font-size:1.4rem;font-weight:800;color:#dc2626;">{{ approved_activities_count }}</div>
+                <div style="font-size:0.68rem;color:#9ca3af;">봉사 완료</div>
+              </div>
+            </div>
+            <!-- 인증률 게이지 -->
+            <div class="gauge-row">
+              <div class="gauge-label">
+                <span style="font-size:0.75rem;">✅ 입주민 인증률</span>
+                <span style="font-size:0.75rem;font-weight:700;color:#2563eb;">{% if total_users %}{% widthratio verified_users total_users 100 %}%{% else %}0%{% endif %}</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill" style="width:{% if total_users %}{% widthratio verified_users total_users 100 %}%{% else %}0{% endif %};background:linear-gradient(90deg,#93c5fd,#2563eb);"></div></div>
+            </div>
+            <div class="gauge-row">
+              <div class="gauge-label">
+                <span style="font-size:0.75rem;">🤝 봉사 승인 건수</span>
+                <span style="font-size:0.75rem;font-weight:700;color:var(--g);">{{ approved_activities_count }}건</span>
+              </div>
+              <div class="gauge-bar"><div class="gauge-fill" style="width:{% if approved_activities_count %}{% widthratio approved_activities_count 100 100 %}%{% else %}5%{% endif %};background:linear-gradient(90deg,var(--gb),var(--g));max-width:100%;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 진행중인 설문 -->
+        {% if active_surveys %}
+        <div class="widget">
+          <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-poll" style="color:#3b82f6;"></i>진행중인 설문</div>
+            <a href="/surveys/" class="widget-more">전체보기 →</a>
+          </div>
+          <div class="widget-body">
+            {% for s in active_surveys %}
+            <a href="/surveys/{{ s.pk }}/" style="text-decoration:none;">
+              <div class="survey-item">
+                <div class="survey-title">{{ s.title|truncatechars:30 }}</div>
+                <div class="survey-meta">{{ s.resp_count }}명 참여 중 →</div>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- 봉사 일정 -->
+        {% if upcoming_volunteer %}
+        <div class="widget">
+          <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-heart" style="color:#ef4444;"></i>봉사 일정</div>
+            <a href="/volunteer/" class="widget-more">전체보기 →</a>
+          </div>
+          <div class="widget-body">
+            {% for ev in upcoming_volunteer %}
+            <a href="/volunteer/{{ ev.pk }}/" class="vol-item">
+              <div class="vol-date">
+                <div class="vol-date-m">{{ ev.start_time|date:"m월" }}</div>
+                <div class="vol-date-d">{{ ev.start_time|date:"d" }}</div>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div class="vol-title">{{ ev.post.title|truncatechars:24 }}</div>
+                <div style="font-size:0.7rem;color:#9ca3af;">{{ ev.start_time|date:"H:i" }}</div>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- 내 소모임 -->
+        {% if my_groups %}
+        <div class="widget">
+          <div class="widget-header">
+            <div class="widget-title"><i class="fas fa-users" style="color:#7c3aed;"></i>내 소모임</div>
+            <a href="/groups/" class="widget-more">전체보기 →</a>
+          </div>
+          <div class="widget-body">
+            {% for g in my_groups %}
+            <a href="/groups/{{ g.pk }}/" class="grp-item">
+              <div class="grp-av">{{ g.name|first|upper }}</div>
+              <div class="grp-info">
+                <div class="grp-name">{{ g.name }}</div>
+                <div class="grp-sub"><i class="fas fa-users me-1"></i>{{ g.members.count }}명</div>
+              </div>
+            </a>
+            {% empty %}
+            <div style="text-align:center;color:#ccc;font-size:0.8rem;padding:10px 0;">
+              <a href="/groups/create/" style="color:var(--g);font-weight:600;">소모임 만들기 →</a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div><!-- /오른쪽 컬럼 -->
+    </div><!-- /dashboard -->
+
+  </div><!-- /home-main -->
+
+  <!-- ══ 우측 라이브 패널 ══ -->
+  <aside class="sidebar-r" id="sidebarR">
+    <!-- 토글 버튼 -->
+    <div class="rp-toggle">
+      <button onclick="toggleRight()" style="background:var(--gl);border:1px solid var(--gb);
+        border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--g);font-size:0.75rem;font-weight:600;width:100%;display:flex;align-items:center;justify-content:space-between;">
+        <span id="rpTitle">📡 라이브 현황</span>
+        <i class="fas fa-chevron-right" id="sbRIcon"></i>
+      </button>
+    </div>
+
+    <!-- 탭 -->
+    <div class="rp-tabs" id="rpTabs">
+      <button class="rp-tab active" onclick="switchRpTab('chat',this)">💬 채팅</button>
+      <button class="rp-tab" onclick="switchRpTab('online',this)">👥 입주민</button>
+      <button class="rp-tab" onclick="switchRpTab('hot',this)">🔥 인기</button>
+    </div>
+
+    <div class="rp-inner" id="rpInner">
+
+      <!-- 채팅 탭 -->
+      <div class="rp-section active rp-content" id="rp-chat">
+        <div style="font-size:0.75rem;font-weight:700;color:#9ca3af;margin-bottom:8px;">실시간 채팅</div>
+        {% for chat in recent_chats %}
+        <div class="chat-item">
+          <div class="chat-av">{{ chat.author.nickname|default:chat.author.username|first|upper }}</div>
+          <div class="chat-msg">
+            <div class="chat-nick">{{ chat.author.nickname|default:chat.author.username }}</div>
+            <div class="chat-text">{{ chat.message|truncatechars:32 }}</div>
+          </div>
+          <div class="chat-time">{{ chat.created_at|date:"H:i" }}</div>
+        </div>
+        {% empty %}
+        <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:20px 0;">채팅이 없어요</div>
+        {% endfor %}
+        <a href="/chat/public/" class="btn btn-success btn-sm w-100 mt-2" style="font-size:0.78rem;">채팅 참여하기</a>
+      </div>
+
+      <!-- 온라인 입주민 탭 -->
+      <div class="rp-section rp-content" id="rp-online">
+        <div style="font-size:0.75rem;font-weight:700;color:#9ca3af;margin-bottom:8px;">최근 접속 입주민</div>
+        {% for u in online_users %}
+        <div class="online-item">
+          <div class="online-av">{{ u.nickname|default:u.username|first|upper }}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="online-name">{{ u.nickname|default:u.username }}</div>
+            <div class="online-unit">{% if u.dong %}{{ u.dong }}동{% else %}입주민{% endif %}</div>
+          </div>
+          <div class="online-dot"></div>
+        </div>
+        {% empty %}
+        <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:20px 0;">접속자 없음</div>
+        {% endfor %}
+      </div>
+
+      <!-- 인기글 탭 -->
+      <div class="rp-section rp-content" id="rp-hot">
+        <div style="font-size:0.75rem;font-weight:700;color:#9ca3af;margin-bottom:8px;">이번주 인기글</div>
+        {% for post in hot_posts %}
+        <a href="/posts/{{ post.pk }}/" class="hot-item">
+          <div class="hi-rank {% if forloop.counter <= 3 %}top{% endif %}">{{ forloop.counter }}</div>
+          <div class="hi-body">
+            <div class="hi-title">{{ post.title|truncatechars:22 }}</div>
+            <div class="hi-meta"><span style="color:#ef4444;">❤ {{ post.like_count }}</span></div>
+          </div>
+        </a>
+        {% empty %}
+        <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:20px 0;">인기글 없음</div>
+        {% endfor %}
+      </div>
+
+    </div><!-- /rp-inner -->
+  </aside>
+
+</div><!-- /home-layout -->
 
 <!-- 모바일 하단 탭바 -->
-<nav class="mob-tabbar">
-  <div class="mob-tabbar-inner">
-    <a href="/" class="mob-tab active"><i class="fas fa-home"></i><span>홈</span></a>
-    <a href="/chat/public/" class="mob-tab"><i class="fas fa-comments"></i><span>소통</span></a>
-    <a href="/notices/" class="mob-tab"><i class="fas fa-bell"></i><span>공지·민원</span></a>
-    <a href="/groups/" class="mob-tab"><i class="fas fa-users"></i><span>함께하기</span></a>
-    <button class="mob-tab" onclick="toggleMore()"><i class="fas fa-th"></i><span>더보기</span></button>
+<nav class="mob-tabbar" style="display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid var(--border);z-index:200;box-shadow:0 -2px 12px rgba(0,0,0,.06);">
+  <div style="display:flex;height:100%;">
+    <a href="/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:var(--g);font-size:0.6rem;font-weight:600;"><i class="fas fa-home" style="font-size:1.2rem;"></i>홈</a>
+    <a href="/chat/public/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;"><i class="fas fa-comments" style="font-size:1.2rem;"></i>소통</a>
+    <a href="/notices/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;"><i class="fas fa-bell" style="font-size:1.2rem;"></i>공지·민원</a>
+    <a href="/groups/" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;"><i class="fas fa-users" style="font-size:1.2rem;"></i>함께하기</a>
+    <button onclick="toggleMore()" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;border:none;background:none;cursor:pointer;"><i class="fas fa-th" style="font-size:1.2rem;"></i>더보기</button>
   </div>
 </nav>
 
-<!-- 더보기 백드롭 -->
-<div class="more-backdrop" id="moreBackdrop" onclick="toggleMore()"></div>
-
-<!-- 더보기 슬라이드업 패널 -->
-<div class="more-panel" id="morePanel">
-  <div class="more-handle"></div>
-
-  <!-- 사용자 정보 -->
-  {% if user.is_authenticated %}
-  <div class="more-user">
-    <div class="more-user-av">{{ user.nickname|default:user.username|first|upper }}</div>
-    <div class="more-user-info">
-      <div class="more-user-name">{{ user.nickname|default:user.username }}</div>
-      <div class="more-user-sub">
-        {% if user.dong %}{{ user.dong }}동 {{ user.ho }}호{% else %}해솔7단지 입주민{% endif %}
-        {% if user.is_verified %} · <span style="color:#1a7a4a;">✓ 인증완료</span>{% else %} · <span style="color:#f59e0b;">인증대기</span>{% endif %}
-      </div>
-    </div>
-    <a href="/mypage/" style="font-size:0.75rem;color:#1a7a4a;font-weight:600;text-decoration:none;">마이페이지 →</a>
-  </div>
-  {% else %}
-  <div class="more-user">
-    <div class="more-user-av" style="background:#9ca3af;"><i class="fas fa-user" style="font-size:1rem;"></i></div>
-    <div class="more-user-info">
-      <div class="more-user-name">로그인이 필요해요</div>
-      <div class="more-user-sub">입주민 커뮤니티에 참여해보세요</div>
-    </div>
-    <a href="/accounts/login/" style="background:#1a7a4a;color:#fff;padding:6px 14px;border-radius:20px;font-size:0.75rem;font-weight:600;text-decoration:none;">로그인</a>
-  </div>
-  {% endif %}
-
-  <!-- 커뮤니티 메뉴 -->
-  <div class="more-section">
-    <div class="more-section-title">커뮤니티</div>
-    <div class="more-grid">
-      <a href="/boards/" class="more-item"><i class="fas fa-clipboard-list"></i><span>게시판</span></a>
-      <a href="/chat/public/" class="more-item"><i class="fas fa-comments"></i><span>전체채팅</span></a>
-      <a href="/notices/" class="more-item"><i class="fas fa-bell"></i><span>공지</span></a>
-      <a href="/complaints/" class="more-item"><i class="bi bi-megaphone"></i><span>민원·건의</span></a>
-      <a href="/surveys/" class="more-item"><i class="fas fa-poll"></i><span>설문</span></a>
-      <a href="/groups/" class="more-item"><i class="fas fa-users"></i><span>소모임</span></a>
-      <a href="/volunteer/" class="more-item"><i class="fas fa-calendar-alt"></i><span>봉사</span></a>
-      <a href="/community/docs/" class="more-item"><i class="fas fa-file-alt"></i><span>단지정보</span></a>
-    </div>
-  </div>
-
-  <div class="more-divider"></div>
-
-  <!-- 내 활동 -->
-  <div class="more-section">
-    <div class="more-section-title">내 활동</div>
-    <div class="more-grid">
-      <a href="/mypage/" class="more-item"><i class="fas fa-user-circle"></i><span>마이페이지</span></a>
-      <a href="/mypage/edit/" class="more-item"><i class="fas fa-edit"></i><span>프로필 수정</span></a>
-      <a href="/activity/submit/" class="more-item"><i class="fas fa-camera"></i><span>활동인증</span></a>
-      <a href="/activity/list/" class="more-item"><i class="fas fa-list-check"></i><span>인증내역</span></a>
-      <a href="/letters/" class="more-item"><i class="fas fa-envelope"></i><span>쪽지함</span></a>
-      <a href="/notifications/" class="more-item"><i class="fas fa-bell"></i><span>알림</span></a>
-      <a href="/certificate/my/" class="more-item"><i class="fas fa-award"></i><span>인증서</span></a>
-      <a href="/calendar/" class="more-item"><i class="fas fa-calendar"></i><span>캘린더</span></a>
-    </div>
-  </div>
-
-  <div class="more-divider"></div>
-
-  <!-- 계정 -->
-  <div class="more-section">
-    <div class="more-section-title">계정</div>
-    <div class="more-grid">
-      {% if user.is_authenticated %}
-      <a href="/verify/request/" class="more-item"><i class="fas fa-id-card"></i><span>입주민인증</span></a>
-      <a href="/accounts/password-reset/" class="more-item"><i class="fas fa-key"></i><span>비밀번호</span></a>
-      <a href="/search/" class="more-item"><i class="fas fa-search"></i><span>검색</span></a>
-      <div class="more-item" style="cursor:pointer;" onclick="document.getElementById('moreLogoutForm').submit();">
-        <i class="fas fa-sign-out-alt" style="color:#e53935;"></i><span style="color:#e53935;">로그아웃</span>
-      </div>
-      {% else %}
-      <a href="/accounts/login/" class="more-item"><i class="fas fa-sign-in-alt"></i><span>로그인</span></a>
-      <a href="/accounts/signup/" class="more-item"><i class="fas fa-user-plus"></i><span>회원가입</span></a>
-      <a href="/search/" class="more-item"><i class="fas fa-search"></i><span>검색</span></a>
-      <a href="/community/docs/" class="more-item"><i class="fas fa-info-circle"></i><span>단지정보</span></a>
-      {% endif %}
-    </div>
-  </div>
-
-  {% if user.is_authenticated %}
-  <form id="moreLogoutForm" method="post" action="/accounts/logout/" style="display:none;">
-    {% csrf_token %}
-  </form>
-  {% endif %}
-
-  <div style="height:16px;"></div>
-</div>
-{% endblock %}
-
-{% block extra_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
-// 현재 페이지에 맞는 탭 활성화
-const path = window.location.pathname;
-document.querySelectorAll('.mob-tab').forEach(tab => {
-  const href = tab.getAttribute('href');
-  if (href && path.startsWith(href) && href !== '/') tab.classList.add('active');
-  else if (href === '/' && path === '/') tab.classList.add('active');
-  else if (!href) tab.classList.remove('active'); // 더보기 버튼
-  else tab.classList.remove('active');
-});
+// 사이드바 토글
+let leftCollapsed = false, rightCollapsed = false;
 
-// 더보기 패널 토글
-function toggleMore() {
-  const panel = document.getElementById('morePanel');
-  const backdrop = document.getElementById('moreBackdrop');
-  const isOpen = panel.classList.contains('show');
-  if (isOpen) {
-    panel.classList.remove('show');
-    backdrop.classList.remove('show');
-    document.body.style.overflow = '';
+function toggleLeft() {
+  leftCollapsed = !leftCollapsed;
+  const layout = document.getElementById('homeLayout');
+  const sidebar = document.getElementById('sidebarL');
+  const icon = document.getElementById('sbLIcon');
+  sidebar.classList.toggle('collapsed', leftCollapsed);
+  if (leftCollapsed) {
+    layout.classList.add(rightCollapsed ? 'hide-both' : 'hide-left');
+    layout.classList.remove('hide-right');
+    icon.className = 'fas fa-chevron-right';
   } else {
-    panel.classList.add('show');
-    backdrop.classList.add('show');
-    document.body.style.overflow = 'hidden';
+    layout.classList.remove('hide-left', 'hide-both');
+    if (rightCollapsed) layout.classList.add('hide-right');
+    icon.className = 'fas fa-chevron-left';
   }
 }
 
-// 스와이프로 닫기
+function toggleRight() {
+  rightCollapsed = !rightCollapsed;
+  const layout = document.getElementById('homeLayout');
+  const sidebar = document.getElementById('sidebarR');
+  const icon = document.getElementById('sbRIcon');
+  const rpTabs = document.getElementById('rpTabs');
+  const rpInner = document.getElementById('rpInner');
+  sidebar.classList.toggle('collapsed', rightCollapsed);
+  rpTabs.style.display = rightCollapsed ? 'none' : 'flex';
+  if (rightCollapsed) {
+    layout.classList.add(leftCollapsed ? 'hide-both' : 'hide-right');
+    layout.classList.remove('hide-left');
+    icon.className = 'fas fa-chevron-left';
+  } else {
+    layout.classList.remove('hide-right', 'hide-both');
+    if (leftCollapsed) layout.classList.add('hide-left');
+    icon.className = 'fas fa-chevron-right';
+  }
+}
+
+// 우측 패널 탭 전환
+function switchRpTab(name, btn) {
+  document.querySelectorAll('.rp-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.rp-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('rp-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// 페이지 진입 시 우측 패널 랜덤 탭 표시
 (function(){
+  const tabs = ['chat', 'online', 'hot'];
+  const random = tabs[Math.floor(Math.random() * tabs.length)];
+  document.querySelectorAll('.rp-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.rp-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('rp-' + random).classList.add('active');
+  document.querySelectorAll('.rp-tab')[tabs.indexOf(random)].classList.add('active');
+})();
+
+// 모바일 탭바
+if (window.innerWidth <= 768) {
+  document.querySelector('.mob-tabbar').style.display = 'block';
+}
+
+// 더보기 패널 (모바일용 - index.html에 이미 있음)
+function toggleMore() {
   const panel = document.getElementById('morePanel');
+  const backdrop = document.getElementById('moreBackdrop');
   if (!panel) return;
-  let startY = 0;
-  panel.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, {passive:true});
-  panel.addEventListener('touchend', e => {
-    const diff = e.changedTouches[0].clientY - startY;
-    if (diff > 80) toggleMore(); // 아래로 80px 이상 스와이프하면 닫힘
-  }, {passive:true});
-})();
-</script>
+  const isOpen = panel.classList.contains('show');
+  panel.classList.toggle('show', !isOpen);
+  backdrop.classList.toggle('show', !isOpen);
+  document.body.style.overflow = isOpen ? '' : 'hidden';
+}
 
-<script>
-// 모바일에서 데스크탑 퀵메뉴 숨기기
-(function(){
-  if(window.innerWidth <= 768) {
-    var el = document.getElementById('desktopIconGrid');
-    if(el) el.style.display = 'none';
-  }
-})();
-
-// 모바일 히어로 스크롤 효과
-(function(){
-  var hero = document.getElementById('mobHero');
-  if(!hero) return;
-  if(window.innerWidth > 768) return;
-
-  var maxH = 130;
-  hero.style.height = maxH + 'px';
-
-  function onScroll(){
-    var scrollY = window.scrollY || document.documentElement.scrollTop;
-    var newH = Math.max(0, maxH - scrollY * 1.8);
-    var opacity = Math.max(0, newH / maxH);
-    hero.style.height = newH + 'px';
-    hero.style.opacity = opacity;
-  }
-  window.addEventListener('scroll', onScroll, {passive:true});
-  window.addEventListener('resize', function(){
-    if(window.innerWidth > 768) {
-      hero.style.height = '';
-      hero.style.opacity = '';
-    }
-  });
-})();
+// 알림 카운트
+{% if user.is_authenticated %}
+async function updateNotiCount() {
+  try {
+    const res = await fetch('/notifications/count/');
+    const data = await res.json();
+    const dot = document.getElementById('noti-dot');
+    if (dot) dot.style.display = data.count > 0 ? 'inline-block' : 'none';
+  } catch(e) {}
+}
+updateNotiCount();
+setInterval(updateNotiCount, 30000);
+{% endif %}
 </script>
 {% endblock %}
