@@ -21,7 +21,7 @@
     .dropdown-item:hover{background:var(--gl)!important;color:var(--g)!important;}
     /* 레이아웃 */
     .layout-2p{display:grid;grid-template-columns:var(--sidebar-w) 1fr 260px;min-height:calc(100vh - var(--nav-h));}
-    @media(max-width:1200px){.layout-2p{grid-template-columns:var(--sidebar-w) 1fr;}}
+    @media(max-width:1200px){.layout-2p{display:grid;grid-template-columns:var(--sidebar-w) 1fr 260px;min-height:calc(100vh - var(--nav-h));}}
     @media(max-width:1200px){.rp-panel{display:none;}}
     /* 사이드바 */
     .sidebar{position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;overflow-x:hidden;border-right:1px solid var(--border);background:#fff;padding:12px 8px;display:flex;flex-direction:column;}
@@ -95,7 +95,7 @@
     .rp-rank.top{color:var(--g);}
     /* 반응형 */
     @media(max-width:768px){
-      .layout-2p{grid-template-columns:1fr;}
+      .layout-2p{display:grid;grid-template-columns:var(--sidebar-w) 1fr 260px;min-height:calc(100vh - var(--nav-h));}
       .sidebar{display:none;}
       .main-content{padding:14px;}
     }
@@ -190,25 +190,51 @@
       <button class="rp-tab" onclick="switchRp('users',this)">👥 입주민</button>
       <button class="rp-tab" onclick="switchRp('hot',this)">🔥 인기</button>
     </div>
-    <div class="rp-body" id="rpBody">
-      <!-- 채팅 -->
+    <div class="rp-body">
+      <!-- 채팅 탭 -->
       <div class="rp-section active" id="rp-chat">
-        <div id="rp-chat-list" style="margin-bottom:8px;">
-          <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:16px 0;">로딩 중...</div>
+        {% for chat in sidebar_chats %}
+        <div style="display:flex;align-items:flex-start;gap:7px;padding:7px 0;border-bottom:1px solid #f8fafb;">
+          <div class="rp-av">{{ chat.author.nickname|default:chat.author.username|first|upper }}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.68rem;color:#9ca3af;">{{ chat.author.nickname|default:chat.author.username }}</div>
+            <div style="font-size:0.78rem;color:#333;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ chat.message|truncatechars:28 }}</div>
+          </div>
+          <div style="font-size:0.63rem;color:#bbb;flex-shrink:0;">{{ chat.created_at|date:"H:i" }}</div>
         </div>
-        <a href="/chat/public/" class="btn btn-success btn-sm w-100" style="font-size:0.76rem;">채팅 참여 →</a>
+        {% empty %}
+        <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:16px 0;">채팅이 없어요</div>
+        {% endfor %}
+        <a href="/chat/public/" class="btn btn-success btn-sm w-100 mt-2" style="font-size:0.76rem;border-radius:8px!important;">채팅 참여 →</a>
       </div>
-      <!-- 입주민 -->
+      <!-- 입주민 탭 -->
       <div class="rp-section" id="rp-users">
-        <div id="rp-users-list">
-          <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:16px 0;">로딩 중...</div>
+        {% for u in sidebar_online_users %}
+        <div style="display:flex;align-items:center;gap:7px;padding:6px 0;border-bottom:1px solid #f8fafb;">
+          <div class="rp-av">{{ u.nickname|default:u.username|first|upper }}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.8rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.nickname|default:u.username }}</div>
+            <div style="font-size:0.68rem;color:#9ca3af;">{% if u.dong %}{{ u.dong }}동{% else %}입주민{% endif %}</div>
+          </div>
+          <div style="width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div>
         </div>
+        {% empty %}
+        <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:16px 0;">접속자 없음</div>
+        {% endfor %}
       </div>
-      <!-- 인기글 -->
+      <!-- 인기글 탭 -->
       <div class="rp-section" id="rp-hot">
-        <div id="rp-hot-list">
-          <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:16px 0;">로딩 중...</div>
-        </div>
+        {% for post in sidebar_hot_posts %}
+        <a href="/posts/{{ post.pk }}/" style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f8fafb;text-decoration:none;color:inherit;">
+          <div style="font-size:1rem;font-weight:800;color:{% if forloop.counter <= 3 %}#1a7a4a{% else %}#c6e8d8{% endif %};width:16px;text-align:center;flex-shrink:0;">{{ forloop.counter }}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.8rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ post.title|truncatechars:22 }}</div>
+            <div style="font-size:0.68rem;color:#9ca3af;">❤ {{ post.like_count }}</div>
+          </div>
+        </a>
+        {% empty %}
+        <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:16px 0;">인기글 없음</div>
+        {% endfor %}
       </div>
     </div>
   </aside>
@@ -236,53 +262,25 @@
     else if(href==='/'&&path==='/')item.classList.add('active');
   });
 })();
-</script>
-
-// 우측 패널 탭
+// 우측 패널 탭 전환
 function switchRp(name, btn) {
   document.querySelectorAll('.rp-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.rp-tab').forEach(b => b.classList.remove('active'));
   document.getElementById('rp-' + name).classList.add('active');
   btn.classList.add('active');
 }
-
-// 우측 패널 데이터 로드
-async function loadRpData() {
-  try {
-    // 채팅 로드
-    const chatRes = await fetch('/chat/public/messages/?since=0');
-    const chatData = await chatRes.json();
-    const chatList = document.getElementById('rp-chat-list');
-    if (chatList && chatData.messages) {
-      const msgs = chatData.messages.slice(-5).reverse();
-      chatList.innerHTML = msgs.length ? msgs.map(m => `
-        <div class="rp-item">
-          <div class="rp-av">${(m.author||'?')[0].toUpperCase()}</div>
-          <div style="flex:1;min-width:0;">
-            <div class="rp-nick">${m.author||''}</div>
-            <div class="rp-text">${m.message||''}</div>
-          </div>
-          <div class="rp-time">${m.time||''}</div>
-        </div>`).join('') :
-        '<div style="text-align:center;color:#ccc;font-size:0.78rem;padding:12px 0;">채팅이 없어요</div>';
-    }
-  } catch(e) {
-    const chatList = document.getElementById('rp-chat-list');
-    if (chatList) chatList.innerHTML = '<div style="text-align:center;color:#ccc;font-size:0.78rem;padding:12px 0;"><a href="/chat/public/" style="color:var(--g);">채팅 참여하기</a></div>';
-  }
-}
-
-// 페이지 로드 시 랜덤 탭 + 데이터 로드
+// 페이지 진입 시 랜덤 탭
 (function(){
   const tabs = ['chat','users','hot'];
   const r = tabs[Math.floor(Math.random()*tabs.length)];
   document.querySelectorAll('.rp-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.rp-section').forEach(s => s.classList.remove('active'));
-  document.getElementById('rp-'+r).classList.add('active');
-  document.querySelectorAll('.rp-tab')[tabs.indexOf(r)].classList.add('active');
-  loadRpData();
+  const el = document.getElementById('rp-'+r);
+  if(el) el.classList.add('active');
+  const tabEls = document.querySelectorAll('.rp-tab');
+  if(tabEls[tabs.indexOf(r)]) tabEls[tabs.indexOf(r)].classList.add('active');
 })();
-
+</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>

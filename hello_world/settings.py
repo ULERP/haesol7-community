@@ -65,6 +65,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "hello_world.context_processors.active_boards",
                 "hello_world.context_processors.verification_status",
+                "hello_world.core.context_processors.sidebar_data",
             ],
         },
     },
