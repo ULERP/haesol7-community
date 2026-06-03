@@ -439,15 +439,41 @@ class Group(models.Model):
     description      = models.TextField()
     group_type       = models.CharField(max_length=20, choices=GROUP_TYPE)
     creator          = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='created_groups')
-    members          = models.ManyToManyField('CustomUser', through='GroupMember', related_name='joined_groups')
+    members          = models.ManyToManyField('CustomUser', through='GroupMember', through_fields=('group','user'), related_name='joined_groups')
     group_image      = models.ImageField(upload_to='groups/', blank=True, null=True)
     location         = models.CharField(max_length=200, blank=True)
     regular_schedule = models.CharField(max_length=200, blank=True)
     member_limit     = models.IntegerField(blank=True, null=True)
+    JOIN_TYPE = [
+        ('open',    '자유가입'),
+        ('approve', '승인제'),
+        ('invite',  '초대제'),
+    ]
+    STATUS_CHOICES = [
+        ('active',   '운영중'),
+        ('pending',  '승인대기'),  # 10인 이상 생성시
+        ('dissolving','해체투표중'),
+        ('dissolved','해체됨'),
+    ]
+    join_type        = models.CharField('가입방식', max_length=20, choices=JOIN_TYPE, default='open')
+    status           = models.CharField('상태', max_length=20, choices=STATUS_CHOICES, default='active')
     is_public        = models.BooleanField(default=True)
     is_active        = models.BooleanField(default=True)
+    is_limited       = models.BooleanField('기간한정', default=False)
+    expires_at       = models.DateTimeField('해체예정일', null=True, blank=True)
+    dissolve_vote_at = models.DateTimeField('해체투표시작', null=True, blank=True)
+    approved_by      = models.ForeignKey('CustomUser', null=True, blank=True, on_delete=models.SET_NULL, related_name='approved_groups', verbose_name='승인자')
+    approved_at      = models.DateTimeField('승인일시', null=True, blank=True)
+    emblem_level     = models.PositiveIntegerField('엠블럼 레벨', default=1)
+    activity_score   = models.PositiveIntegerField('활동점수', default=0)
     created_at       = models.DateTimeField(auto_now_add=True)
     updated_at       = models.DateTimeField(auto_now=True)
+
+    def member_count(self):
+        return self.groupmember_set.filter(is_active=True).count()
+
+    def needs_admin_approval(self):
+        return self.member_limit and self.member_limit >= 10
 
     class Meta:
         ordering = ['-created_at']
@@ -464,11 +490,21 @@ class GroupMember(models.Model):
         ('moderator', '운영진'),
         ('leader',    '리더'),
     ]
-    group     = models.ForeignKey(Group, on_delete=models.CASCADE)
-    user      = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
-    role      = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
-    joined_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
+    JOIN_STATUS = [
+        ('pending',  '가입대기'),
+        ('approved', '승인됨'),
+        ('rejected', '거절됨'),
+        ('banned',   '강제퇴장'),
+    ]
+    group       = models.ForeignKey(Group, on_delete=models.CASCADE)
+    user        = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
+    role        = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
+    join_status = models.CharField('가입상태', max_length=20, choices=JOIN_STATUS, default='approved')
+    joined_at   = models.DateTimeField(auto_now_add=True)
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey('CustomUser', null=True, blank=True, on_delete=models.SET_NULL, related_name='approved_members')
+    ban_reason  = models.TextField('퇴장사유', blank=True)
+    is_active   = models.BooleanField(default=True)
 
     class Meta:
         verbose_name        = '소모임 회원'
@@ -546,6 +582,57 @@ class GroupComment(models.Model):
     def __str__(self):
         return f"{self.author.username} - {self.content[:50]}"
 
+
+
+class GroupLeaderLog(models.Model):
+    """방장 활동 기록"""
+    ACTION_CHOICES = [
+        ('create',   '소모임 생성'),
+        ('approve',  '가입 승인'),
+        ('reject',   '가입 거절'),
+        ('ban',      '강제 퇴장'),
+        ('invite',   '초대'),
+        ('delegate', '방장 위임'),
+        ('dissolve', '해체 신청'),
+        ('edit',     '소모임 수정'),
+    ]
+    group      = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='leader_logs')
+    actor      = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='leader_actions')
+    target     = models.ForeignKey('CustomUser', null=True, blank=True, on_delete=models.SET_NULL, related_name='leader_action_targets')
+    action     = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    detail     = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = '방장 활동 기록'
+        verbose_name_plural = '방장 활동 기록'
+
+    def __str__(self):
+        return f"[{self.get_action_display()}] {self.actor} → {self.group.name}"
+
+
+class GroupDissolveVote(models.Model):
+    """소모임 해체 투표 (5인 이상)"""
+    group      = models.OneToOneField(Group, on_delete=models.CASCADE, related_name='dissolve_vote')
+    started_by = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='dissolve_votes')
+    started_at = models.DateTimeField(auto_now_add=True)
+    ends_at    = models.DateTimeField()
+    oppose_users = models.ManyToManyField('CustomUser', blank=True, related_name='opposed_dissolves')
+
+    class Meta:
+        verbose_name = '해체 투표'
+        verbose_name_plural = '해체 투표'
+
+    def oppose_count(self):
+        return self.oppose_users.count()
+
+    def is_blocked(self):
+        total = self.group.member_count()
+        return self.oppose_count() > total / 2
+
+    def __str__(self):
+        return f"{self.group.name} 해체투표"
 
 class GroupChat(models.Model):
     group      = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='chat_messages')

@@ -1064,76 +1064,279 @@ def group_list(request):
 
 
 @login_required
+@login_required
 def group_create(request):
-    from .models import Group, GroupMember
+    from .models import Group, GroupMember, GroupLeaderLog
+    from django.utils import timezone
     GROUP_TYPE = [
         ('hobby', '취미 활동'), ('pet', '반려동물'), ('sports', '스포츠'),
         ('volunteer', '자원봉사'), ('learning', '학습'), ('event', '정기 행사'),
     ]
     if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        description = request.POST.get('description', '').strip()
-        group_type = request.POST.get('group_type', 'hobby')
-        location = request.POST.get('location', '').strip()
+        name             = request.POST.get('name', '').strip()
+        description      = request.POST.get('description', '').strip()
+        group_type       = request.POST.get('group_type', 'hobby')
+        location         = request.POST.get('location', '').strip()
         regular_schedule = request.POST.get('regular_schedule', '').strip()
-        member_limit = request.POST.get('member_limit') or None
-        is_public = request.POST.get('is_public') == 'on'
+        member_limit     = request.POST.get('member_limit') or None
+        is_public        = request.POST.get('is_public') == 'on'
+        join_type        = request.POST.get('join_type', 'open')
+        is_limited       = request.POST.get('is_limited') == 'on'
+        expires_at_str   = request.POST.get('expires_at', '').strip()
+
         if not name:
             messages.error(request, '소모임 이름을 입력해주세요.')
             return render(request, 'group_form.html', {'group_types': GROUP_TYPE})
+
+        limit_int = int(member_limit) if member_limit else None
+        # 10인 이상이면 관리자 승인 필요
+        needs_approval = limit_int and limit_int >= 10
+        status = 'pending' if needs_approval else 'active'
+
+        expires_at = None
+        if is_limited and expires_at_str:
+            from django.utils.dateparse import parse_datetime
+            expires_at = parse_datetime(expires_at_str + ':00') if len(expires_at_str) == 16 else None
+
         group = Group.objects.create(
             name=name, description=description, group_type=group_type,
             creator=request.user, location=location,
             regular_schedule=regular_schedule,
-            member_limit=int(member_limit) if member_limit else None,
+            member_limit=limit_int,
             is_public=is_public,
+            join_type=join_type,
+            is_limited=is_limited,
+            expires_at=expires_at,
+            status=status,
         )
-        GroupMember.objects.create(group=group, user=request.user, role='leader')
-        messages.success(request, f'소모임 "{name}"이 만들어졌어요! 이웃을 초대해보세요.')
+        GroupMember.objects.create(
+            group=group, user=request.user, role='leader',
+            join_status='approved', approved_at=timezone.now()
+        )
+        GroupLeaderLog.objects.create(
+            group=group, actor=request.user, action='create',
+            detail=f'소모임 생성 (정원:{limit_int}, 가입:{join_type})'
+        )
+        if needs_approval:
+            messages.warning(request, f'"{name}" 소모임이 생성됐어요. 정원 10인 이상은 관리자 승인 후 활성화됩니다.')
+        else:
+            messages.success(request, f'소모임 "{name}"이 만들어졌어요! 이웃을 초대해보세요.')
         return redirect('group_detail', pk=group.pk)
     return render(request, 'group_form.html', {'group_types': GROUP_TYPE})
 
 
 def group_detail(request, pk):
-    from .models import Group, GroupMember, GroupPost, GroupChat
+    from .models import Group, GroupMember, GroupPost, GroupLeaderLog, CalendarEvent, Survey
+    from django.db.models import Q
     group = get_object_or_404(Group, pk=pk)
     is_member = False
     my_role = None
+    membership = None
     if request.user.is_authenticated:
         membership = GroupMember.objects.filter(group=group, user=request.user, is_active=True).first()
         is_member = bool(membership)
         my_role = membership.role if membership else None
-    members = GroupMember.objects.filter(group=group, is_active=True).select_related('user')
+
+    # 가입 대기중인지
+    pending = False
+    if request.user.is_authenticated and not is_member:
+        pending = GroupMember.objects.filter(
+            group=group, user=request.user, join_status='pending'
+        ).exists()
+
+    members = GroupMember.objects.filter(
+        group=group, is_active=True, join_status='approved'
+    ).select_related('user').order_by('joined_at')
+
+    pending_members = []
+    leader_logs = []
+    if my_role in ('leader', 'moderator'):
+        pending_members = GroupMember.objects.filter(
+            group=group, join_status='pending'
+        ).select_related('user')
+        leader_logs = GroupLeaderLog.objects.filter(group=group).select_related('actor','target')[:20]
+
     recent_posts = GroupPost.objects.filter(group=group).order_by('-created_at')[:5]
+    group_events = CalendarEvent.objects.filter(group=group, is_approved=True).order_by('start_time')[:5]
+
     return render(request, 'group_detail.html', {
-        'group': group,
-        'is_member': is_member,
-        'my_role': my_role,
-        'members': members,
-        'recent_posts': recent_posts,
-        'member_count': members.count(),
+        'group':           group,
+        'is_member':       is_member,
+        'my_role':         my_role,
+        'pending':         pending,
+        'membership':      membership,
+        'members':         members,
+        'pending_members': pending_members,
+        'leader_logs':     leader_logs,
+        'recent_posts':    recent_posts,
+        'group_events':    group_events,
+        'member_count':    members.count(),
+        'is_leader':       my_role == 'leader',
+        'is_mod':          my_role in ('leader', 'moderator'),
     })
 
 
 @login_required
 def group_join(request, pk):
-    from .models import Group, GroupMember
+    from .models import Group, GroupMember, GroupLeaderLog
+    from django.utils import timezone
     group = get_object_or_404(Group, pk=pk)
-    if request.method == 'POST':
-        existing = GroupMember.objects.filter(group=group, user=request.user).first()
+    if request.method != 'POST':
+        return redirect('group_detail', pk=pk)
+
+    existing = GroupMember.objects.filter(group=group, user=request.user).first()
+
+    # 탈퇴 처리
+    if existing and existing.is_active and existing.join_status == 'approved':
+        if existing.role == 'leader':
+            messages.error(request, '방장은 탈퇴할 수 없어요. 먼저 방장을 위임하세요.')
+            return redirect('group_detail', pk=pk)
+        existing.is_active = False
+        existing.save()
+        messages.info(request, f'"{group.name}" 소모임에서 나왔어요.')
+        return redirect('group_detail', pk=pk)
+
+    # 정원 확인
+    current_count = GroupMember.objects.filter(group=group, is_active=True, join_status='approved').count()
+    if group.member_limit and current_count >= group.member_limit:
+        messages.error(request, '참여 인원이 가득 찼어요.')
+        return redirect('group_detail', pk=pk)
+
+    # 가입 방식별 처리
+    if group.join_type == 'open':
         if existing:
-            existing.is_active = not existing.is_active
+            existing.is_active = True
+            existing.join_status = 'approved'
+            existing.approved_at = timezone.now()
             existing.save()
-            if existing.is_active:
-                messages.success(request, f'"{group.name}" 소모임에 참여했어요!')
-            else:
-                messages.info(request, f'"{group.name}" 소모임에서 나왔어요.')
         else:
-            if group.member_limit and GroupMember.objects.filter(group=group, is_active=True).count() >= group.member_limit:
-                messages.error(request, '참여 인원이 가득 찼어요.')
-            else:
-                GroupMember.objects.create(group=group, user=request.user, role='member')
-                messages.success(request, f'"{group.name}" 소모임에 참여했어요!')
+            GroupMember.objects.create(
+                group=group, user=request.user, role='member',
+                join_status='approved', approved_at=timezone.now()
+            )
+        messages.success(request, f'"{group.name}" 소모임에 참여했어요!')
+
+    elif group.join_type == 'approve':
+        if existing and existing.join_status == 'pending':
+            messages.info(request, '이미 가입 신청 중이에요. 방장 승인을 기다려주세요.')
+        else:
+            GroupMember.objects.update_or_create(
+                group=group, user=request.user,
+                defaults={'join_status': 'pending', 'is_active': True, 'role': 'member'}
+            )
+            # 방장에게 알림
+            leader_member = GroupMember.objects.filter(group=group, role='leader', is_active=True).first()
+            if leader_member:
+                from .models import Notification
+                Notification.objects.create(
+                    recipient=leader_member.user,
+                    title=f'[{group.name}] 가입 신청',
+                    message=f'{request.user.nickname or request.user.username}님이 가입을 신청했어요.',
+                    notification_type='community',
+                )
+            messages.success(request, '가입 신청이 완료됐어요. 방장 승인을 기다려주세요.')
+
+    elif group.join_type == 'invite':
+        messages.error(request, '초대제 소모임은 초대를 통해서만 가입할 수 있어요.')
+
+    return redirect('group_detail', pk=pk)
+
+
+@login_required
+def group_member_action(request, pk):
+    """방장/운영진의 회원 관리 액션"""
+    from .models import Group, GroupMember, GroupLeaderLog
+    from django.utils import timezone
+    group = get_object_or_404(Group, pk=pk)
+    my_membership = GroupMember.objects.filter(group=group, user=request.user, is_active=True).first()
+    if not my_membership or my_membership.role not in ('leader', 'moderator'):
+        messages.error(request, '권한이 없어요.')
+        return redirect('group_detail', pk=pk)
+
+    action      = request.POST.get('action')
+    target_id   = request.POST.get('user_id')
+    reason      = request.POST.get('reason', '')
+    target_user = get_object_or_404(CustomUser, pk=target_id)
+    target_mem  = GroupMember.objects.filter(group=group, user=target_user).first()
+
+    if action == 'approve' and target_mem:
+        target_mem.join_status = 'approved'
+        target_mem.approved_at = timezone.now()
+        target_mem.approved_by = request.user
+        target_mem.save()
+        GroupLeaderLog.objects.create(group=group, actor=request.user, target=target_user, action='approve')
+        messages.success(request, f'{target_user.nickname or target_user.username}님의 가입을 승인했어요.')
+
+    elif action == 'reject' and target_mem:
+        target_mem.join_status = 'rejected'
+        target_mem.is_active = False
+        target_mem.save()
+        GroupLeaderLog.objects.create(group=group, actor=request.user, target=target_user, action='reject', detail=reason)
+        messages.info(request, f'가입 신청을 거절했어요.')
+
+    elif action == 'ban' and target_mem:
+        if target_mem.role == 'leader':
+            messages.error(request, '방장은 강제퇴장할 수 없어요.')
+        else:
+            target_mem.is_active = False
+            target_mem.join_status = 'banned'
+            target_mem.ban_reason = reason
+            target_mem.save()
+            GroupLeaderLog.objects.create(group=group, actor=request.user, target=target_user, action='ban', detail=reason)
+            messages.success(request, f'{target_user.nickname or target_user.username}님을 퇴장시켰어요.')
+
+    elif action == 'delegate' and my_membership.role == 'leader':
+        my_membership.role = 'member'
+        my_membership.save()
+        if target_mem:
+            target_mem.role = 'leader'
+            target_mem.save()
+        group.creator = target_user
+        group.save()
+        GroupLeaderLog.objects.create(group=group, actor=request.user, target=target_user, action='delegate')
+        messages.success(request, f'{target_user.nickname or target_user.username}님에게 방장을 위임했어요.')
+
+    return redirect('group_detail', pk=pk)
+
+
+@login_required
+def group_dissolve(request, pk):
+    """소모임 해체 신청 / 투표"""
+    from .models import Group, GroupMember, GroupLeaderLog, GroupDissolveVote
+    from django.utils import timezone
+    from datetime import timedelta
+    group = get_object_or_404(Group, pk=pk)
+    my_membership = GroupMember.objects.filter(group=group, user=request.user, role='leader', is_active=True).first()
+
+    if not my_membership:
+        messages.error(request, '방장만 해체를 신청할 수 있어요.')
+        return redirect('group_detail', pk=pk)
+
+    member_count = GroupMember.objects.filter(group=group, is_active=True, join_status='approved').count()
+
+    if member_count >= 5:
+        # 5인 이상 → 해체 투표
+        vote, created = GroupDissolveVote.objects.get_or_create(
+            group=group,
+            defaults={
+                'started_by': request.user,
+                'ends_at': timezone.now() + timedelta(days=7),
+            }
+        )
+        group.status = 'dissolving'
+        group.dissolve_vote_at = timezone.now()
+        group.save()
+        GroupLeaderLog.objects.create(group=group, actor=request.user, action='dissolve', detail='해체 투표 시작')
+        messages.warning(request, '해체 투표가 시작됐어요. 7일 내 과반의 반대가 없으면 해체됩니다.')
+    else:
+        # 5인 미만 → 즉시 해체
+        group.status = 'dissolved'
+        group.is_active = False
+        group.save()
+        GroupLeaderLog.objects.create(group=group, actor=request.user, action='dissolve', detail='즉시 해체')
+        messages.info(request, f'"{group.name}" 소모임이 해체됐어요.')
+        return redirect('group_list')
+
     return redirect('group_detail', pk=pk)
 
 

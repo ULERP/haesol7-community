@@ -1,98 +1,82 @@
 {% extends 'base_2panel.html' %}
-{% block title %}{% if group %}소모임 수정{% else %}소모임 만들기{% endif %} — 해솔7 지킴이{% endblock %}
-{% block extra_head %}
-<style>
-:root{--g:#1a7a4a;}
-.wrap{max-width:600px;margin:0 auto;padding:16px;}
-.form-card{background:#fff;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;
-  box-shadow:0 2px 8px rgba(0,0,0,.06);}
-.form-header{background:linear-gradient(135deg,var(--g),#1e9158);padding:20px 24px;}
-.form-header h5{color:#fff;font-weight:700;margin:0;font-size:1rem;}
-.form-header p{color:rgba(255,255,255,.8);font-size:0.78rem;margin:4px 0 0;}
-.form-body{padding:20px 24px;}
-.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;}
-.type-option{display:none;}
-.type-label{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;
-  border:1.5px solid #e5e7eb;border-radius:12px;cursor:pointer;font-size:0.75rem;
-  font-weight:600;color:#6b7280;transition:all .15s;text-align:center;}
-.type-label:hover{border-color:var(--g);color:var(--g);background:#f0fdf7;}
-.type-option:checked + .type-label{border-color:var(--g);background:#e8f5ee;color:var(--g);}
-.type-icon{font-size:1.4rem;}
-</style>
-{% endblock %}
+{% block menu_groups %}active{% endblock %}
+{% block title %}소모임 만들기{% endblock %}
 {% block content %}
-<div class="wrap">
-  <div class="form-card">
-    <div class="form-header">
-      <h5>{% if group %}✏️ 소모임 수정{% else %}✨ 새 소모임 만들기{% endif %}</h5>
-      <p>이웃들과 함께하는 소모임을 만들어보세요</p>
-    </div>
-    <div class="form-body">
-      {% if messages %}{% for m in messages %}
-      <div class="alert alert-danger py-2 mb-3" style="font-size:0.83rem;">{{ m }}</div>
-      {% endfor %}{% endif %}
-      <form method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-          <label class="form-label">소모임 이름 *</label>
-          <input type="text" name="name" class="form-control"
-            value="{{ group.name|default:'' }}" placeholder="예: 아침 산책 모임" required maxlength="30">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">소모임 유형 *</label>
-          <div class="type-grid">
-            {% for key, label in group_types %}
-            <input type="radio" name="group_type" id="type_{{ key }}" value="{{ key }}"
-              class="type-option" {% if group.group_type == key %}checked{% elif not group and key == 'hobby' %}checked{% endif %}>
-            <label for="type_{{ key }}" class="type-label">
-              <span class="type-icon">
-                {% if key == 'hobby' %}🎨{% elif key == 'pet' %}🐾{% elif key == 'sports' %}⚽
-                {% elif key == 'volunteer' %}🤝{% elif key == 'learning' %}📚{% else %}🎉{% endif %}
-              </span>
-              {{ label }}
-            </label>
+<div class="card border-0" style="border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08);max-width:700px;margin:0 auto;">
+  <div class="p-4" style="background:linear-gradient(135deg,#1a7a4a,#1e9158);">
+    <h5 class="text-white fw-bold mb-1"><i class="fas fa-users me-2"></i>새 소모임 만들기</h5>
+    <p class="text-white mb-0" style="opacity:.8;font-size:0.82rem;">이웃과 함께하는 소모임을 시작해보세요 🌿</p>
+  </div>
+  <div class="p-4">
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">소모임 이름 <span class="text-danger">*</span></label>
+        <input type="text" name="name" class="form-control" placeholder="예: 해솔 산책단, 독서모임">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">소개글 <span class="text-danger">*</span></label>
+        <textarea name="description" class="form-control" rows="3" placeholder="소모임을 소개해주세요"></textarea>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">유형</label>
+          <select name="group_type" class="form-select">
+            {% for val, label in group_types %}
+            <option value="{{ val }}">{{ label }}</option>
             {% endfor %}
-          </div>
+          </select>
         </div>
-        <div class="mb-3">
-          <label class="form-label">소모임 소개</label>
-          <textarea name="description" class="form-control" rows="3"
-            placeholder="어떤 소모임인지 간단히 소개해주세요">{{ group.description|default:'' }}</textarea>
+        <div class="col-md-6">
+          <label class="form-label">가입 방식</label>
+          <select name="join_type" class="form-select">
+            <option value="open">🔓 자유가입</option>
+            <option value="approve">✅ 승인제</option>
+            <option value="invite">🔒 초대제</option>
+          </select>
         </div>
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label">활동 장소</label>
-            <input type="text" name="location" class="form-control form-control-sm"
-              value="{{ group.location|default:'' }}" placeholder="예: 단지 내 공원">
-          </div>
-          <div class="col-6">
-            <label class="form-label">정원 (선택)</label>
-            <input type="number" name="member_limit" class="form-control form-control-sm"
-              value="{{ group.member_limit|default:'' }}" placeholder="제한 없음" min="2" max="100">
-          </div>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">최대 인원</label>
+          <input type="number" name="member_limit" class="form-control" placeholder="제한 없음" min="2" max="100">
+          <div class="form-text">💡 10인 이상은 관리자 승인이 필요해요</div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">정기 일정</label>
-          <input type="text" name="regular_schedule" class="form-control"
-            value="{{ group.regular_schedule|default:'' }}" placeholder="예: 매주 토요일 오전 7시">
+        <div class="col-md-6">
+          <label class="form-label">활동 장소</label>
+          <input type="text" name="location" class="form-control" placeholder="예: 단지 내 공원">
         </div>
-        <div class="mb-3">
-          <div class="form-check">
-            <input type="checkbox" name="is_public" class="form-check-input" id="is_public"
-              {% if not group or group.is_public %}checked{% endif %}>
-            <label class="form-check-label" for="is_public" style="font-size:0.85rem;">
-              공개 소모임 (누구나 목록에서 볼 수 있어요)
-            </label>
-          </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">정기 일정</label>
+        <input type="text" name="regular_schedule" class="form-control" placeholder="예: 매주 토요일 오전 10시">
+      </div>
+      <div class="mb-3">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="is_limited" id="isLimited" onchange="toggleExpiry()">
+          <label class="form-check-label" for="isLimited">기간 한정 소모임</label>
         </div>
-        <div class="d-flex gap-2 mt-4">
-          <button type="submit" class="btn btn-success flex-1" style="flex:1;">
-            <i class="fas fa-check me-1"></i>{% if group %}저장하기{% else %}소모임 만들기{% endif %}
-          </button>
-          <a href="{% url 'group_list' %}" class="btn btn-outline-secondary">취소</a>
+        <div id="expiryWrap" class="mt-2 d-none">
+          <label class="form-label small">해체 예정일</label>
+          <input type="datetime-local" name="expires_at" class="form-control form-control-sm">
         </div>
-      </form>
-    </div>
+      </div>
+      <div class="mb-4">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="is_public" id="isPublic" checked>
+          <label class="form-check-label" for="isPublic">공개 소모임 (목록에 표시)</label>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success px-4"><i class="fas fa-plus me-1"></i>소모임 만들기</button>
+        <a href="/groups/" class="btn btn-outline-secondary px-4">취소</a>
+      </div>
+    </form>
   </div>
 </div>
+<script>
+function toggleExpiry() {
+  document.getElementById('expiryWrap').classList.toggle('d-none', !document.getElementById('isLimited').checked);
+}
+</script>
 {% endblock %}
