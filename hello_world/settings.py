@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "django_browser_reload",
     "rest_framework",
     "corsheaders",
+    "storages",
     "hello_world.core",
     "community",
 ]
@@ -94,8 +95,44 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "hello_world" / "static"]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "hello_world" / "media"
+# ── Cloudflare R2 이미지 스토리지 ───────────────────────────────────
+R2_ACCOUNT_ID       = config('R2_ACCOUNT_ID', default='')
+R2_ACCESS_KEY_ID    = config('R2_ACCESS_KEY_ID', default='')
+R2_SECRET_ACCESS_KEY= config('R2_SECRET_ACCESS_KEY', default='')
+R2_BUCKET_NAME      = config('R2_BUCKET_NAME', default='')
+R2_CUSTOM_DOMAIN    = config('R2_CUSTOM_DOMAIN', default='')
+
+if R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY:
+    # R2 사용 (운영 환경)
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "access_key":        R2_ACCESS_KEY_ID,
+                "secret_key":        R2_SECRET_ACCESS_KEY,
+                "bucket_name":       R2_BUCKET_NAME,
+                "endpoint_url":      f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com",
+                "region_name":       "auto",
+                "default_acl":       None,
+                "file_overwrite":    False,
+                "object_parameters": {"CacheControl": "max-age=86400"},
+                # 퍼블릭 URL 설정
+                "custom_domain":     R2_CUSTOM_DOMAIN if R2_CUSTOM_DOMAIN else None,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    # R2 public URL
+    if R2_CUSTOM_DOMAIN:
+        MEDIA_URL = f"https://{R2_CUSTOM_DOMAIN}/"
+    else:
+        MEDIA_URL = f"https://{R2_BUCKET_NAME}.{R2_ACCOUNT_ID}.r2.cloudflarestorage.com/"
+else:
+    # 로컬 개발 환경 (R2 미설정시 기존 방식 유지)
+    MEDIA_URL  = "/media/"
+    MEDIA_ROOT = BASE_DIR / "hello_world" / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
