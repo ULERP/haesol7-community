@@ -34,11 +34,9 @@
           </a>
           <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-th-large text-success"></i>전체 게시판</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/notices/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-bullhorn text-danger"></i>공지 및 행정</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-home text-warning"></i>우리동네 소통</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-info-circle text-info"></i>생활 정보 공유</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-laugh text-warning"></i>여가 및 활동</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/community/docs/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-archive text-secondary"></i>지킴이 아카이브</a></li>
+            {% for board in active_boards %}
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/{{ board.id }}/" style="font-size:0.82rem;padding:8px 12px;"><i class="{{ board.icon }} text-secondary"></i>{{ board.name }}</a></li>
+            {% endfor %}
           </ul>
         </li>
 
