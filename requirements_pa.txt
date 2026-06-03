@@ -1,0 +1,12 @@
+django==5.2.14
+python-decouple
+djangorestframework
+Pillow
+whitenoise
+django-storages
+boto3
+reportlab
+requests
+openai
+django-browser-reload
+django-cors-headers
