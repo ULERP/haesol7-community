@@ -94,9 +94,8 @@
     .rp-rank{font-size:1rem;font-weight:800;color:var(--gb);width:16px;text-align:center;flex-shrink:0;}
     .rp-rank.top{color:var(--g);}
     /* 반응형 */
-    @media(max-width:992px){.rp-panel{display:none;}}
     @media(max-width:768px){
-      .layout-2p{grid-template-columns:1fr!important;}
+      .layout-2p{display:grid;grid-template-columns:var(--sidebar-w) 1fr 260px;min-height:calc(100vh - var(--nav-h));}
       .sidebar{display:none;}
       .main-content{padding:14px;}
     }
