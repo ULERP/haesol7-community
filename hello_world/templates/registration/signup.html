@@ -96,11 +96,58 @@
             </div>
           </div>
 
+
           <hr class="my-3">
 
-          <!-- STEP 3: 입주민 인증 -->
-          <div class="fw-bold mb-2" style="font-size:0.82rem;color:#1a7a4a;letter-spacing:.03em;">
+          <!-- STEP 3: 보안 질문 -->
+          <div class="fw-bold mb-3" style="font-size:0.82rem;color:#1a7a4a;letter-spacing:.03em;">
             <span style="background:#1a7a4a;color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:0.72rem;margin-right:6px;">3</span>
+            비밀번호 찾기용 보안 질문
+            <span class="text-muted fw-normal" style="font-size:0.73rem;">비밀번호를 잊었을 때 사용해요</span>
+          </div>
+          <div class="row g-3 mb-2">
+            <div class="col-12">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">보안 질문 <span class="text-danger">*</span></label>
+              <select name="security_question" class="form-select" required>
+                <option value="">-- 질문을 선택하세요 --</option>
+                <optgroup label="가족/성장">
+                  <option>어머니의 성함은?</option>
+                  <option>아버지의 성함은?</option>
+                  <option>형제·자매 중 막내의 이름은?</option>
+                  <option>내가 태어난 병원 이름은?</option>
+                  <option>어린 시절 가장 친했던 친구 이름은?</option>
+                </optgroup>
+                <optgroup label="학교/경험">
+                  <option>초등학교 이름은?</option>
+                  <option>중학교 이름은?</option>
+                  <option>처음 다닌 직장 이름은?</option>
+                  <option>가장 기억에 남는 선생님 성함은?</option>
+                </optgroup>
+                <optgroup label="개인 취향">
+                  <option>가장 좋아하는 음식은?</option>
+                  <option>어린 시절 키우던 반려동물 이름은?</option>
+                  <option>내가 처음 산 자동차 모델은?</option>
+                  <option>가장 좋아하는 영화 제목은?</option>
+                  <option>가장 좋아하는 운동선수 이름은?</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold" style="font-size:0.85rem;">보안 답변 <span class="text-danger">*</span></label>
+              <input type="text" name="security_answer" class="form-control"
+                placeholder="답변을 입력하세요 (대소문자 구분 없음)" required
+                autocomplete="off">
+              <div class="form-text" style="font-size:0.72rem;">
+                📌 답변은 암호화 저장되며 비밀번호 찾기 시에만 사용됩니다.
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-3">
+
+          <!-- STEP 4: 입주민 인증 -->
+          <div class="fw-bold mb-2" style="font-size:0.82rem;color:#1a7a4a;letter-spacing:.03em;">
+            <span style="background:#1a7a4a;color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:0.72rem;margin-right:6px;">4</span>
             입주민 인증 <span class="text-muted fw-normal" style="font-size:0.73rem;">가입 후 관리자 승인 필요</span>
           </div>
 

@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -7,6 +8,8 @@ class CustomUser(AbstractUser):
     unit_number   = models.CharField(max_length=20, blank=True)
     dong          = models.CharField('동', max_length=10, blank=True)
     ho            = models.CharField('호', max_length=10, blank=True)
+    security_question = models.CharField('보안 질문', max_length=200, blank=True, default='')
+    security_answer   = models.CharField('보안 답변', max_length=100, blank=True, default='')
     nickname      = models.CharField('닉네임', max_length=30, blank=True)
     phone_number  = models.CharField(max_length=20, blank=True)
     is_verified   = models.BooleanField('입주민 인증', default=False)
@@ -23,6 +26,8 @@ class CustomUser(AbstractUser):
     class Meta:
         ordering  = ['-created_at']
         app_label = 'core'
+        verbose_name        = '입주민'
+        verbose_name_plural = '입주민'
 
     def __str__(self):
         return f"{self.username} ({str(self.unit_number)})"
@@ -45,8 +50,9 @@ class Badge(models.Model):
     created_at          = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name        = '배지'
         ordering       = ['category', 'required_points']
-        verbose_name_plural = "Badges"
+        verbose_name_plural = '배지'
 
     def __str__(self):
         return f"[{self.category}] {self.title}"
@@ -71,7 +77,7 @@ class Activity(models.Model):
     class Meta:
         ordering = ['activity_type', 'name']
         verbose_name = '봉사 활동'
-        verbose_name_plural = '봉사 활동 목록'
+        verbose_name_plural = '봉사 활동'
 
     def __str__(self):
         return self.name
@@ -98,7 +104,7 @@ class ActivityProof(models.Model):
     class Meta:
         ordering = ['-submitted_at']
         verbose_name = '활동 인증'
-        verbose_name_plural = '활동 인증 목록'
+        verbose_name_plural = '활동 인증'
 
     def __str__(self):
         return f"{self.user.username} - {self.activity.name}"
@@ -116,6 +122,8 @@ class ActivityVerification(models.Model):
     notes        = models.TextField(blank=True)
 
     class Meta:
+        verbose_name        = '활동 검증'
+        verbose_name_plural = '활동 검증'
         ordering = ['-submitted_at']
 
     def __str__(self):
@@ -129,6 +137,8 @@ class UserBadge(models.Model):
     is_displayed = models.BooleanField(default=True)
 
     class Meta:
+        verbose_name        = '회원 보유 배지'
+        verbose_name_plural = '회원 보유 배지'
         unique_together = ('user', 'badge')
         ordering        = ['-earned_at']
 
@@ -146,6 +156,8 @@ class Rating(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name        = '이웃 온기 평가'
+        verbose_name_plural = '이웃 온기 평가'
         unique_together = ('rater', 'rated_user')
         ordering        = ['-created_at']
 
@@ -185,7 +197,7 @@ class Board(models.Model):
     class Meta:
         ordering       = ['order']
         verbose_name   = '게시판'
-        verbose_name_plural = '게시판 목록'
+        verbose_name_plural = '게시판'
 
     def __str__(self):
         return self.name
@@ -229,7 +241,7 @@ class Post(models.Model):
     class Meta:
         ordering = ['-is_pinned', '-created_at']
         verbose_name = '게시글'
-        verbose_name_plural = '게시글 목록'
+        verbose_name_plural = '게시글'
 
     def __str__(self):
         return self.title
@@ -241,6 +253,8 @@ class PostImage(models.Model):
     order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
+        verbose_name        = '게시글 이미지'
+        verbose_name_plural = '게시글 이미지'
         ordering = ['order']
 
 
@@ -254,6 +268,8 @@ class Comment(models.Model):
     created_at   = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name        = '댓글'
+        verbose_name_plural = '댓글'
         ordering = ['created_at']
 
     def __str__(self):
@@ -266,6 +282,8 @@ class PostLike(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name        = '게시글 좋아요'
+        verbose_name_plural = '게시글 좋아요'
         unique_together = [['post', 'user']]
 
 
@@ -313,6 +331,14 @@ class Event(models.Model):
     location   = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name        = '봉사 일정'
+        verbose_name_plural = '봉사 일정'
+
+    class Meta:
+        verbose_name        = '봉사 일정'
+        verbose_name_plural = '봉사 일정'
+
     def __str__(self):
         return f"{self.post.title} @ {self.start_time}"
 
@@ -337,6 +363,8 @@ class Notification(models.Model):
     read_at            = models.DateTimeField(blank=True, null=True)
 
     class Meta:
+        verbose_name        = '알림'
+        verbose_name_plural = '알림'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -353,6 +381,8 @@ class ChatHistory(models.Model):
     created_at            = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name        = '채팅 기록'
+        verbose_name_plural = '채팅 기록'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -382,7 +412,7 @@ class ManagementDocument(models.Model):
     class Meta:
         ordering = ['category', 'title']
         verbose_name = '관리 문서'
-        verbose_name_plural = '관리 문서 목록'
+        verbose_name_plural = '관리 문서'
 
     def __str__(self):
         return f"[{self.category}] {self.title}"
@@ -414,7 +444,7 @@ class Group(models.Model):
     class Meta:
         ordering = ['-created_at']
         verbose_name = '소그룹'
-        verbose_name_plural = '소그룹 목록'
+        verbose_name_plural = '소그룹'
 
     def __str__(self):
         return self.name
@@ -433,6 +463,8 @@ class GroupMember(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
+        verbose_name        = '소모임 회원'
+        verbose_name_plural = '소모임 회원'
         unique_together = ('group', 'user')
         ordering        = ['-joined_at']
 
@@ -465,7 +497,7 @@ class Meetup(models.Model):
     class Meta:
         ordering = ['scheduled_at']
         verbose_name = '번개/모임'
-        verbose_name_plural = '번개/모임 목록'
+        verbose_name_plural = '번개/모임'
 
     def __str__(self):
         return self.title
@@ -483,6 +515,8 @@ class GroupPost(models.Model):
     updated_at    = models.DateTimeField(auto_now=True)
 
     class Meta:
+        verbose_name        = '소모임 게시글'
+        verbose_name_plural = '소모임 게시글'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -497,6 +531,8 @@ class GroupComment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        verbose_name        = '소모임 댓글'
+        verbose_name_plural = '소모임 댓글'
         ordering = ['created_at']
 
     def __str__(self):
@@ -515,6 +551,8 @@ class GroupChat(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name        = '소모임 채팅'
+        verbose_name_plural = '소모임 채팅'
         ordering = ['created_at']
 
     def __str__(self):
@@ -549,7 +587,7 @@ class MemberGrade(models.Model):
     class Meta:
         ordering            = ['order']
         verbose_name        = '회원 등급'
-        verbose_name_plural = '회원 등급 목록'
+        verbose_name_plural = '회원 등급'
 
     def __str__(self):
         return f"[{self.order}] {self.name}"
@@ -565,7 +603,7 @@ class BoardGradePermission(models.Model):
     class Meta:
         unique_together     = [['board', 'grade']]
         verbose_name        = '게시판 등급 권한'
-        verbose_name_plural = '게시판 등급 권한 목록'
+        verbose_name_plural = '게시판 등급 권한'
 
     def __str__(self):
         return f"{self.board.name} — {self.grade.name}"
@@ -593,7 +631,7 @@ class DirectMessage(models.Model):
     class Meta:
         ordering = ['created_at']
         verbose_name = '1:1 메시지'
-        verbose_name_plural = '1:1 메시지 목록'
+        verbose_name_plural = '1:1 메시지'
 
     def __str__(self):
         return f"{self.sender.username} → {self.receiver.username}: {self.message[:30]}"
@@ -613,7 +651,7 @@ class PublicChat(models.Model):
     class Meta:
         ordering = ['created_at']
         verbose_name = '오픈채팅'
-        verbose_name_plural = '오픈채팅 목록'
+        verbose_name_plural = '오픈채팅'
 
     def __str__(self):
         return f"{self.author.username}: {self.message[:30]}"
@@ -649,7 +687,7 @@ class Survey(models.Model):
     class Meta:
         ordering = ['-created_at']
         verbose_name = '설문조사'
-        verbose_name_plural = '설문조사 목록'
+        verbose_name_plural = '설문조사'
 
     def __str__(self):
         return self.title
@@ -766,7 +804,7 @@ class Letter(models.Model):
     class Meta:
         ordering = ['-created_at']
         verbose_name = '쪽지'
-        verbose_name_plural = '쪽지 목록'
+        verbose_name_plural = '쪽지'
 
     def __str__(self):
         return f"[{self.subject}] {self.sender} → {self.receiver}"
@@ -804,7 +842,7 @@ class Complaint(models.Model):
     class Meta:
         ordering = ['-created_at']
         verbose_name = '민원/건의'
-        verbose_name_plural = '민원/건의 목록'
+        verbose_name_plural = '민원/건의'
 
     def __str__(self):
         return f"[{self.get_category_display()}] {self.title}"
@@ -830,7 +868,7 @@ class Notice(models.Model):
     class Meta:
         ordering = ['-is_pinned', '-created_at']
         verbose_name = '빠른 공지'
-        verbose_name_plural = '빠른 공지 목록'
+        verbose_name_plural = '빠른 공지'
 
     def __str__(self):
         return f"[{self.get_notice_type_display()}] {self.title}"
@@ -847,7 +885,7 @@ class ComplaintCategory(models.Model):
     class Meta:
         ordering = ['order', 'name']
         verbose_name = '민원 분류'
-        verbose_name_plural = '민원 분류 목록'
+        verbose_name_plural = '민원 분류'
 
     def __str__(self):
         return self.name
@@ -864,7 +902,7 @@ class NoticeCategory(models.Model):
     class Meta:
         ordering = ['order', 'name']
         verbose_name = '공지 유형'
-        verbose_name_plural = '공지 유형 목록'
+        verbose_name_plural = '공지 유형'
 
     def __str__(self):
         return self.name
@@ -898,7 +936,7 @@ class CalendarEvent(models.Model):
     class Meta:
         ordering = ['start_time']
         verbose_name = '캘린더 일정'
-        verbose_name_plural = '캘린더 일정 목록'
+        verbose_name_plural = '캘린더 일정'
 
     def __str__(self):
         return f"[{self.get_event_type_display()}] {self.title}"
@@ -921,3 +959,31 @@ class SiteConfig(models.Model):
     def get(cls):
         obj, _ = cls.objects.get_or_create(id=1)
         return obj
+
+
+class AdminActionLog(models.Model):
+    """관리자 행위 로그 — 개인정보보호법 29조 안전조치 의무"""
+    ACTION_CHOICES = [
+        ('pw_reset',     '비밀번호 초기화'),
+        ('grade_change', '등급 변경'),
+        ('activate',     '계정 활성화'),
+        ('deactivate',   '계정 비활성화'),
+        ('verify',       '입주민 인증 승인'),
+        ('reject',       '입주민 인증 거절'),
+    ]
+    admin       = models.ForeignKey('core.CustomUser', on_delete=models.SET_NULL,
+                    null=True, related_name='admin_actions')
+    target_user = models.ForeignKey('core.CustomUser', on_delete=models.SET_NULL,
+                    null=True, related_name='admin_action_targets')
+    action      = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    detail      = models.TextField(blank=True)   # 평문 비밀번호 절대 저장 금지
+    ip_address  = models.GenericIPAddressField(null=True, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = '관리자 행위 로그'
+        verbose_name_plural = '관리자 행위 로그'
+
+    def __str__(self):
+        return f"[{self.get_action_display()}] {self.admin} → {self.target_user} ({self.created_at:%Y-%m-%d %H:%M})"

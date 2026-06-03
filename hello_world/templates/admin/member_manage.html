@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% block title %}회원 관리 — 해솔7 지킴이{% endblock %}
+{% block extra_head %}
+<style>
+.stat-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;text-align:center;}
+.stat-n{font-size:1.8rem;font-weight:700;color:#1a7a4a;line-height:1;}
+.stat-l{font-size:0.72rem;color:#9ca3af;margin-top:4px;}
+.action-bar{display:flex;gap:6px;flex-wrap:wrap;}
+.log-row{font-size:0.78rem;padding:6px 0;border-bottom:1px solid #f0f2f4;}
+.log-row:last-child{border-bottom:none;}
+.badge-grade{display:inline-block;padding:2px 8px;border-radius:10px;font-size:0.7rem;font-weight:600;}
+</style>
+{% endblock %}
+{% block content %}
+
+<!-- 헤더 -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 style="font-size:1.1rem;font-weight:700;margin:0;">👥 회원 등급 관리</h2>
+    <p class="text-muted mb-0" style="font-size:0.78rem;">
+      개인정보보호법에 따라 모든 관리 행위가 자동 기록됩니다.
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="/admin-tools/logs/" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-history me-1"></i>행위 로그
+    </a>
+    <a href="/admin/" class="btn btn-outline-success btn-sm">Django 관리자</a>
+  </div>
+</div>
+
+<!-- 메시지 -->
+{% if messages %}{% for m in messages %}
+<div class="alert alert-{{ m.tags|default:'info' }} py-2 mb-3" style="font-size:0.84rem;border-radius:10px;">{{ m }}</div>
+{% endfor %}{% endif %}
+
+<!-- 통계 -->
+<div class="row g-2 mb-3">
+  <div class="col-4"><div class="stat-card"><div class="stat-n">{{ total }}</div><div class="stat-l">전체 회원</div></div></div>
+  <div class="col-4"><div class="stat-card"><div class="stat-n">{{ active_count }}</div><div class="stat-l">활성 계정</div></div></div>
+  <div class="col-4"><div class="stat-card"><div class="stat-n">{{ verified_count }}</div><div class="stat-l">인증 입주민</div></div></div>
+</div>
+
+<!-- 검색/필터 -->
+<div class="card mb-3">
+  <div class="card-body" style="padding:12px 16px!important;">
+    <form method="get" class="d-flex gap-2 flex-wrap align-items-center">
+      <input type="text" name="q" value="{{ q }}" placeholder="아이디·닉네임·실명·동 검색"
+        class="form-control form-control-sm" style="max-width:220px;">
+      <select name="status" class="form-select form-select-sm" style="max-width:130px;">
+        <option value="">전체 상태</option>
+        <option value="active" {% if status == "active" %}selected{% endif %}>활성</option>
+        <option value="inactive" {% if status == "inactive" %}selected{% endif %}>비활성</option>
+        <option value="verified" {% if status == "verified" %}selected{% endif %}>인증됨</option>
+        <option value="unverified" {% if status == "unverified" %}selected{% endif %}>미인증</option>
+      </select>
+      <button class="btn btn-success btn-sm">검색</button>
+      {% if q or status %}<a href="?" class="btn btn-outline-secondary btn-sm">초기화</a>{% endif %}
+      <span class="ms-auto" style="font-size:0.78rem;color:#9ca3af;">{{ users|length }}명</span>
+    </form>
+  </div>
+</div>
+
+<!-- 회원 목록 -->
+<div class="card mb-4">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr style="font-size:0.78rem;">
+          <th>회원</th>
+          <th>동·호수</th>
+          <th>이메일</th>
+          <th>등급</th>
+          <th>상태</th>
+          <th>가입일</th>
+          <th style="min-width:220px;">관리</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr style="font-size:0.82rem;">
+          <td>
+            <div style="font-weight:600;">{{ u.nickname|default:u.username }}</div>
+            <div style="font-size:0.72rem;color:#9ca3af;">{{ u.username }}
+              {% if u.is_superuser %}<span class="badge bg-danger ms-1">최고관리자</span>
+              {% elif u.is_staff %}<span class="badge bg-warning text-dark ms-1">관리자</span>{% endif %}
+              {% if u.is_verified %}<span class="badge bg-success ms-1" style="font-size:0.6rem;">인증</span>{% endif %}
+            </div>
+          </td>
+          <td style="font-size:0.8rem;">
+            {% if u.dong %}{{ u.dong }}동 {{ u.ho }}호{% else %}<span class="text-muted">-</span>{% endif %}
+          </td>
+          <td style="font-size:0.78rem;">
+            {% if u.email %}
+              {{ u.email|truncatechars:20 }}
+            {% else %}
+              <span style="color:#e53935;font-size:0.72rem;"><i class="fas fa-exclamation-triangle me-1"></i>미등록</span>
+            {% endif %}
+          </td>
+          <td>
+            <!-- 등급 변경 폼 -->
+            {% if not u.is_superuser %}
+            <form method="post" action="/admin-tools/members/grade/" style="display:inline;">
+              {% csrf_token %}
+              <input type="hidden" name="user_id" value="{{ u.pk }}">
+              <select name="grade_id" class="form-select form-select-sm"
+                style="min-width:110px;font-size:0.75rem;display:inline-block;"
+                onchange="this.form.submit()"
+                title="등급 선택 후 자동 저장">
+                <option value="">등급 선택</option>
+                {% for g in grades %}
+                <option value="{{ g.pk }}"
+                  {% if u.groups.all|length > 0 and g.name in u.groups.values_list %}selected{% endif %}>
+                  {{ g.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </form>
+            {% else %}
+            <span style="font-size:0.75rem;color:#d1d5db;">보호됨</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.is_active %}
+              <span class="badge bg-success">활성</span>
+            {% else %}
+              <span class="badge bg-secondary">비활성</span>
+            {% endif %}
+          </td>
+          <td style="font-size:0.75rem;color:#9ca3af;">{{ u.date_joined|date:"y.m.d" }}</td>
+          <td>
+            {% if not u.is_superuser %}
+            <div class="action-bar">
+
+              <!-- 임시 비밀번호 발급 -->
+              {% if u.email %}
+              <form method="post" action="/admin-tools/members/pw-reset/"
+                onsubmit="return confirm('{{ u.nickname|default:u.username }}님에게 임시 비밀번호를 이메일로 발송할까요?
+
+✅ 개인정보보호법에 따라 이 행위는 로그에 기록됩니다.')">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{ u.pk }}">
+                <button class="btn btn-warning btn-sm" style="font-size:0.72rem;padding:3px 10px;"
+                  title="임시 비밀번호를 이메일로 발송합니다">
+                  <i class="fas fa-key me-1"></i>임시PW 발급
+                </button>
+              </form>
+              {% else %}
+              <button class="btn btn-outline-secondary btn-sm" style="font-size:0.72rem;padding:3px 8px;"
+                disabled title="이메일이 등록되지 않아 발급 불가">
+                <i class="fas fa-key me-1"></i>이메일 없음
+              </button>
+              {% endif %}
+
+              <!-- 활성/비활성 토글 -->
+              <form method="post" action="/admin-tools/members/toggle/"
+                onsubmit="return confirm('{% if u.is_active %}{{ u.nickname|default:u.username }}님 계정을 비활성화할까요?{% else %}{{ u.nickname|default:u.username }}님 계정을 활성화할까요?{% endif %}
+
+이 행위는 로그에 기록됩니다.')">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{ u.pk }}">
+                {% if u.is_active %}
+                <button class="btn btn-outline-danger btn-sm" style="font-size:0.72rem;padding:3px 8px;"
+                  title="계정 비활성화">
+                  <i class="fas fa-ban"></i>
+                </button>
+                {% else %}
+                <button class="btn btn-outline-success btn-sm" style="font-size:0.72rem;padding:3px 8px;"
+                  title="계정 활성화">
+                  <i class="fas fa-check"></i>
+                </button>
+                {% endif %}
+              </form>
+
+            </div>
+            {% else %}
+            <span style="font-size:0.73rem;color:#d1d5db;">보호됨</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-4" style="font-size:0.85rem;">검색 결과가 없어요</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 최근 관리 행위 로그 (하단 요약) -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center" style="padding:10px 16px!important;">
+    <span style="font-size:0.82rem;font-weight:700;"><i class="fas fa-history me-1"></i>최근 관리 행위 로그</span>
+    <a href="/admin-tools/logs/" style="font-size:0.75rem;color:#1a7a4a;text-decoration:none;">전체보기 →</a>
+  </div>
+  <div class="card-body" style="padding:12px 16px!important;">
+    {% for log in recent_logs %}
+    <div class="log-row">
+      <span class="badge
+        {% if log.action == 'pw_reset' %}bg-warning text-dark
+        {% elif log.action == 'grade_change' %}bg-info text-dark
+        {% elif log.action == 'deactivate' %}bg-danger
+        {% elif log.action == 'activate' %}bg-success
+        {% else %}bg-secondary{% endif %}"
+        style="font-size:0.65rem;">{{ log.get_action_display }}</span>
+      <span style="font-weight:600;margin:0 4px;">{{ log.admin.nickname|default:log.admin.username }}</span>
+      <span style="color:#9ca3af;">→</span>
+      <span style="font-weight:600;margin:0 4px;">{{ log.target_user.nickname|default:log.target_user.username }}</span>
+      {% if log.detail %}<span style="color:#9ca3af;font-size:0.72rem;">| {{ log.detail }}</span>{% endif %}
+      <span style="float:right;color:#9ca3af;font-size:0.72rem;">{{ log.created_at|date:"m.d H:i" }}</span>
+    </div>
+    {% empty %}
+    <div style="font-size:0.8rem;color:#9ca3af;text-align:center;padding:8px 0;">아직 관리 기록이 없어요</div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="mt-2" style="font-size:0.72rem;color:#9ca3af;line-height:1.6;">
+  <i class="fas fa-shield-alt me-1"></i>
+  모든 관리 행위는 개인정보보호법 제29조에 따라 기록·보관됩니다.
+  임시 비밀번호는 이메일 발송 후 서버에 평문으로 저장되지 않습니다.
+</div>
+{% endblock %}

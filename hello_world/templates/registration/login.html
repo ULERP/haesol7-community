@@ -1,41 +1,82 @@
 {% extends 'base.html' %}
-{% block title %}로그인{% endblock %}
-{% block content %}
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-5">
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-success text-white text-center py-3">
-          <h5 class="mb-0 fw-bold"><i class="fas fa-shield-alt me-2"></i>해솔7지킴이 로그인</h5>
+{% block title %}로그인 — 해솔7 지킴이{% endblock %}
+{% block extra_head %}
+<style>
+  body{background:#f0f7f3;}
+  .login-wrap{min-height:calc(100vh - 52px);display:flex;align-items:center;justify-content:center;padding:20px 16px 40px;}
+  .login-box{width:100%;max-width:400px;background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(26,122,74,.12);overflow:hidden;}
+  .login-header{background:linear-gradient(135deg,#1a7a4a 0%,#1e9158 100%);padding:28px 24px 22px;text-align:center;}
+  .login-header .logo-circle{width:56px;height:56px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.4);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:1.5rem;}
+  .login-header h5{color:#fff;font-size:1.05rem;font-weight:700;margin:0;}
+  .login-header p{color:rgba(255,255,255,.8);font-size:0.78rem;margin:4px 0 0;}
+  .login-body{padding:24px;}
+  .field-wrap{position:relative;margin-bottom:16px;}
+  .field-wrap label{display:block;font-size:0.82rem;font-weight:600;color:#374151;margin-bottom:6px;}
+  .field-wrap input{width:100%;padding:12px 44px 12px 14px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:0.95rem;outline:none;transition:border-color .15s,box-shadow .15s;background:#fafafa;-webkit-appearance:none;box-sizing:border-box;}
+  .field-wrap input:focus{border-color:#1a7a4a;box-shadow:0 0 0 3px rgba(26,122,74,.1);background:#fff;}
+  .field-icon{position:absolute;right:14px;top:36px;color:#9ca3af;font-size:1rem;cursor:pointer;transition:color .15s;}
+  .field-icon:hover{color:#1a7a4a;}
+  .btn-login{width:100%;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:background .15s;}
+  .btn-login:active{background:#15623c;}
+  .login-footer{padding:0 24px 24px;display:flex;flex-direction:column;gap:10px;}
+  .divider-line{display:flex;align-items:center;gap:10px;color:#9ca3af;font-size:0.75rem;}
+  .divider-line::before,.divider-line::after{content:'';flex:1;height:1px;background:#e5e7eb;}
+  .link-row{display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;}
+  .link-row a{color:#1a7a4a;font-weight:600;text-decoration:none;}
+  .signup-btn{display:block;width:100%;padding:12px;border:1.5px solid #1a7a4a;border-radius:12px;color:#1a7a4a;font-size:0.9rem;font-weight:600;text-align:center;text-decoration:none;transition:background .15s;box-sizing:border-box;}
+  .signup-btn:hover{background:#f0fdf7;}
+  .alert-custom{background:#fef2f2;color:#991b1b;border-radius:10px;padding:10px 14px;font-size:0.82rem;margin-bottom:16px;border-left:3px solid #e53935;display:flex;align-items:center;gap:8px;}
+</style>
+{% endblock %}
+{% block full_content %}
+<div class="login-wrap">
+  <div class="login-box">
+    <div class="login-header">
+      <div class="logo-circle">🌿</div>
+      <h5>해솔7 지킴이</h5>
+      <p>해솔마을 7단지 입주민 커뮤니티</p>
+    </div>
+    <div class="login-body">
+      {% if messages %}{% for message in messages %}
+      <div class="alert-custom"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
+      {% endfor %}{% endif %}
+      <form method="post" id="loginForm">
+        {% csrf_token %}
+        <div class="field-wrap">
+          <label for="id_username">아이디</label>
+          <input type="text" id="id_username" name="username"
+            placeholder="아이디 입력" autocomplete="username"
+            value="{{ request.POST.username|default:'' }}" required autofocus>
+          <i class="fas fa-user field-icon" style="cursor:default;"></i>
         </div>
-        <div class="card-body p-4">
-          {% if messages %}
-          {% for message in messages %}
-          <div class="alert alert-danger">{{ message }}</div>
-          {% endfor %}
-          {% endif %}
-          <form method="post">
-            {% csrf_token %}
-            <div class="mb-3">
-              <label class="form-label fw-semibold">아이디</label>
-              <input type="text" name="username" class="form-control" placeholder="아이디를 입력하세요" required autofocus>
-            </div>
-            <div class="mb-4">
-              <label class="form-label fw-semibold">비밀번호</label>
-              <input type="password" name="password" class="form-control" placeholder="비밀번호를 입력하세요" required>
-            </div>
-            <div class="d-grid">
-              <button type="submit" class="btn btn-success btn-lg fw-bold">로그인</button>
-            </div>
-          </form>
-          <hr>
-          <div class="text-center">
-            <span class="text-muted small">아직 회원이 아니신가요?</span>
-            <a href="/accounts/signup/" class="text-success fw-semibold ms-2">회원가입</a>
-          </div>
+        <div class="field-wrap">
+          <label for="id_password">비밀번호</label>
+          <input type="password" id="id_password" name="password"
+            placeholder="비밀번호 입력" autocomplete="current-password" required>
+          <i class="fas fa-eye field-icon" id="pwToggle" onclick="togglePw()"></i>
         </div>
+        <button type="submit" class="btn-login">
+          <i class="fas fa-sign-in-alt me-2"></i>로그인
+        </button>
+      </form>
+    </div>
+    <div class="login-footer">
+      <div class="link-row">
+        <span style="color:#9ca3af;">비밀번호를 잊으셨나요?</span>
+        <a href="/accounts/password-reset/">비밀번호 찾기</a>
       </div>
+      <div class="divider-line">또는</div>
+      <a href="/accounts/signup/" class="signup-btn">
+        <i class="fas fa-user-plus me-1"></i>회원가입
+      </a>
     </div>
   </div>
 </div>
+<script>
+function togglePw(){
+  var i=document.getElementById('id_password'),t=document.getElementById('pwToggle');
+  if(i.type==='password'){i.type='text';t.classList.replace('fa-eye','fa-eye-slash');}
+  else{i.type='password';t.classList.replace('fa-eye-slash','fa-eye');}
+}
+</script>
 {% endblock %}
