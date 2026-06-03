@@ -36,7 +36,12 @@
     .sb-stat{background:#fff;border-radius:7px;padding:5px;text-align:center;border:1px solid var(--border);}
     .sb-stat-n{font-size:0.95rem;font-weight:700;color:var(--g);}
     .sb-stat-l{font-size:0.6rem;color:#9ca3af;}
-    .sb-label{font-size:0.62rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;padding:8px 8px 3px;}
+    .sb-label{font-size:0.62rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;padding:8px 8px 3px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-radius:6px;transition:all .15s;}
+    .sb-label:hover{background:var(--gl);color:var(--g);}
+    .sb-label .sb-fold-icon{font-size:0.6rem;transition:transform 0.2s;opacity:0.5;}
+    .sb-label.folded .sb-fold-icon{transform:rotate(-90deg);}
+    .sb-section{overflow:hidden;transition:max-height 0.25s ease;}
+    .sb-section.folded{max-height:0!important;}
     .sb-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;text-decoration:none;color:#374151;font-size:0.81rem;font-weight:500;transition:all .12s;border:none;background:none;width:100%;cursor:pointer;text-align:left;}
     .sb-item:hover{background:var(--gl);color:var(--g);}
     .sb-item.active{background:var(--gl);color:var(--g);font-weight:700;}
@@ -131,32 +136,50 @@
       </div>
     </div>
     {% endif %}
-    <div class="sb-label">메뉴</div>
-    <a href="/" class="sb-item {% block menu_home %}{% endblock %}"><i class="fas fa-home"></i>홈</a>
-    <a href="/boards/" class="sb-item {% block menu_boards %}{% endblock %}"><i class="fas fa-clipboard-list"></i>게시판</a>
-    <a href="/chat/public/" class="sb-item {% block menu_chat %}{% endblock %}"><i class="fas fa-comments"></i>전체채팅</a>
-    <a href="/notices/" class="sb-item {% block menu_notices %}{% endblock %}"><i class="fas fa-bell"></i>공지사항</a>
-    <a href="/complaints/" class="sb-item {% block menu_complaints %}{% endblock %}"><i class="bi bi-megaphone"></i>민원·건의</a>
+    <div class="sb-label">홈</div>
+    <a href="/" class="sb-item {% block menu_home %}{% endblock %}" data-tooltip="홈"><i class="fas fa-home"></i><span class="sb-text">홈</span></a>
     <div class="sb-divider"></div>
-    <div class="sb-label">함께하기</div>
-    <a href="/groups/" class="sb-item {% block menu_groups %}{% endblock %}"><i class="fas fa-users"></i>소모임</a>
-    <a href="/volunteer/" class="sb-item {% block menu_volunteer %}{% endblock %}"><i class="fas fa-heart"></i>봉사활동</a>
-    <a href="/surveys/" class="sb-item {% block menu_surveys %}{% endblock %}"><i class="fas fa-poll"></i>설문조사</a>
-    <a href="/calendar/" class="sb-item {% block menu_calendar %}{% endblock %}"><i class="fas fa-calendar-alt"></i>캘린더</a>
+    <div class="sb-label" onclick="toggleSection('sec-chat')">💬 대화하기<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+    <div class="sb-section" id="sec-chat">
+    <a href="/chat/public/" class="sb-item {% block menu_chat %}{% endblock %}" data-tooltip="전체채팅"><i class="fas fa-comments"></i><span class="sb-text">전체채팅</span></a>
+    <a href="/groups/" class="sb-item {% block menu_groups %}{% endblock %}" data-tooltip="소모임채팅"><i class="fas fa-users"></i><span class="sb-text">소모임채팅</span></a>
+    <a href="/chat/dm/list/" class="sb-item" data-tooltip="1:1채팅"><i class="fas fa-comment-dots"></i><span class="sb-text">1:1 채팅</span></a>
+    <a href="/letters/" class="sb-item" data-tooltip="쪽지함"><i class="fas fa-envelope"></i><span class="sb-text">쪽지함</span></a>
+    </div>
     <div class="sb-divider"></div>
-    <div class="sb-label">단지 정보</div>
-    <a href="/community/docs/" class="sb-item {% block menu_docs %}{% endblock %}"><i class="fas fa-file-alt"></i>관리 문서</a>
-    <a href="/search/" class="sb-item {% block menu_search %}{% endblock %}"><i class="fas fa-search"></i>검색</a>
+    <div class="sb-label" onclick="toggleSection('sec-record')">📋 기록하기<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+    <div class="sb-section" id="sec-record">
+    <a href="/boards/" class="sb-item {% block menu_boards %}{% endblock %}" data-tooltip="게시판"><i class="fas fa-clipboard-list"></i><span class="sb-text">게시판</span></a>
+    <a href="/notices/" class="sb-item {% block menu_notices %}{% endblock %}" data-tooltip="공지사항"><i class="fas fa-bullhorn"></i><span class="sb-text">공지사항</span></a>
+    <a href="/community/docs/" class="sb-item {% block menu_docs %}{% endblock %}" data-tooltip="관리문서"><i class="fas fa-archive"></i><span class="sb-text">관리문서</span></a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-label" onclick="toggleSection('sec-together')">🤝 함께하기<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+    <div class="sb-section" id="sec-together">
+    <a href="/volunteer/" class="sb-item {% block menu_volunteer %}{% endblock %}" data-tooltip="봉사활동"><i class="fas fa-heart"></i><span class="sb-text">봉사활동</span></a>
+    <a href="/surveys/" class="sb-item {% block menu_surveys %}{% endblock %}" data-tooltip="설문조사"><i class="fas fa-poll"></i><span class="sb-text">설문조사</span></a>
+    <a href="/calendar/" class="sb-item {% block menu_calendar %}{% endblock %}" data-tooltip="캘린더"><i class="fas fa-calendar-alt"></i><span class="sb-text">캘린더</span></a>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-label" onclick="toggleSection('sec-news')">📢 단지소식<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+    <div class="sb-section" id="sec-news">
+    <a href="/complaints/" class="sb-item {% block menu_complaints %}{% endblock %}" data-tooltip="민원·건의"><i class="bi bi-megaphone"></i><span class="sb-text">민원·건의</span></a>
+    <a href="/stats/" class="sb-item" data-tooltip="단지통계"><i class="fas fa-chart-bar"></i><span class="sb-text">단지통계</span></a>
+    <a href="/search/" class="sb-item {% block menu_search %}{% endblock %}" data-tooltip="검색"><i class="fas fa-search"></i><span class="sb-text">검색</span></a>
     {% if user.is_authenticated %}
+    </div>
     <div class="sb-divider"></div>
-    <div class="sb-label">내 활동</div>
+    <div class="sb-label" onclick="toggleSection('sec-myact')">내 활동<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+    <div class="sb-section" id="sec-myact">
     <a href="/mypage/" class="sb-item {% block menu_mypage %}{% endblock %}"><i class="fas fa-user-circle"></i>마이페이지</a>
     <a href="/activity/submit/" class="sb-item"><i class="fas fa-camera"></i>활동 인증</a>
     <a href="/notifications/" class="sb-item"><i class="fas fa-bell"></i>알림<span id="sb-noti-dot" style="display:none;width:6px;height:6px;border-radius:50%;background:#ef4444;margin-left:auto;flex-shrink:0;"></span></a>
     <a href="/letters/" class="sb-item"><i class="fas fa-envelope"></i>쪽지함</a>
     {% if user.is_staff %}
+    </div>
     <div class="sb-divider"></div>
-    <div class="sb-label">관리자</div>
+    <div class="sb-label" onclick="toggleSection('sec-admin')">관리자<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+    <div class="sb-section" id="sec-admin">
     <a href="/admin/" class="sb-item"><i class="fas fa-cog"></i>관리자 페이지</a>
     <a href="/verify/admin/" class="sb-item"><i class="fas fa-id-card"></i>인증 관리</a>
     <a href="/admin-tools/members/" class="sb-item"><i class="fas fa-users-cog"></i>회원 관리</a>
@@ -263,6 +286,34 @@
     else if(href==='/'&&path==='/')item.classList.add('active');
   });
 })();
+// 사이드바 섹션 폴딩
+function toggleSection(id) {
+  const sec = document.getElementById(id);
+  const label = sec ? sec.previousElementSibling : null;
+  if (!sec) return;
+  const folded = sec.classList.toggle('folded');
+  if (label) label.classList.toggle('folded', folded);
+  // localStorage 저장
+  try { localStorage.setItem('sb_fold_' + id, folded ? '1' : '0'); } catch(e) {}
+}
+
+// 페이지 로드시 폴딩 상태 복원
+(function() {
+  const secs = ['sec-chat','sec-record','sec-together','sec-news','sec-myact','sec-admin'];
+  secs.forEach(id => {
+    const saved = localStorage.getItem('sb_fold_' + id);
+    if (saved === '1') {
+      const sec = document.getElementById(id);
+      const label = sec ? sec.previousElementSibling : null;
+      if (sec) { sec.classList.add('folded'); sec.style.maxHeight = '0'; }
+      if (label) label.classList.add('folded');
+    } else if (sec) {
+      const sec = document.getElementById(id);
+      if (sec) sec.style.maxHeight = sec.scrollHeight + 'px';
+    }
+  });
+})();
+
 // 우측 패널 탭 전환
 function switchRp(name, btn) {
   document.querySelectorAll('.rp-section').forEach(s => s.classList.remove('active'));

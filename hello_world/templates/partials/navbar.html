@@ -10,59 +10,68 @@
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav me-auto align-items-lg-center" style="gap:2px;">
 
-        <!-- 소통하기 -->
+        <!-- 💬 대화하기 -->
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
              data-bs-toggle="dropdown" style="font-size:0.82rem;">
-            <i class="fas fa-comments"></i>소통하기
+            <i class="fas fa-comments"></i>대화하기
           </a>
-          <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;padding:6px;">
+          <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
+            <li><div style="padding:6px 12px 4px;font-size:0.68rem;color:#9ca3af;font-weight:700;letter-spacing:.05em;">채팅</div></li>
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/chat/public/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-comments text-success"></i>전체채팅</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/chat/dm/list/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-users text-warning"></i>소모임 채팅</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/groups/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-users text-warning"></i>소모임 채팅</a></li>
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/chat/dm/list/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-comment-dots text-primary"></i>1:1 채팅</a></li>
+            <li><hr class="dropdown-divider my-1"></li>
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/letters/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-envelope text-secondary"></i>쪽지함</a></li>
-
           </ul>
         </li>
 
-        <!-- 단지 소식 -->
+        <!-- 📋 기록하기 -->
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
              data-bs-toggle="dropdown" style="font-size:0.82rem;">
-            <i class="fas fa-bell"></i>단지 소식
+            <i class="fas fa-clipboard-list"></i>기록하기
           </a>
-          <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;padding:6px;">
+          <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-th-large text-success"></i>전체 게시판</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/notices/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-bullhorn text-danger"></i>공지 및 행정</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-home text-warning"></i>우리동네 소통</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-info-circle text-info"></i>생활 정보 공유</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-laugh text-warning"></i>여가 및 활동</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/community/docs/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-archive text-secondary"></i>지킴이 아카이브</a></li>
+          </ul>
+        </li>
+
+        <!-- 🤝 함께하기 -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
+             data-bs-toggle="dropdown" style="font-size:0.82rem;">
+            <i class="fas fa-hands-helping"></i>함께하기
+          </a>
+          <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/groups/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-users text-success"></i>소모임</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/volunteer/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-heart text-danger"></i>봉사활동</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/calendar/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-calendar-alt text-primary"></i>캘린더</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/surveys/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-poll text-info"></i>설문조사</a></li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/activity/submit/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-camera text-warning"></i>활동 인증</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-handshake text-success"></i>나눔/장터</a></li>
+          </ul>
+        </li>
+
+        <!-- 📢 단지소식 -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
+             data-bs-toggle="dropdown" style="font-size:0.82rem;">
+            <i class="fas fa-bell"></i>단지소식
+          </a>
+          <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/notices/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-bell text-danger"></i>공지사항</a></li>
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/complaints/" style="font-size:0.82rem;padding:8px 12px;"><i class="bi bi-megaphone text-warning"></i>민원·건의</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/community/docs/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-file-alt text-secondary"></i>관리 문서</a></li>
-          </ul>
-        </li>
-
-        <!-- 함께하기 -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
-             data-bs-toggle="dropdown" style="font-size:0.82rem;">
-            <i class="fas fa-users"></i>함께하기
-          </a>
-          <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;padding:6px;">
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/groups/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-users text-success"></i>소모임</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/volunteer/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-calendar-alt text-danger"></i>봉사활동</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/calendar/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-calendar text-success"></i>통합 캘린더</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/surveys/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-poll text-primary"></i>설문조사</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/activity/submit/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-camera text-danger"></i>활동 인증</a></li>
-
-          </ul>
-        </li>
-
-        <!-- 단지 정보 -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
-             data-bs-toggle="dropdown" style="font-size:0.82rem;">
-            <i class="fas fa-building"></i>단지 정보
-          </a>
-          <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:160px;padding:6px;">
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/stats/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-chart-bar text-info"></i>단지 통계</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/search/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-search text-secondary"></i>통합 검색</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/community/docs/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-file-alt text-secondary"></i>관리 문서</a></li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/search/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-question-circle text-primary"></i>FAQ</a></li>
           </ul>
         </li>
 
