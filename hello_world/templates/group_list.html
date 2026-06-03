@@ -1,162 +1,149 @@
-{% extends "base.html" %}
-{% load custom_filters %}
-{% block content %}
-<div class="container py-3">
-
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h4 class="fw-bold mb-0"><i class="fas fa-users me-2 text-success"></i>소모임</h4>
-  {% if user.is_authenticated %}
-  <a href="{% url 'group_create' %}" class="btn btn-success btn-sm">
-    <i class="bi bi-plus-circle me-1"></i>소모임 만들기
-  </a>
-  {% endif %}
-</div>
-
-<!-- 검색/필터 -->
-<form method="get" class="card shadow-sm mb-4">
-  <div class="card-body py-2">
-    <div class="row g-2 align-items-center">
-      <div class="col-md-4">
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
-          <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="소모임 이름/설명 검색">
-        </div>
-      </div>
-      <div class="col-md-3">
-        <select name="type" class="form-select form-select-sm">
-          <option value="">전체 유형</option>
-          {% for key, label in group_type_labels.items %}
-          <option value="{{ key }}" {% if gtype == key %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3">
-        <select name="order" class="form-select form-select-sm">
-          <option value="newest" {% if order == 'newest' %}selected{% endif %}>최신순</option>
-          <option value="members" {% if order == 'members' %}selected{% endif %}>인원 많은 순</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <button type="submit" class="btn btn-success btn-sm w-100">검색</button>
-      </div>
-    </div>
-  </div>
-</form>
-
-<!-- 내 소모임 -->
-{% if user.is_authenticated and my_groups %}
-<h6 class="fw-bold text-success mb-2"><i class="bi bi-star-fill me-1"></i>내 소모임</h6>
-<div class="row g-3 mb-4">
-  {% for group in my_groups %}
-  <div class="col-md-4 col-sm-6">
-    <div class="card h-100 shadow-sm border-success border-2">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start mb-1">
-          <h6 class="fw-bold mb-0">{{ group.name }}</h6>
-          <span class="badge bg-success">{{ group_type_labels|getitem:group.group_type|default:group.group_type }}</span>
-        </div>
-        <p class="text-muted small mb-2">{{ group.description|truncatechars:60 }}</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <small class="text-muted"><i class="bi bi-people me-1"></i>{{ group.members.count }}명</small>
-          {% if group.regular_schedule %}
-          <small class="text-muted"><i class="bi bi-calendar me-1"></i>{{ group.regular_schedule }}</small>
-          {% endif %}
-        </div>
-      </div>
-      <div class="card-footer bg-transparent d-flex gap-2">
-        <a href="{% url 'group_detail' group.pk %}" class="btn btn-success btn-sm flex-grow-1">입장</a>
-        <a href="{% url 'group_chat' group.pk %}" class="btn btn-outline-success btn-sm"><i class="bi bi-chat"></i></a>
-        <button class="btn btn-outline-secondary btn-sm share-btn"
-                data-name="{{ group.name }}"
-                data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'group_detail' group.pk %}">
-          <i class="bi bi-share"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-
-<!-- 전체 소모임 -->
-<h6 class="fw-bold mb-2">
-  <i class="bi bi-grid me-1"></i>전체 소모임
-  {% if q or gtype %}<small class="text-muted fw-normal ms-1">검색 결과 {{ all_groups|length }}개</small>{% endif %}
-</h6>
-{% if all_groups %}
-<div class="row g-3">
-  {% for group in all_groups %}
-  <div class="col-md-4 col-sm-6">
-    <div class="card h-100 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start mb-1">
-          <h6 class="fw-bold mb-0">{{ group.name }}</h6>
-          <span class="badge bg-light text-dark border">{{ group_type_labels|getitem:group.group_type|default:group.group_type }}</span>
-        </div>
-        <p class="text-muted small mb-2">{{ group.description|truncatechars:60 }}</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <small class="text-muted"><i class="bi bi-people me-1"></i>{{ group.members.count }}명
-            {% if group.member_limit %} / {{ group.member_limit }}{% endif %}
-          </small>
-          {% if group.regular_schedule %}
-          <small class="text-muted"><i class="bi bi-calendar me-1"></i>{{ group.regular_schedule }}</small>
-          {% endif %}
-        </div>
-      </div>
-      <div class="card-footer bg-transparent d-flex gap-2">
-        <a href="{% url 'group_detail' group.pk %}" class="btn btn-outline-success btn-sm flex-grow-1">자세히 보기</a>
-        {% if user.is_authenticated %}
-        <a href="{% url 'group_join' group.pk %}" class="btn btn-success btn-sm">참여</a>
-        {% endif %}
-        <button class="btn btn-outline-secondary btn-sm share-btn"
-                data-name="{{ group.name }}"
-                data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'group_detail' group.pk %}">
-          <i class="bi bi-share"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-  {% endfor %}
-</div>
-{% else %}
-<div class="text-center text-muted py-5">
-  <i class="bi bi-people display-4 d-block mb-2"></i>
-  {% if q or gtype %}검색 결과가 없습니다.{% else %}아직 소모임이 없습니다.{% endif %}
-  {% if user.is_authenticated %}
-  <div class="mt-2"><a href="{% url 'group_create' %}" class="btn btn-success btn-sm">첫 소모임 만들기</a></div>
-  {% endif %}
-</div>
-{% endif %}
-
-</div>
-
-<!-- 공유 토스트 -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
-  <div id="shareToast" class="toast align-items-center text-bg-success border-0" role="alert">
-    <div class="d-flex">
-      <div class="toast-body"><i class="bi bi-check-circle me-1"></i>링크가 복사됐어요!</div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-    </div>
-  </div>
-</div>
-
-{% block extra_js %}
-<script>
-document.querySelectorAll('.share-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    const name = this.dataset.name;
-    const url  = this.dataset.url;
-    const text = `[해솔7지킴이] "${name}" 소모임에 참여해보세요!\n${url}`;
-    if (navigator.share) {
-      navigator.share({ title: name, text: text, url: url });
-    } else {
-      navigator.clipboard.writeText(text).then(() => {
-        const toast = new bootstrap.Toast(document.getElementById('shareToast'));
-        toast.show();
-      });
-    }
-  });
-});
-</script>
+{% extends 'base.html' %}
+{% block title %}소모임 — 해솔7 지킴이{% endblock %}
+{% block extra_head %}
+<style>
+:root{--g:#1a7a4a;--gl:#e8f5ee;--gb:#a8d5b8;}
+.wrap{max-width:860px;margin:0 auto;padding:16px;}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.page-header h2{font-size:1.1rem;font-weight:700;margin:0;color:#111;}
+.filter-bar{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:16px;
+  border:1px solid #e5e7eb;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.type-chip{display:inline-block;padding:5px 12px;border-radius:20px;font-size:0.78rem;
+  font-weight:600;text-decoration:none;border:1.5px solid #e5e7eb;color:#6b7280;transition:all .15s;}
+.type-chip:hover,.type-chip.active{background:var(--g);color:#fff;border-color:var(--g);}
+.section-label{font-size:0.72rem;font-weight:700;color:#9ca3af;text-transform:uppercase;
+  letter-spacing:.06em;margin:16px 0 8px;padding:0 2px;}
+.group-card{background:#fff;border-radius:14px;border:1px solid #e5e7eb;padding:16px;
+  margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;text-decoration:none;
+  color:inherit;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.group-card:hover{border-color:var(--g);background:var(--gl);transform:translateY(-1px);}
+.group-avatar{width:48px;height:48px;border-radius:14px;background:var(--g);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;
+  flex-shrink:0;}
+.group-body{flex:1;min-width:0;}
+.group-name{font-size:0.95rem;font-weight:700;color:#111;margin-bottom:4px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.group-desc{font-size:0.78rem;color:#6b7280;margin-bottom:6px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.group-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:0.7rem;font-weight:600;}
+.tag-type{background:var(--gl);color:var(--g);}
+.tag-members{background:#f3f4f6;color:#374151;}
+.tag-location{background:#fef3c7;color:#92400e;}
+.tag-mine{background:#dbeafe;color:#1d4ed8;}
+.my-badge{background:var(--g);color:#fff;font-size:0.65rem;padding:2px 7px;
+  border-radius:8px;font-weight:700;flex-shrink:0;align-self:flex-start;}
+.empty-state{text-align:center;padding:48px 20px;color:#9ca3af;}
+.empty-state i{font-size:3rem;display:block;margin-bottom:12px;opacity:.3;}
+.cta-banner{background:linear-gradient(135deg,var(--g),#1e9158);border-radius:14px;
+  padding:20px;text-align:center;margin-bottom:16px;}
+.cta-banner h5{color:#fff;font-weight:700;margin-bottom:6px;font-size:0.95rem;}
+.cta-banner p{color:rgba(255,255,255,.85);font-size:0.8rem;margin-bottom:14px;}
+.btn-w{background:#fff;color:var(--g);padding:9px 20px;border-radius:50px;
+  font-size:0.85rem;font-weight:700;text-decoration:none;display:inline-block;margin:3px;}
+.btn-gg{background:rgba(255,255,255,.2);color:#fff;padding:9px 18px;border-radius:50px;
+  font-size:0.85rem;font-weight:600;text-decoration:none;display:inline-block;margin:3px;
+  border:1px solid rgba(255,255,255,.4);}
+</style>
 {% endblock %}
+{% block content %}
+<div class="wrap">
+
+  <div class="page-header">
+    <h2><i class="fas fa-users me-2" style="color:var(--g);"></i>소모임</h2>
+    {% if user.is_authenticated %}
+    <a href="{% url 'group_create' %}" class="btn btn-success btn-sm">
+      <i class="fas fa-plus me-1"></i>소모임 만들기
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- 비로그인 CTA -->
+  {% if not user.is_authenticated %}
+  <div class="cta-banner">
+    <div style="font-size:1.8rem;margin-bottom:8px;">👥</div>
+    <h5>이웃과 함께하는 소모임</h5>
+    <p>취미·운동·봉사 등 다양한 소모임에 참여해보세요!</p>
+    <a href="/accounts/login/" class="btn-w"><i class="fas fa-sign-in-alt me-1"></i>로그인하고 참여하기</a>
+    <a href="/accounts/signup/" class="btn-gg">회원가입</a>
+  </div>
+  {% endif %}
+
+  <!-- 필터 -->
+  <form method="get" class="filter-bar">
+    <a href="{% url 'group_list' %}" class="type-chip {% if not gtype %}active{% endif %}">전체</a>
+    {% for key, label in group_type_labels.items %}
+    <a href="?type={{ key }}{% if q %}&q={{ q }}{% endif %}"
+       class="type-chip {% if gtype == key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+    <div style="flex:1;display:flex;gap:6px;min-width:180px;">
+      <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm"
+        placeholder="소모임 검색..." style="border-radius:20px;">
+      {% if gtype %}<input type="hidden" name="type" value="{{ gtype }}">{% endif %}
+      <button type="submit" class="btn btn-success btn-sm" style="border-radius:20px;padding:4px 14px;">검색</button>
+    </div>
+  </form>
+
+  <!-- 내 소모임 -->
+  {% if my_groups %}
+  <div class="section-label">✨ 내 소모임</div>
+  {% for group in my_groups %}
+  <a href="{% url 'group_detail' group.pk %}" class="group-card">
+    <div class="group-avatar">{{ group.name|first|upper }}</div>
+    <div class="group-body">
+      <div class="group-name">{{ group.name }}</div>
+      <div class="group-desc">{{ group.description|default:"소모임 설명이 없어요"|truncatechars:50 }}</div>
+      <div class="group-tags">
+        <span class="tag tag-type">{{ group.get_group_type_display }}</span>
+        <span class="tag tag-members"><i class="fas fa-users me-1"></i>{{ group.members.count }}명</span>
+        {% if group.location %}<span class="tag tag-location"><i class="fas fa-map-marker-alt me-1"></i>{{ group.location }}</span>{% endif %}
+      </div>
+    </div>
+    <span class="my-badge">참여중</span>
+  </a>
+  {% endfor %}
+  {% endif %}
+
+  <!-- 전체 소모임 -->
+  <div class="section-label">
+    🌿 전체 소모임
+    <span style="font-weight:400;color:#9ca3af;">({{ all_groups|length }}개)</span>
+  </div>
+
+  {% for group in all_groups %}
+  <a href="{% url 'group_detail' group.pk %}" class="group-card">
+    <div class="group-avatar" style="background:
+      {% cycle '#1a7a4a' '#2563eb' '#7c3aed' '#dc2626' '#ea580c' '#0891b2' %};">
+      {{ group.name|first|upper }}
+    </div>
+    <div class="group-body">
+      <div class="group-name">{{ group.name }}</div>
+      <div class="group-desc">{{ group.description|default:"소모임 설명이 없어요"|truncatechars:50 }}</div>
+      <div class="group-tags">
+        <span class="tag tag-type">{{ group.get_group_type_display }}</span>
+        <span class="tag tag-members"><i class="fas fa-users me-1"></i>{{ group.members.count }}명</span>
+        {% if group.location %}<span class="tag tag-location"><i class="fas fa-map-marker-alt me-1"></i>{{ group.location }}</span>{% endif %}
+        {% if group.regular_schedule %}<span class="tag" style="background:#f0fdf4;color:#166534;">📅 {{ group.regular_schedule }}</span>{% endif %}
+      </div>
+    </div>
+    {% if group.member_limit %}
+    <div style="flex-shrink:0;text-align:center;">
+      <div style="font-size:0.85rem;font-weight:700;color:var(--g);">{{ group.members.count }}/{{ group.member_limit }}</div>
+      <div style="font-size:0.68rem;color:#9ca3af;">정원</div>
+    </div>
+    {% endif %}
+  </a>
+  {% empty %}
+  <div class="empty-state">
+    <i class="fas fa-users"></i>
+    <p>{% if q or gtype %}검색 결과가 없어요{% else %}아직 소모임이 없어요{% endif %}</p>
+    {% if user.is_authenticated %}
+    <a href="{% url 'group_create' %}" class="btn btn-success btn-sm mt-2">
+      첫 소모임 만들기
+    </a>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+</div>
 {% endblock %}

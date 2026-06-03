@@ -2784,3 +2784,30 @@ def admin_action_log(request):
         'page': page, 'action_filter': action_filter,
         'action_choices': AL.ACTION_CHOICES,
     })
+
+
+# ════════════════════════════════════════════════════════
+# 배지 자동 발급 로직
+# ════════════════════════════════════════════════════════
+def _auto_award_badges(user):
+    """봉사 승인 시 배지 자동 발급"""
+    from .models import Badge, UserBadge
+    approved_count = ActivityProof.objects.filter(
+        user=user, status='approved'
+    ).count()
+    total_points = user.mileage_points
+
+    badges = Badge.objects.filter(is_active=True)
+    for badge in badges:
+        already_has = UserBadge.objects.filter(user=user, badge=badge).exists()
+        if already_has:
+            continue
+        # 조건 충족 여부 확인
+        if approved_count >= badge.required_activities and            total_points >= badge.required_points:
+            UserBadge.objects.create(user=user, badge=badge)
+            Notification.objects.create(
+                recipient=user,
+                title=f"🏅 새 배지 획득!",
+                message=f"축하해요! '{badge.title}' 배지를 획득했어요!",
+                notification_type='badge',
+            )
