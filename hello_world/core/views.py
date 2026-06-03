@@ -27,21 +27,44 @@ def get_user_grade(user):
     ).order_by('-order').first()
 
 def check_board_permission(user, board, action='read'):
-    if user.is_superuser:
+    """
+    게시판 권한 체크
+    write_permission: all / member / staff / admin
+    읽기: 비로그인 → False, 로그인 → True (티저는 뷰에서 별도 처리)
+    쓰기/댓글: board.write_permission 기준
+    MemberGrade/BoardGradePermission 고급 설정이 있으면 그걸 우선 적용
+    """
+    # 슈퍼유저 전체 허용
+    if user.is_authenticated and user.is_superuser:
         return True
-    if not user.is_authenticated:
-        return False
-    user_grade = get_user_grade(user)
-    if not user_grade:
-        return False
-    perm = BoardGradePermission.objects.filter(board=board, grade=user_grade).first()
-    if perm:
-        if action == 'read':    return perm.can_read
-        if action == 'write':   return perm.can_write
-        if action == 'comment': return perm.can_comment
-    if action == 'read':    return user_grade.can_read_all
-    if action == 'write':   return user_grade.can_write
-    if action == 'comment': return user_grade.can_comment
+
+    # 읽기 권한
+    if action == 'read':
+        if board.write_permission == 'admin':
+            return user.is_authenticated and (user.is_staff or user.is_superuser)
+        if board.write_permission == 'staff':
+            return user.is_authenticated and user.is_staff
+        # 일반 게시판: 로그인 + 인증 필요
+        return user.is_authenticated and (getattr(user, 'is_verified', False) or user.is_staff)
+
+    # 쓰기/댓글 권한 — MemberGrade 고급설정 우선
+    if user.is_authenticated:
+        user_grade = get_user_grade(user)
+        if user_grade:
+            perm = BoardGradePermission.objects.filter(board=board, grade=user_grade).first()
+            if perm:
+                if action == 'write':   return perm.can_write
+                if action == 'comment': return perm.can_comment
+
+    # 기본 write_permission 기반
+    if board.write_permission == 'all':
+        return user.is_authenticated and (getattr(user, 'is_verified', False) or user.is_staff)
+    if board.write_permission == 'member':
+        return user.is_authenticated and (getattr(user, 'is_verified', False) or user.is_staff)
+    if board.write_permission == 'staff':
+        return user.is_authenticated and user.is_staff
+    if board.write_permission == 'admin':
+        return user.is_authenticated and user.is_superuser
     return False
 
 
