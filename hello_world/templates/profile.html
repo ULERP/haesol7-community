@@ -134,6 +134,34 @@
     </div>
   </div>
 
+  <!-- 팔로우/친구 버튼 -->
+  {% if user.is_authenticated and user != profile_user %}
+  <div style="background:#fff;border-radius:14px;border:1px solid #e5e7eb;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <div style="font-size:0.82rem;color:#374151;">
+      {% if is_friend %}
+        <span style="color:var(--g);font-weight:700;">👥 친구</span>
+      {% elif is_following %}
+        <span style="color:#6b7280;">➡️ 팔로잉 중</span>
+      {% else %}
+        <span style="color:#9ca3af;">이웃을 팔로우해보세요</span>
+      {% endif %}
+    </div>
+    <div class="d-flex gap-2">
+      <form method="post" action="/users/{{ profile_user.pk }}/follow/" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm {% if is_following %}btn-outline-secondary{% else %}btn-success{% endif %}" style="border-radius:20px;font-size:0.78rem;">
+          {% if is_following %}언팔로우{% else %}+ 팔로우{% endif %}
+        </button>
+      </form>
+      {% if is_friend %}
+      <a href="/chat/dm/{{ profile_user.pk }}/" class="btn btn-success btn-sm" style="border-radius:20px;font-size:0.78rem;">
+        <i class="fas fa-comment me-1"></i>채팅
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
   <!-- 온기 평가하기 -->
   {% if can_rate %}
   <div class="rate-section">

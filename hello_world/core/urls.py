@@ -61,6 +61,8 @@ urlpatterns = [
     path('chat/polls/',                    views.chat_poll_list,   name='chat_poll_list'),
 
     path('users/<int:user_id>/rate/', views.rate_user,    name='rate_user'),
+    path('users/<int:user_id>/follow/', views.follow_user, name='follow_user'),
+    path('friends/', views.friend_list, name='friend_list'),
     path('users/<int:user_id>/',      views.user_profile, name='user_profile'),
 
     path('surveys/',                   views.survey_list,    name='survey_list'),

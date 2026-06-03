@@ -1,0 +1,104 @@
+{% extends 'base_2panel.html' %}
+{% block title %}친구 목록{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h4 class="fw-bold mb-0"><i class="fas fa-user-friends text-success me-2"></i>친구 목록</h4>
+</div>
+
+<!-- 탭 -->
+<ul class="nav nav-pills mb-3 gap-1">
+  <li class="nav-item">
+    <button class="nav-link active" onclick="switchFTab('friends',this)" style="border-radius:20px;font-size:0.82rem;">
+      👥 친구 {{ friends|length }}
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" onclick="switchFTab('following',this)" style="border-radius:20px;font-size:0.82rem;">
+      ➡️ 팔로잉 {{ following|length }}
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" onclick="switchFTab('followers',this)" style="border-radius:20px;font-size:0.82rem;">
+      ⬅️ 팔로워 {{ followers|length }}
+    </button>
+  </li>
+</ul>
+
+<!-- 친구 -->
+<div id="ftab-friends">
+  {% if friends %}
+  <div class="row g-3">
+    {% for u in friends %}
+    <div class="col-md-6">
+      <div class="card border-0 p-3 d-flex flex-row align-items-center gap-3" style="border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.06);">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">
+          {{ u.nickname|default:u.username|first|upper }}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="fw-bold" style="font-size:0.88rem;">{{ u.nickname|default:u.username }}</div>
+          <div style="font-size:0.72rem;color:#9ca3af;">{% if u.dong %}{{ u.dong }}동{% endif %}{% if u.is_verified %} ✓{% endif %}</div>
+        </div>
+        <div class="d-flex gap-1">
+          <a href="/users/{{ u.pk }}/" class="btn btn-outline-success btn-sm" style="border-radius:20px;font-size:0.72rem;">프로필</a>
+          <a href="/chat/dm/{{ u.pk }}/" class="btn btn-success btn-sm" style="border-radius:20px;font-size:0.72rem;"><i class="fas fa-comment"></i></a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5 text-muted">
+    <i class="fas fa-user-friends fa-3x mb-3 d-block opacity-25"></i>
+    <p>아직 친구가 없어요</p>
+    <p class="small">이웃의 프로필에서 팔로우하면 맞팔 시 친구가 됩니다</p>
+    <a href="/boards/" class="btn btn-success btn-sm">이웃 게시글 둘러보기</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- 팔로잉 -->
+<div id="ftab-following" style="display:none;">
+  {% for f in following %}
+  <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+    <div style="width:36px;height:36px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;">
+      {{ f.following.nickname|default:f.following.username|first|upper }}
+    </div>
+    <div class="flex-1">
+      <div class="fw-semibold" style="font-size:0.86rem;">{{ f.following.nickname|default:f.following.username }}</div>
+      <div style="font-size:0.7rem;color:#9ca3af;">{{ f.created_at|date:"Y.m.d" }} 팔로우</div>
+    </div>
+    <a href="/users/{{ f.following.pk }}/" class="btn btn-outline-success btn-sm" style="border-radius:20px;font-size:0.72rem;">프로필</a>
+  </div>
+  {% empty %}
+  <div class="text-center py-4 text-muted">팔로잉 중인 이웃이 없어요</div>
+  {% endfor %}
+</div>
+
+<!-- 팔로워 -->
+<div id="ftab-followers" style="display:none;">
+  {% for f in followers %}
+  <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+    <div style="width:36px;height:36px;border-radius:50%;background:#6b7280;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;">
+      {{ f.follower.nickname|default:f.follower.username|first|upper }}
+    </div>
+    <div class="flex-1">
+      <div class="fw-semibold" style="font-size:0.86rem;">{{ f.follower.nickname|default:f.follower.username }}</div>
+      <div style="font-size:0.7rem;color:#9ca3af;">{{ f.created_at|date:"Y.m.d" }} 팔로우</div>
+    </div>
+    <a href="/users/{{ f.follower.pk }}/" class="btn btn-outline-success btn-sm" style="border-radius:20px;font-size:0.72rem;">프로필</a>
+  </div>
+  {% empty %}
+  <div class="text-center py-4 text-muted">팔로워가 없어요</div>
+  {% endfor %}
+</div>
+
+<script>
+function switchFTab(name, btn) {
+  ['friends','following','followers'].forEach(t => {
+    document.getElementById('ftab-'+t).style.display = t===name ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+{% endblock %}

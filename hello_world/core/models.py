@@ -1056,6 +1056,38 @@ class SiteConfig(models.Model):
         return obj
 
 
+
+class UserFollow(models.Model):
+    """팔로우 (단방향) — 맞팔 시 친구 관계"""
+    follower   = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='following')
+    following  = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='followers')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('follower', 'following')
+        ordering = ['-created_at']
+        verbose_name = '팔로우'
+        verbose_name_plural = '팔로우'
+
+    def __str__(self):
+        return f"{self.follower.username} → {self.following.username}"
+
+    @classmethod
+    def is_friend(cls, user_a, user_b):
+        """맞팔 여부 확인"""
+        return (cls.objects.filter(follower=user_a, following=user_b).exists() and
+                cls.objects.filter(follower=user_b, following=user_a).exists())
+
+    @classmethod
+    def get_friends(cls, user):
+        """맞팔 친구 목록"""
+        following_ids = cls.objects.filter(follower=user).values_list('following_id', flat=True)
+        follower_ids  = cls.objects.filter(following=user).values_list('follower_id', flat=True)
+        friend_ids = set(following_ids) & set(follower_ids)
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        return User.objects.filter(pk__in=friend_ids)
+
 class AdminActionLog(models.Model):
     """관리자 행위 로그 — 개인정보보호법 29조 안전조치 의무"""
     ACTION_CHOICES = [
