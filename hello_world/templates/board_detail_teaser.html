@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ board.name }} — 해솔7 지킴이{% endblock %}
+{% block extra_head %}
+<style>
+.teaser-wrap{max-width:680px;margin:0 auto;padding:16px;}
+.board-header{background:#fff;border-radius:14px;padding:20px;margin-bottom:16px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.board-title{font-size:1.1rem;font-weight:700;color:#111;margin-bottom:4px;}
+.board-desc{font-size:0.82rem;color:#6b7280;}
+.fake-post{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#fff;border-radius:10px;margin-bottom:6px;border:1px solid #e5e7eb;}
+.fake-badge{width:60px;height:12px;background:#e5e7eb;border-radius:4px;flex-shrink:0;}
+.fake-title{height:14px;background:#e5e7eb;border-radius:4px;flex:1;}
+.fake-meta{width:80px;height:10px;background:#f3f4f6;border-radius:4px;flex-shrink:0;}
+.lock-banner{background:linear-gradient(135deg,#1a7a4a,#1e9158);border-radius:14px;padding:24px;text-align:center;margin-top:8px;}
+.lock-banner .lock-icon{font-size:2rem;margin-bottom:10px;}
+.lock-banner h5{color:#fff;font-weight:700;margin-bottom:6px;font-size:0.95rem;}
+.lock-banner p{color:rgba(255,255,255,.85);font-size:0.8rem;margin-bottom:16px;}
+.btn-w{background:#fff;color:#1a7a4a;padding:10px 24px;border-radius:50px;font-size:0.88rem;font-weight:700;text-decoration:none;display:inline-block;margin:4px;}
+.btn-g{background:rgba(255,255,255,.2);color:#fff;padding:10px 20px;border-radius:50px;font-size:0.88rem;font-weight:600;text-decoration:none;display:inline-block;margin:4px;border:1px solid rgba(255,255,255,.4);}
+</style>
+{% endblock %}
+{% block content %}
+<div class="teaser-wrap">
+  <div class="board-header">
+    <div class="board-title"><i class="fas fa-clipboard-list me-2" style="color:#1a7a4a;"></i>{{ board.name }}</div>
+    {% if board.description %}<div class="board-desc">{{ board.description }}</div>{% endif %}
+  </div>
+
+  <!-- 가짜 게시글 목록 (블러 효과) -->
+  <div style="filter:blur(3px);pointer-events:none;margin-bottom:8px;">
+    {% for i in "12345" %}
+    <div class="fake-post">
+      <div class="fake-badge"></div>
+      <div class="fake-title" style="width:{% cycle '60' '45' '70' '55' '65' %}%;"></div>
+      <div class="fake-meta"></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- 잠금 배너 -->
+  <div class="lock-banner">
+    <div class="lock-icon">🔒</div>
+    {% if reason == 'login' %}
+    <h5>로그인 후 게시판을 이용할 수 있어요</h5>
+    <p>해솔7단지 입주민 커뮤니티에 가입하고<br>이웃들과 소통해보세요!</p>
+    <a href="/accounts/login/?next={{ request.path }}" class="btn-w"><i class="fas fa-sign-in-alt me-1"></i>로그인하기</a>
+    <a href="/accounts/signup/" class="btn-g">회원가입</a>
+    {% else %}
+    <h5>입주민 인증 후 이용할 수 있어요</h5>
+    <p>관리자 승인이 완료되면<br>모든 게시판을 자유롭게 이용할 수 있어요!</p>
+    <a href="/verify/request/" class="btn-w"><i class="fas fa-id-card me-1"></i>인증 신청하기</a>
+    <a href="/mypage/" class="btn-g">승인 현황 확인</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

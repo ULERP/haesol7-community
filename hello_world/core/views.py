@@ -317,7 +317,12 @@ def board_list(request):
 def board_detail(request, board_id):
     board = get_object_or_404(Board, pk=board_id, is_active=True)
     if not check_board_permission(request.user, board, 'read'):
-        return HttpResponseForbidden('이 게시판을 열람할 권한이 없습니다.')
+        # 비로그인/미승인 → 티저 페이지
+        reason = 'login' if not request.user.is_authenticated else 'verify'
+        return render(request, 'board_detail_teaser.html', {
+            'board': board,
+            'reason': reason,
+        })
     tag   = request.GET.get('tag', '')
     posts = Post.objects.filter(board=board, is_active=True)
     if tag:
@@ -352,6 +357,13 @@ def post_list(request):
 def post_detail(request, pk):
     post     = get_object_or_404(Post, pk=pk, is_active=True)
     Post.objects.filter(pk=pk).update(view_count=post.view_count+1)
+
+    # 비로그인 또는 미승인 → 티저 페이지
+    if not request.user.is_authenticated:
+        return render(request, 'post_detail_teaser.html', {'post': post, 'reason': 'login'})
+    if not request.user.is_verified and not request.user.is_staff:
+        return render(request, 'post_detail_teaser.html', {'post': post, 'reason': 'verify'})
+
     comments = post.comments.filter(is_active=True, parent=None)
     user_groups = []
     if request.user.is_authenticated:
@@ -787,11 +799,18 @@ def public_chat(request):
     my_groups = Group.objects.filter(members=request.user, is_active=True)[:10] if request.user.is_authenticated else []
     online_users = User.objects.filter(is_active=True).order_by('-last_login')[:20]
     all_users = User.objects.filter(is_active=True).order_by('nickname')[:50]
+
+    # 비로그인/미승인 → 블러 처리된 채팅 페이지
+    is_locked = (not request.user.is_authenticated) or                 (not request.user.is_verified and not request.user.is_staff)
+    reason = 'login' if not request.user.is_authenticated else 'verify'
+
     return render(request, 'chat/public_chat.html', {
         'recent_chats': list(reversed(recent_chats)),
         'my_groups': my_groups,
         'online_users': online_users,
         'all_users': all_users,
+        'is_locked': is_locked,
+        'reason': reason,
     })
 
 def public_chat_messages(request):

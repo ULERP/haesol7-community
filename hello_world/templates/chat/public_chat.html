@@ -251,4 +251,60 @@ initTabDropdown([
   { id:'group',  icon:'fa-users',    label:'소모임 채팅', desc:'소모임 대화방',      url:'/groups/' },
 ]);
 </script>
+
+{% if is_locked %}
+<style>
+.chat-lock-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: flex-end; justify-content: center;
+  pointer-events: none;
+}
+.chat-lock-panel {
+  width: 100%; max-width: 600px;
+  background: #fff; border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 32px rgba(0,0,0,.15);
+  padding: 28px 24px 40px;
+  text-align: center;
+  pointer-events: all;
+}
+.chat-blur-bg {
+  position: fixed; inset: 0; z-index: 9998;
+  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,.4);
+}
+.chat-lock-panel .lock-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.chat-lock-panel h5 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+.chat-lock-panel p { font-size: 0.83rem; color: #6b7280; margin-bottom: 20px; }
+.chat-lock-panel .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.btn-join { background: #1a7a4a; color: #fff; padding: 11px 28px; border-radius: 50px;
+  font-size: 0.9rem; font-weight: 700; text-decoration: none; }
+.btn-login { background: #fff; color: #1a7a4a; padding: 11px 24px; border-radius: 50px;
+  font-size: 0.9rem; font-weight: 600; text-decoration: none; border: 1.5px solid #1a7a4a; }
+</style>
+<div class="chat-blur-bg"></div>
+<div class="chat-lock-overlay">
+  <div class="chat-lock-panel">
+    <div class="lock-icon">💬</div>
+    {% if reason == "login" %}
+    <h5>채팅에 참여하려면 로그인하세요</h5>
+    <p>지금 이웃들이 대화 중이에요!<br>로그인하고 우리 단지 이야기에 참여해보세요 🌿</p>
+    <div class="btn-row">
+      <a href="/accounts/login/?next=/chat/public/" class="btn-join">
+        <i class="fas fa-sign-in-alt me-1"></i>로그인하기
+      </a>
+      <a href="/accounts/signup/" class="btn-login">회원가입</a>
+    </div>
+    {% else %}
+    <h5>입주민 인증 후 채팅에 참여할 수 있어요</h5>
+    <p>관리자 승인이 완료되면<br>채팅, 게시판 등 모든 기능을 이용할 수 있어요 🌿</p>
+    <div class="btn-row">
+      <a href="/verify/request/" class="btn-join">
+        <i class="fas fa-id-card me-1"></i>인증 신청하기
+      </a>
+      <a href="/mypage/" class="btn-login">승인 현황 확인</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
 {% endblock %}
