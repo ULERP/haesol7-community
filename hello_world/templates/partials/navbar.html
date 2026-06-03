@@ -33,9 +33,9 @@
             <i class="fas fa-clipboard-list"></i>기록하기
           </a>
           <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-th-large text-success"></i>전체 게시판</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-th-large text-success"></i>전체 게시판</a></li>
             {% for board in active_boards %}
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/{{ board.id }}/" style="font-size:0.82rem;padding:8px 12px;"><i class="{{ board.icon }} text-secondary"></i>{{ board.name }}</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/{{ board.id }}/" style="font-size:0.82rem;padding:8px 12px;"><i class="{{ board.icon }} text-secondary"></i>{{ board.name }}</a></li>
             {% endfor %}
           </ul>
         </li>
@@ -53,7 +53,7 @@
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/surveys/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-poll text-info"></i>설문조사</a></li>
             <li><hr class="dropdown-divider my-1"></li>
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/activity/submit/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-camera text-warning"></i>활동 인증</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-handshake text-success"></i>나눔/장터</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-handshake text-success"></i>나눔/장터</a></li>
           </ul>
         </li>
 
