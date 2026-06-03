@@ -22,7 +22,27 @@
   {% endif %}
   <div class="card shadow-sm border-0">
     <div class="list-group list-group-flush">
-      {% for post in posts %}
+      {% if not user.is_authenticated %}
+<div style="background:linear-gradient(135deg,#1a7a4a,#1e9158);border-radius:12px;padding:14px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:200px;">
+    <div style="font-weight:700;color:#fff;font-size:0.9rem;margin-bottom:2px;">👋 게시글 내용을 보고 싶으신가요?</div>
+    <div style="font-size:0.78rem;color:rgba(255,255,255,.85);">로그인 후 입주민 인증을 받으면 모든 게시글을 읽을 수 있어요</div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a href="/accounts/login/" style="background:#fff;color:#1a7a4a;padding:7px 16px;border-radius:20px;font-size:0.82rem;font-weight:700;text-decoration:none;">로그인</a>
+    <a href="/accounts/signup/" style="background:rgba(255,255,255,.2);color:#fff;padding:7px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.4);">회원가입</a>
+  </div>
+</div>
+{% elif not user.is_verified and not user.is_staff %}
+<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <div style="flex:1;min-width:200px;">
+    <div style="font-weight:700;color:#92400e;font-size:0.88rem;margin-bottom:2px;">⏳ 입주민 인증 대기 중</div>
+    <div style="font-size:0.78rem;color:#78350f;">게시글 제목은 볼 수 있지만 내용은 인증 후 확인 가능해요</div>
+  </div>
+  <a href="/verify/request/" style="background:#f59e0b;color:#fff;padding:7px 16px;border-radius:20px;font-size:0.82rem;font-weight:700;text-decoration:none;flex-shrink:0;">인증 신청 →</a>
+</div>
+{% endif %}
+{% for post in posts %}
       <a href="{% url 'post_detail' post.pk %}" class="list-group-item list-group-item-action py-3">
         <div class="d-flex justify-content-between align-items-center">
           <div>

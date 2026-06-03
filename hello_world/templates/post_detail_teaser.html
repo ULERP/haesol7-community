@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }} — 해솔7 지킴이{% endblock %}
+{% block extra_head %}
+<style>
+.teaser-wrap { max-width: 680px; margin: 0 auto; padding: 16px; }
+.post-header { background: #fff; border-radius: 14px; padding: 20px; margin-bottom: 12px;
+  border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.post-title { font-size: 1.1rem; font-weight: 700; color: #111; margin-bottom: 8px; }
+.post-meta { font-size: 0.78rem; color: #9ca3af; display: flex; gap: 12px; }
+.blurred-content { position: relative; border-radius: 14px; overflow: hidden; margin-bottom: 16px; }
+.blurred-inner { background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+  padding: 20px; filter: blur(6px); user-select: none; pointer-events: none;
+  min-height: 200px; }
+.blurred-overlay { position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; z-index: 10;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,.95) 60%); }
+.lock-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.lock-msg { font-size: 0.95rem; font-weight: 700; color: #111; margin-bottom: 4px; }
+.lock-sub { font-size: 0.82rem; color: #6b7280; margin-bottom: 20px; text-align: center; }
+.cta-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.btn-cta-primary { background: #1a7a4a; color: #fff; padding: 10px 24px; border-radius: 50px;
+  font-size: 0.88rem; font-weight: 700; text-decoration: none; transition: background .15s; }
+.btn-cta-primary:hover { background: #15623c; color: #fff; }
+.btn-cta-secondary { background: #fff; color: #1a7a4a; padding: 10px 22px; border-radius: 50px;
+  font-size: 0.88rem; font-weight: 600; text-decoration: none; border: 1.5px solid #1a7a4a; }
+.steps-card { background: #f0fdf7; border: 1px solid #a8d5b8; border-radius: 14px;
+  padding: 16px 20px; }
+.steps-title { font-size: 0.82rem; font-weight: 700; color: #1a7a4a; margin-bottom: 12px; }
+.step-item { display: flex; align-items: center; gap: 10px; padding: 8px 0;
+  border-bottom: 1px solid #d1f0e2; font-size: 0.83rem; color: #374151; }
+.step-item:last-child { border-bottom: none; }
+.step-num { width: 24px; height: 24px; border-radius: 50%; background: #1a7a4a; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 0.72rem;
+  font-weight: 700; flex-shrink: 0; }
+.step-done { background: #10b981; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="teaser-wrap">
+
+  <!-- 게시글 헤더 (공개) -->
+  <div class="post-header">
+    <div class="post-title">{{ post.title }}</div>
+    <div class="post-meta">
+      <span><i class="fas fa-user me-1"></i>{{ post.author.nickname|default:post.author.username }}</span>
+      <span><i class="fas fa-clock me-1"></i>{{ post.created_at|date:"Y.m.d" }}</span>
+      <span><i class="fas fa-eye me-1"></i>{{ post.view_count }}</span>
+      <span><i class="fas fa-heart me-1" style="color:#e74c3c;"></i>{{ post.likes.count }}</span>
+      {% if post.board %}<span><i class="fas fa-folder me-1"></i>{{ post.board.name }}</span>{% endif %}
+    </div>
+  </div>
+
+  <!-- 블러 처리된 본문 -->
+  <div class="blurred-content">
+    <div class="blurred-inner">
+      <p>이 게시글의 내용을 확인하려면 입주민 인증이 필요합니다.</p>
+      <p>해솔마을 7단지 입주민이신가요? 지금 바로 가입하고 이웃들과 소통해보세요.</p>
+      <p>게시판에는 단지 생활 정보, 공지사항, 이웃들의 이야기가 가득합니다.</p>
+      <p>함께하면 더 좋은 우리 단지를 만들 수 있어요.</p>
+    </div>
+    <div class="blurred-overlay">
+      <div class="lock-icon">🔒</div>
+      {% if reason == 'login' %}
+      <div class="lock-msg">로그인이 필요한 콘텐츠예요</div>
+      <div class="lock-sub">해솔7단지 입주민 커뮤니티 회원만<br>게시글 내용을 확인할 수 있어요</div>
+      <div class="cta-btns">
+        <a href="/accounts/login/?next={{ request.path }}" class="btn-cta-primary">
+          <i class="fas fa-sign-in-alt me-1"></i>로그인하기
+        </a>
+        <a href="/accounts/signup/" class="btn-cta-secondary">회원가입</a>
+      </div>
+      {% else %}
+      <div class="lock-msg">입주민 인증이 필요해요</div>
+      <div class="lock-sub">관리자 승인 후 모든 게시글을<br>자유롭게 읽고 참여할 수 있어요</div>
+      <div class="cta-btns">
+        <a href="/verify/request/" class="btn-cta-primary">
+          <i class="fas fa-id-card me-1"></i>인증 신청하기
+        </a>
+        <a href="/mypage/" class="btn-cta-secondary">승인 현황 확인</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- 단계 안내 -->
+  <div class="steps-card">
+    <div class="steps-title">🌿 해솔7 지킴이 이용 안내</div>
+    <div class="step-item">
+      <div class="step-num {% if request.user.is_authenticated %}step-done{% endif %}">1</div>
+      <div>
+        <strong>회원가입</strong> — 아이디/비밀번호와 동·호수 입력
+        {% if request.user.is_authenticated %}<span style="color:#10b981;font-size:0.75rem;"> ✓ 완료</span>{% endif %}
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num {% if request.user.is_authenticated and not request.user.is_verified %}{% else %}{% if request.user.is_verified %}step-done{% endif %}{% endif %}">2</div>
+      <div>
+        <strong>입주민 인증 신청</strong> — 관리비 고지서 첨부 시 빠른 승인
+        {% if request.user.is_authenticated and not request.user.is_verified %}
+        <span style="color:#f59e0b;font-size:0.75rem;"> ⏳ 승인 대기중</span>
+        {% elif request.user.is_verified %}
+        <span style="color:#10b981;font-size:0.75rem;"> ✓ 완료</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <div><strong>커뮤니티 활동</strong> — 게시글, 채팅, 소모임, 봉사활동 참여</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
