@@ -2424,3 +2424,344 @@ def calendar_event_approve(request, pk):
     event.approved_at = timezone.now()
     event.save()
     return JsonResponse({'success': True})
+
+
+# ════════════════════════════════════════════════════════
+# 비밀번호 찾기 (보안질문 + 이메일)
+# ════════════════════════════════════════════════════════
+import json as _json
+import secrets as _secrets
+from django.core.cache import cache as _cache
+from django.http import JsonResponse as _JR
+
+def password_reset_page(request):
+    """비밀번호 찾기 메인 페이지"""
+    return render(request, 'registration/password_reset.html')
+
+def pw_get_question(request):
+    """AJAX: 아이디+실명 확인 후 보안 질문 반환"""
+    if request.method != 'POST':
+        return _JR({'ok': False, 'error': '잘못된 요청'})
+    try:
+        data      = _json.loads(request.body)
+        username  = data.get('username', '').strip()
+        real_name = data.get('real_name', '').strip()
+        user = CustomUser.objects.get(username=username)
+        # 실명 확인 (대소문자 무관)
+        if user.real_name.strip().lower() != real_name.lower():
+            return _JR({'ok': False, 'error': '아이디 또는 실명이 일치하지 않습니다.'})
+        if not user.security_question:
+            return _JR({'ok': False, 'error': '보안 질문이 등록되지 않은 계정입니다. 이메일로 찾기를 이용해주세요.'})
+        return _JR({'ok': True, 'question': user.security_question})
+    except CustomUser.DoesNotExist:
+        return _JR({'ok': False, 'error': '아이디 또는 실명이 일치하지 않습니다.'})
+    except Exception as e:
+        return _JR({'ok': False, 'error': '오류가 발생했습니다.'})
+
+def pw_verify_answer(request):
+    """AJAX: 보안 답변 검증 후 리셋 토큰 발급"""
+    if request.method != 'POST':
+        return _JR({'ok': False, 'error': '잘못된 요청'})
+    try:
+        data     = _json.loads(request.body)
+        username = data.get('username', '').strip()
+        answer   = data.get('answer', '').strip().lower()
+        user = CustomUser.objects.get(username=username)
+        if user.security_answer.strip().lower() != answer:
+            return _JR({'ok': False, 'error': '답변이 일치하지 않습니다.'})
+        # 10분 유효 토큰 발급
+        token = _secrets.token_urlsafe(32)
+        _cache.set(f'pw_reset_{token}', user.pk, timeout=600)
+        return _JR({'ok': True, 'token': token})
+    except CustomUser.DoesNotExist:
+        return _JR({'ok': False, 'error': '사용자를 찾을 수 없습니다.'})
+    except Exception:
+        return _JR({'ok': False, 'error': '오류가 발생했습니다.'})
+
+def pw_do_reset(request):
+    """AJAX: 토큰 검증 후 비밀번호 변경"""
+    if request.method != 'POST':
+        return _JR({'ok': False, 'error': '잘못된 요청'})
+    try:
+        data     = _json.loads(request.body)
+        token    = data.get('token', '')
+        password = data.get('password', '')
+        if len(password) < 8:
+            return _JR({'ok': False, 'error': '비밀번호는 8자 이상이어야 해요.'})
+        user_pk = _cache.get(f'pw_reset_{token}')
+        if not user_pk:
+            return _JR({'ok': False, 'error': '세션이 만료됐습니다. 처음부터 다시 시도해주세요.'})
+        user = CustomUser.objects.get(pk=user_pk)
+        user.set_password(password)
+        user.save()
+        _cache.delete(f'pw_reset_{token}')
+        return _JR({'ok': True})
+    except CustomUser.DoesNotExist:
+        return _JR({'ok': False, 'error': '사용자를 찾을 수 없습니다.'})
+    except Exception:
+        return _JR({'ok': False, 'error': '오류가 발생했습니다.'})
+
+def pw_send_email(request):
+    """AJAX: 이메일로 비밀번호 재설정 링크 발송"""
+    if request.method != 'POST':
+        return _JR({'ok': False, 'error': '잘못된 요청'})
+    try:
+        data     = _json.loads(request.body)
+        username = data.get('username', '').strip()
+        email    = data.get('email', '').strip().lower()
+        # 보안상 항상 ok 반환 (사용자 존재 여부 노출 방지)
+        try:
+            user = CustomUser.objects.get(username=username)
+            if user.email.lower() == email:
+                token = _secrets.token_urlsafe(32)
+                _cache.set(f'pw_reset_{token}', user.pk, timeout=1800)  # 30분
+                reset_url = f"{request.scheme}://{request.get_host()}/accounts/password-reset/email-confirm/?token={token}"
+                from django.core.mail import send_mail
+                send_mail(
+                    subject='[해솔7 지킴이] 비밀번호 재설정',
+                    message=f"""안녕하세요, {user.nickname or user.username}님.\n\n비밀번호 재설정을 요청하셨습니다.\n아래 링크를 클릭해 새 비밀번호를 설정해주세요.\n\n{reset_url}\n\n링크는 30분간 유효합니다.\n요청하지 않으셨다면 이 메일을 무시해주세요.\n\n해솔7 지킴이 드림""",
+                    from_email=None,
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                )
+        except CustomUser.DoesNotExist:
+            pass
+    except Exception:
+        pass
+    return _JR({'ok': True})  # 항상 성공 반환
+
+def pw_email_confirm(request):
+    """이메일 링크 클릭 후 새 비밀번호 설정 페이지"""
+    token = request.GET.get('token', '')
+    user_pk = _cache.get(f'pw_reset_{token}')
+    if not user_pk:
+        messages.error(request, '링크가 만료됐거나 유효하지 않습니다.')
+        return redirect('password_reset_page')
+    if request.method == 'POST':
+        pw1 = request.POST.get('password1', '')
+        pw2 = request.POST.get('password2', '')
+        if len(pw1) < 8:
+            messages.error(request, '비밀번호는 8자 이상이어야 해요.')
+        elif pw1 != pw2:
+            messages.error(request, '비밀번호가 일치하지 않아요.')
+        else:
+            try:
+                user = CustomUser.objects.get(pk=user_pk)
+                user.set_password(pw1)
+                user.save()
+                _cache.delete(f'pw_reset_{token}')
+                messages.success(request, '비밀번호가 변경됐어요! 새 비밀번호로 로그인해주세요.')
+                return redirect('login')
+            except CustomUser.DoesNotExist:
+                messages.error(request, '오류가 발생했습니다.')
+    return render(request, 'registration/pw_email_confirm.html', {'token': token})
+
+
+# ════════════════════════════════════════════════════════════════════
+# 관리자 전용 — 회원 등급 관리 + 비밀번호 초기화
+# 개인정보보호법 29조: 관리자 행위 전건 로그 기록
+# ════════════════════════════════════════════════════════════════════
+from django.contrib.admin.views.decorators import staff_member_required as _staff
+import random as _rand, string as _str, json as _json
+from django.core.mail import send_mail as _send_mail
+from django.core.cache import cache as _cache
+import secrets as _secrets
+
+def _get_client_ip(request):
+    x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
+    return x_forwarded.split(',')[0].strip() if x_forwarded else request.META.get('REMOTE_ADDR')
+
+def _log_action(admin, target, action, detail, ip):
+    """관리자 행위 로그 기록 — 평문 비밀번호 절대 포함 금지"""
+    from .models import AdminActionLog
+    AdminActionLog.objects.create(
+        admin=admin, target_user=target,
+        action=action, detail=detail, ip_address=ip
+    )
+
+@_staff
+def admin_member_manage(request):
+    """회원 등급 관리 + 비밀번호 초기화 메인 페이지"""
+    from .models import MemberGrade, AdminActionLog
+
+    q      = request.GET.get('q', '').strip()
+    grade  = request.GET.get('grade', '')
+    status = request.GET.get('status', '')
+
+    users = CustomUser.objects.all().order_by('-date_joined')
+    if q:
+        from django.db.models import Q
+        users = users.filter(
+            Q(username__icontains=q) | Q(nickname__icontains=q) |
+            Q(real_name__icontains=q) | Q(dong__icontains=q)
+        )
+    if status == 'active':   users = users.filter(is_active=True)
+    if status == 'inactive': users = users.filter(is_active=False)
+    if status == 'verified': users = users.filter(is_verified=True)
+    if status == 'unverified': users = users.filter(is_verified=False)
+
+    grades      = MemberGrade.objects.filter(is_active=True).order_by('order')
+    recent_logs = AdminActionLog.objects.select_related('admin','target_user')[:20]
+
+    return render(request, 'admin/member_manage.html', {
+        'users': users, 'grades': grades,
+        'recent_logs': recent_logs,
+        'q': q, 'grade': grade, 'status': status,
+        'total': CustomUser.objects.count(),
+        'active_count': CustomUser.objects.filter(is_active=True).count(),
+        'verified_count': CustomUser.objects.filter(is_verified=True).count(),
+    })
+
+@_staff
+def admin_pw_reset(request):
+    """비밀번호 초기화 — 임시 비밀번호 이메일 발송"""
+    if request.method != 'POST':
+        return redirect('admin_member_manage')
+
+    user_id = request.POST.get('user_id')
+    ip      = _get_client_ip(request)
+
+    try:
+        target = CustomUser.objects.get(pk=user_id)
+    except CustomUser.DoesNotExist:
+        messages.error(request, '사용자를 찾을 수 없습니다.')
+        return redirect('admin_member_manage')
+
+    # 이메일 없으면 발급 불가 (개인정보 노출 방지)
+    if not target.email:
+        messages.error(
+            request,
+            f'⚠ {target.nickname or target.username}님의 이메일이 등록되지 않아 발급할 수 없습니다.'
+        )
+        return redirect('admin_member_manage')
+
+    # 임시 비밀번호 생성 (영문 대소문자 + 숫자 10자리)
+    chars  = _str.ascii_letters + _str.digits
+    tmp_pw = ''.join(_rand.choices(chars, k=10))
+
+    # DB에 해시만 저장 (평문 절대 저장 금지)
+    target.set_password(tmp_pw)
+    target.save(update_fields=['password'])
+
+    # 사용자에게 이메일 발송
+    try:
+        _send_mail(
+            subject='[해솔7 지킴이] 임시 비밀번호가 발급됐어요',
+            message=(
+                f"{target.nickname or target.username}님, 안녕하세요.\n\n"
+                f"관리자가 회원님의 비밀번호를 초기화했습니다.\n\n"
+                f"임시 비밀번호: {tmp_pw}\n\n"
+                f"보안을 위해 로그인 후 즉시 비밀번호를 변경해주세요.\n"
+                f"비밀번호 변경: {request.scheme}://{request.get_host()}/mypage/edit/\n\n"
+                f"본인이 요청하지 않은 경우 즉시 관리자에게 문의해주세요.\n\n"
+                f"해솔7 지킴이 드림"
+            ),
+            from_email=None,
+            recipient_list=[target.email],
+            fail_silently=False,
+        )
+        email_sent = True
+    except Exception as e:
+        email_sent = False
+
+    # ★ 관리자 행위 로그 기록 (평문 비밀번호 절대 포함 금지)
+    _log_action(
+        admin=request.user,
+        target=target,
+        action='pw_reset',
+        detail=f"이메일 발송{'성공' if email_sent else '실패'} | 수신: {target.email[:3]}***",
+        ip=ip
+    )
+
+    if email_sent:
+        messages.success(
+            request,
+            f"✅ {target.nickname or target.username}님의 임시 비밀번호를 이메일({target.email[:3]}***)로 발송했습니다."
+        )
+    else:
+        messages.warning(
+            request,
+            f"⚠ 비밀번호는 초기화됐으나 이메일 발송에 실패했습니다. 이메일 설정을 확인해주세요."
+        )
+    return redirect('admin_member_manage')
+
+@_staff
+def admin_grade_change(request):
+    """회원 등급 변경"""
+    if request.method != 'POST':
+        return redirect('admin_member_manage')
+
+    from .models import MemberGrade
+    user_id  = request.POST.get('user_id')
+    grade_id = request.POST.get('grade_id')
+    ip       = _get_client_ip(request)
+
+    try:
+        target     = CustomUser.objects.get(pk=user_id)
+        new_grade  = MemberGrade.objects.get(pk=grade_id)
+        old_groups = list(target.groups.values_list('name', flat=True))
+
+        # 기존 등급 그룹 제거 후 새 등급 추가
+        from django.contrib.auth.models import Group as AuthGroup
+        grade_names = MemberGrade.objects.values_list('name', flat=True)
+        for g in target.groups.filter(name__in=grade_names):
+            target.groups.remove(g)
+        new_group, _ = AuthGroup.objects.get_or_create(name=new_grade.name)
+        target.groups.add(new_group)
+
+        _log_action(
+            admin=request.user, target=target,
+            action='grade_change',
+            detail=f"{old_groups} → {new_grade.name}",
+            ip=ip
+        )
+        messages.success(request, f"✅ {target.nickname or target.username}님 등급을 [{new_grade.name}](으)로 변경했습니다.")
+    except (CustomUser.DoesNotExist, MemberGrade.DoesNotExist):
+        messages.error(request, '사용자 또는 등급을 찾을 수 없습니다.')
+
+    return redirect('admin_member_manage')
+
+@_staff
+def admin_toggle_active(request):
+    """계정 활성/비활성 토글"""
+    if request.method != 'POST':
+        return redirect('admin_member_manage')
+
+    user_id = request.POST.get('user_id')
+    ip      = _get_client_ip(request)
+
+    try:
+        target = CustomUser.objects.get(pk=user_id)
+        if target.is_superuser:
+            messages.error(request, '최고관리자 계정은 변경할 수 없습니다.')
+            return redirect('admin_member_manage')
+
+        target.is_active = not target.is_active
+        target.save(update_fields=['is_active'])
+
+        action = 'activate' if target.is_active else 'deactivate'
+        _log_action(admin=request.user, target=target, action=action, detail='', ip=ip)
+
+        status = '활성화' if target.is_active else '비활성화'
+        messages.success(request, f"✅ {target.nickname or target.username}님 계정을 {status}했습니다.")
+    except CustomUser.DoesNotExist:
+        messages.error(request, '사용자를 찾을 수 없습니다.')
+
+    return redirect('admin_member_manage')
+
+@_staff
+def admin_action_log(request):
+    """관리자 행위 로그 전체 조회"""
+    from .models import AdminActionLog
+    logs = AdminActionLog.objects.select_related('admin','target_user').all()
+    action_filter = request.GET.get('action','')
+    if action_filter:
+        logs = logs.filter(action=action_filter)
+    from django.core.paginator import Paginator
+    paginator = Paginator(logs, 30)
+    page = paginator.get_page(request.GET.get('page', 1))
+    from .models import AdminActionLog as AL
+    return render(request, 'admin/action_log.html', {
+        'page': page, 'action_filter': action_filter,
+        'action_choices': AL.ACTION_CHOICES,
+    })

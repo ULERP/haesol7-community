@@ -10,6 +10,17 @@ router.register(r'groups',  views.GroupViewSet,  basename='group')
 router.register(r'meetups', views.MeetupViewSet, basename='meetup')
 
 urlpatterns = [
+    path('accounts/password-reset/',                    views.password_reset_page,  name='password_reset_page'),
+    path('accounts/password-reset/get-question/',        views.pw_get_question,       name='pw_get_question'),
+    path('accounts/password-reset/verify-answer/',       views.pw_verify_answer,      name='pw_verify_answer'),
+    path('accounts/password-reset/do-reset/',            views.pw_do_reset,           name='pw_do_reset'),
+    path('accounts/password-reset/send-email/',          views.pw_send_email,         name='pw_send_email'),
+    path('accounts/password-reset/email-confirm/',       views.pw_email_confirm,      name='pw_email_confirm'),
+    path('admin-tools/members/',            views.admin_member_manage, name='admin_member_manage'),
+    path('admin-tools/members/pw-reset/',   views.admin_pw_reset,      name='admin_pw_reset'),
+    path('admin-tools/members/grade/',      views.admin_grade_change,  name='admin_grade_change'),
+    path('admin-tools/members/toggle/',     views.admin_toggle_active, name='admin_toggle_active'),
+    path('admin-tools/logs/',               views.admin_action_log,    name='admin_action_log'),
     path('', views.index, name='index'),
 
     path('accounts/login/',  views.custom_login, name='login'),
