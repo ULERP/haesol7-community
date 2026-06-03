@@ -2008,7 +2008,7 @@ def my_certificate(request):
         user=request.user, status='approved'
     ).select_related('activity').order_by('-submitted_at')
     total_points   = sum(a.points_earned for a in approved)
-    total_hours    = sum(a.hours_spent or 0 for a in approved)
+    total_hours    = sum(a.duration_hours or 0 for a in approved)
     total_count    = approved.count()
     return render(request, 'certificate.html', {
         'approved_activities': approved,
@@ -2079,7 +2079,7 @@ def certificate_pdf(request, user_id):
     body_style    = ParagraphStyle('body',    fontName=font_name,  fontSize=11, alignment=TA_CENTER, spaceAfter=6)
     section_style = ParagraphStyle('section', fontName=font_bold,  fontSize=12, textColor=colors.HexColor('#1a7a4a'), spaceAfter=4)
 
-    total_hours  = sum(a.hours_spent or 0 for a in approved)
+    total_hours  = sum(a.duration_hours or 0 for a in approved)
     total_points = sum(a.points_earned for a in approved)
     total_count  = approved.count()
     issue_date   = timezone.now().strftime('%Y년 %m월 %d일')
@@ -2141,7 +2141,7 @@ def certificate_pdf(request, user_id):
         act_data.append([
             Paragraph(a.activity.name if a.activity else '-', ParagraphStyle('td', fontName=font_name, fontSize=9)),
             a.submitted_at.strftime('%Y.%m.%d'),
-            f"{a.hours_spent or 0}h",
+            f"{a.duration_hours or 0}h",
             f"{a.points_earned}P",
         ])
     act_table = Table(act_data, colWidths=[80*mm, 35*mm, 25*mm, 25*mm])
