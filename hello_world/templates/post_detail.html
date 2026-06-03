@@ -2,23 +2,57 @@
 {% block menu_boards %}active{% endblock %}
 {% block title %}{{ post.title }}{% endblock %}
 {% block content %}
-  <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header bg-white py-3">
-      <div class="d-flex justify-content-between align-items-start">
-        <div>
-          {% if post.tag %}<span class="badge bg-success me-2">{{ post.tag }}</span>{% endif %}
-          <h4 class="fw-bold d-inline">{{ post.title }}</h4>
-        </div>
+  <div class="card border-0 mb-4" style="border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08);">
+    <div class="card-header py-4 px-4" style="background:#fff;border-bottom:1px solid #f3f4f6;">
+      <!-- 게시판 breadcrumb -->
+      <div class="mb-2">
+        <a href="/boards/" class="text-muted text-decoration-none" style="font-size:0.76rem;"><i class="fas fa-clipboard-list me-1"></i>게시판</a>
+        <span class="text-muted mx-1" style="font-size:0.76rem;">›</span>
+        <a href="{% url 'board_detail' post.board.id %}" class="text-decoration-none" style="font-size:0.76rem;color:var(--g);">{{ post.board.name }}</a>
       </div>
-      <div class="text-muted small mt-2">
-        <span class="me-3"><i class="fas fa-user me-1"></i>{% if post.is_anonymous %}익명{% else %}<a href="/users/{{ post.author.pk }}/" class="text-decoration-none text-dark fw-semibold">{{ post.author.nickname|default:post.author.username }}</a>{% if post.author.unit_number %} <small class="text-muted">({{ post.author.dong }}동)</small>{% endif %}{% endif %}</span>
-        <span class="me-3"><i class="fas fa-clock me-1"></i>{{ post.created_at|date:"Y.m.d H:i" }}</span>
-        <span class="me-3"><i class="fas fa-eye me-1"></i>{{ post.view_count }}</span>
-        <span><i class="fas fa-heart me-1"></i><span id="like-count">{{ post.like_count }}</span></span>
+      <!-- 말머리 + 제목 -->
+      <div class="d-flex align-items-start gap-2 mb-3">
+        {% if post.is_pinned %}<i class="fas fa-thumbtack text-danger mt-1" style="font-size:0.85rem;"></i>{% endif %}
+        {% if post.tag %}<span class="badge" style="background:var(--g);font-size:0.72rem;margin-top:3px;flex-shrink:0;">{{ post.tag }}</span>{% endif %}
+        <h4 class="fw-bold mb-0" style="line-height:1.4;">{{ post.title }}</h4>
+      </div>
+      <!-- 메타 정보 -->
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+          {% if post.is_anonymous %}
+          <div class="d-flex align-items-center gap-2">
+            <div style="width:32px;height:32px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;"><i class="fas fa-user text-muted" style="font-size:0.8rem;"></i></div>
+            <span style="font-size:0.85rem;font-weight:600;color:#374151;">익명</span>
+          </div>
+          {% else %}
+          <a href="/users/{{ post.author.pk }}/" class="d-flex align-items-center gap-2 text-decoration-none">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.82rem;">{{ post.author.nickname|default:post.author.username|first|upper }}</div>
+            <div>
+              <div style="font-size:0.85rem;font-weight:600;color:#374151;">{{ post.author.nickname|default:post.author.username }}</div>
+              {% if post.author.dong %}<div style="font-size:0.7rem;color:#9ca3af;">{{ post.author.dong }}동 입주민{% if post.author.is_verified %} ✓{% endif %}</div>{% endif %}
+            </div>
+          </a>
+          {% endif %}
+        </div>
+        <div class="d-flex gap-3" style="font-size:0.76rem;color:#9ca3af;">
+          <span><i class="fas fa-clock me-1"></i>{{ post.created_at|date:"Y.m.d H:i" }}</span>
+          <span><i class="fas fa-eye me-1"></i>{{ post.view_count }}</span>
+          <span><i class="fas fa-heart me-1 text-danger"></i><span id="like-count">{{ post.like_count }}</span></span>
+          <span><i class="fas fa-comment me-1 text-primary"></i>{{ post.comments.count }}</span>
+        </div>
       </div>
     </div>
     <div class="card-body py-4">
-      <p style="white-space:pre-wrap; line-height:1.8">{{ post.content }}</p>
+      <div class="post-content ql-editor" style="padding:0;line-height:1.85;font-size:0.95rem;">{{ post.content|safe }}</div>
+      <style>
+        .post-content img { max-width:100%; border-radius:10px; margin:8px 0; }
+        .post-content a { color:var(--g); }
+        .post-content blockquote { border-left:4px solid var(--gb); padding-left:16px; color:#6b7280; margin:12px 0; }
+        .post-content pre { background:#f3f4f6; border-radius:8px; padding:14px; font-size:0.85rem; overflow-x:auto; }
+        .post-content h1,.post-content h2,.post-content h3 { font-weight:700; margin:16px 0 8px; }
+        .post-content ul,.post-content ol { padding-left:24px; }
+        .post-content p { margin-bottom:8px; }
+      </style>
       <!-- ── 삽입된 설문 위젯 ── -->
       {% if post.linked_survey %}
       <div class="mt-4 p-4 rounded" style="background:#f0fdf6;border:1.5px solid #a8d5b8;">
