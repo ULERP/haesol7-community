@@ -139,6 +139,39 @@
   setInterval(updateNotiCount, 30000);
   {% endif %}
 </script>
+<script>
+function toggleSection(id) {
+  const sec = document.getElementById(id);
+  const label = sec ? sec.previousElementSibling : null;
+  if (!sec) return;
+  if (sec.classList.contains('folded')) {
+    sec.classList.remove('folded');
+    sec.style.maxHeight = sec.scrollHeight + 'px';
+    if (label) label.classList.remove('folded');
+    try { localStorage.setItem('sb_fold_' + id, '0'); } catch(e) {}
+  } else {
+    sec.style.maxHeight = sec.scrollHeight + 'px';
+    requestAnimationFrame(() => { sec.style.maxHeight = '0'; });
+    sec.classList.add('folded');
+    if (label) label.classList.add('folded');
+    try { localStorage.setItem('sb_fold_' + id, '1'); } catch(e) {}
+  }
+}
+(function() {
+  const secs = ['sec-chat','sec-record','sec-together','sec-news','sec-myact','sec-admin'];
+  secs.forEach(id => {
+    const sec = document.getElementById(id);
+    const label = sec ? sec.previousElementSibling : null;
+    const saved = localStorage.getItem('sb_fold_' + id);
+    if (saved === '0') {
+      if (sec) sec.style.maxHeight = sec.scrollHeight + 'px';
+    } else {
+      if (sec) { sec.classList.add('folded'); sec.style.maxHeight = '0'; }
+      if (label) label.classList.add('folded');
+    }
+  });
+})();
+</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>
