@@ -128,6 +128,37 @@
   .mob-tab i { font-size:1.2rem; }
   .mob-tab.active { color:var(--g); }
   @media (max-width:1024px) { .mob-tabbar { display:block; } }
+  /* 더보기 슬라이드업 패널 */
+  .more-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:300; }
+  .more-backdrop.show { display:block; }
+  .more-panel { position:fixed; bottom:-100%; left:0; right:0; background:#fff;
+    border-radius:20px 20px 0 0; z-index:301; transition:bottom .3s ease;
+    padding-bottom:env(safe-area-inset-bottom); max-height:85vh; overflow-y:auto; }
+  .more-panel.show { bottom:0; }
+  .more-handle { width:36px; height:4px; background:#e5e7eb; border-radius:2px;
+    margin:10px auto 4px; }
+  .more-header { padding:8px 20px 12px; border-bottom:1px solid #f0f2f4; }
+  .more-header-title { font-size:0.88rem; font-weight:700; color:#111; }
+  .more-section { padding:12px 16px; }
+  .more-section-title { font-size:0.68rem; font-weight:700; color:#9ca3af;
+    text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; padding:0 4px; }
+  .more-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .more-item { display:flex; flex-direction:column; align-items:center; gap:5px;
+    text-decoration:none; color:#374151; padding:12px 4px 10px;
+    border-radius:12px; background:#f8fafb; border:1px solid #eef1f5;
+    font-size:0.66rem; font-weight:600; transition:all .15s; }
+  .more-item:active { background:#e8f5ee; color:#1a7a4a; }
+  .more-item i { font-size:1.3rem; color:#1a7a4a; }
+  .more-divider { height:1px; background:#f0f2f4; margin:4px 0; }
+  /* 로그인/로그아웃 영역 */
+  .more-user { display:flex; align-items:center; gap:12px; padding:12px 16px;
+    border-bottom:1px solid #f0f2f4; }
+  .more-user-av { width:40px; height:40px; border-radius:50%; background:#1a7a4a;
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:1rem; flex-shrink:0; }
+  .more-user-info { flex:1; }
+  .more-user-name { font-size:0.88rem; font-weight:700; color:#111; }
+  .more-user-sub { font-size:0.73rem; color:#9ca3af; }
 </style>
 {% endblock %}
 
@@ -543,9 +574,103 @@
     <a href="/chat/public/" class="mob-tab"><i class="fas fa-comments"></i><span>소통</span></a>
     <a href="/notices/" class="mob-tab"><i class="fas fa-bell"></i><span>공지·민원</span></a>
     <a href="/groups/" class="mob-tab"><i class="fas fa-users"></i><span>함께하기</span></a>
-    <a href="/mypage/" class="mob-tab"><i class="fas fa-user"></i><span>내 정보</span></a>
+    <button class="mob-tab" onclick="toggleMore()"><i class="fas fa-th"></i><span>더보기</span></button>
   </div>
 </nav>
+
+<!-- 더보기 백드롭 -->
+<div class="more-backdrop" id="moreBackdrop" onclick="toggleMore()"></div>
+
+<!-- 더보기 슬라이드업 패널 -->
+<div class="more-panel" id="morePanel">
+  <div class="more-handle"></div>
+
+  <!-- 사용자 정보 -->
+  {% if user.is_authenticated %}
+  <div class="more-user">
+    <div class="more-user-av">{{ user.nickname|default:user.username|first|upper }}</div>
+    <div class="more-user-info">
+      <div class="more-user-name">{{ user.nickname|default:user.username }}</div>
+      <div class="more-user-sub">
+        {% if user.dong %}{{ user.dong }}동 {{ user.ho }}호{% else %}해솔7단지 입주민{% endif %}
+        {% if user.is_verified %} · <span style="color:#1a7a4a;">✓ 인증완료</span>{% else %} · <span style="color:#f59e0b;">인증대기</span>{% endif %}
+      </div>
+    </div>
+    <a href="/mypage/" style="font-size:0.75rem;color:#1a7a4a;font-weight:600;text-decoration:none;">마이페이지 →</a>
+  </div>
+  {% else %}
+  <div class="more-user">
+    <div class="more-user-av" style="background:#9ca3af;"><i class="fas fa-user" style="font-size:1rem;"></i></div>
+    <div class="more-user-info">
+      <div class="more-user-name">로그인이 필요해요</div>
+      <div class="more-user-sub">입주민 커뮤니티에 참여해보세요</div>
+    </div>
+    <a href="/accounts/login/" style="background:#1a7a4a;color:#fff;padding:6px 14px;border-radius:20px;font-size:0.75rem;font-weight:600;text-decoration:none;">로그인</a>
+  </div>
+  {% endif %}
+
+  <!-- 커뮤니티 메뉴 -->
+  <div class="more-section">
+    <div class="more-section-title">커뮤니티</div>
+    <div class="more-grid">
+      <a href="/boards/" class="more-item"><i class="fas fa-clipboard-list"></i><span>게시판</span></a>
+      <a href="/chat/public/" class="more-item"><i class="fas fa-comments"></i><span>전체채팅</span></a>
+      <a href="/notices/" class="more-item"><i class="fas fa-bell"></i><span>공지</span></a>
+      <a href="/complaints/" class="more-item"><i class="bi bi-megaphone"></i><span>민원·건의</span></a>
+      <a href="/surveys/" class="more-item"><i class="fas fa-poll"></i><span>설문</span></a>
+      <a href="/groups/" class="more-item"><i class="fas fa-users"></i><span>소모임</span></a>
+      <a href="/volunteer/" class="more-item"><i class="fas fa-calendar-alt"></i><span>봉사</span></a>
+      <a href="/community/docs/" class="more-item"><i class="fas fa-file-alt"></i><span>단지정보</span></a>
+    </div>
+  </div>
+
+  <div class="more-divider"></div>
+
+  <!-- 내 활동 -->
+  <div class="more-section">
+    <div class="more-section-title">내 활동</div>
+    <div class="more-grid">
+      <a href="/mypage/" class="more-item"><i class="fas fa-user-circle"></i><span>마이페이지</span></a>
+      <a href="/mypage/edit/" class="more-item"><i class="fas fa-edit"></i><span>프로필 수정</span></a>
+      <a href="/activity/submit/" class="more-item"><i class="fas fa-camera"></i><span>활동인증</span></a>
+      <a href="/activity/list/" class="more-item"><i class="fas fa-list-check"></i><span>인증내역</span></a>
+      <a href="/letters/" class="more-item"><i class="fas fa-envelope"></i><span>쪽지함</span></a>
+      <a href="/notifications/" class="more-item"><i class="fas fa-bell"></i><span>알림</span></a>
+      <a href="/certificate/my/" class="more-item"><i class="fas fa-award"></i><span>인증서</span></a>
+      <a href="/calendar/" class="more-item"><i class="fas fa-calendar"></i><span>캘린더</span></a>
+    </div>
+  </div>
+
+  <div class="more-divider"></div>
+
+  <!-- 계정 -->
+  <div class="more-section">
+    <div class="more-section-title">계정</div>
+    <div class="more-grid">
+      {% if user.is_authenticated %}
+      <a href="/verify/request/" class="more-item"><i class="fas fa-id-card"></i><span>입주민인증</span></a>
+      <a href="/accounts/password-reset/" class="more-item"><i class="fas fa-key"></i><span>비밀번호</span></a>
+      <a href="/search/" class="more-item"><i class="fas fa-search"></i><span>검색</span></a>
+      <div class="more-item" style="cursor:pointer;" onclick="document.getElementById('moreLogoutForm').submit();">
+        <i class="fas fa-sign-out-alt" style="color:#e53935;"></i><span style="color:#e53935;">로그아웃</span>
+      </div>
+      {% else %}
+      <a href="/accounts/login/" class="more-item"><i class="fas fa-sign-in-alt"></i><span>로그인</span></a>
+      <a href="/accounts/signup/" class="more-item"><i class="fas fa-user-plus"></i><span>회원가입</span></a>
+      <a href="/search/" class="more-item"><i class="fas fa-search"></i><span>검색</span></a>
+      <a href="/community/docs/" class="more-item"><i class="fas fa-info-circle"></i><span>단지정보</span></a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if user.is_authenticated %}
+  <form id="moreLogoutForm" method="post" action="/accounts/logout/" style="display:none;">
+    {% csrf_token %}
+  </form>
+  {% endif %}
+
+  <div style="height:16px;"></div>
+</div>
 {% endblock %}
 
 {% block extra_scripts %}
@@ -556,8 +681,37 @@ document.querySelectorAll('.mob-tab').forEach(tab => {
   const href = tab.getAttribute('href');
   if (href && path.startsWith(href) && href !== '/') tab.classList.add('active');
   else if (href === '/' && path === '/') tab.classList.add('active');
+  else if (!href) tab.classList.remove('active'); // 더보기 버튼
   else tab.classList.remove('active');
 });
+
+// 더보기 패널 토글
+function toggleMore() {
+  const panel = document.getElementById('morePanel');
+  const backdrop = document.getElementById('moreBackdrop');
+  const isOpen = panel.classList.contains('show');
+  if (isOpen) {
+    panel.classList.remove('show');
+    backdrop.classList.remove('show');
+    document.body.style.overflow = '';
+  } else {
+    panel.classList.add('show');
+    backdrop.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+// 스와이프로 닫기
+(function(){
+  const panel = document.getElementById('morePanel');
+  if (!panel) return;
+  let startY = 0;
+  panel.addEventListener('touchstart', e => { startY = e.touches[0].clientY; }, {passive:true});
+  panel.addEventListener('touchend', e => {
+    const diff = e.changedTouches[0].clientY - startY;
+    if (diff > 80) toggleMore(); // 아래로 80px 이상 스와이프하면 닫힘
+  }, {passive:true});
+})();
 </script>
 
 <script>

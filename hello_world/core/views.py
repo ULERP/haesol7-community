@@ -317,7 +317,12 @@ def board_list(request):
 def board_detail(request, board_id):
     board = get_object_or_404(Board, pk=board_id, is_active=True)
     if not check_board_permission(request.user, board, 'read'):
-        return HttpResponseForbidden('이 게시판을 열람할 권한이 없습니다.')
+        # 비로그인/미승인 → 티저 페이지
+        reason = 'login' if not request.user.is_authenticated else 'verify'
+        return render(request, 'board_detail_teaser.html', {
+            'board': board,
+            'reason': reason,
+        })
     tag   = request.GET.get('tag', '')
     posts = Post.objects.filter(board=board, is_active=True)
     if tag:
