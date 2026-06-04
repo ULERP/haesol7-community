@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}오류가 발생했어요 — 해솔7{% endblock %}
+{% block content %}
+<div style="min-height:60vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;">
+  <div style="text-align:center;max-width:420px;">
+    <div style="font-size:4rem;margin-bottom:16px;">⚠️</div>
+    <h2 style="font-size:1.4rem;font-weight:800;color:#222;margin-bottom:8px;">일시적인 오류가 발생했어요</h2>
+    <p style="color:#888;font-size:0.9rem;line-height:1.7;margin-bottom:28px;">
+      서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요.<br>
+      문제가 계속되면 관리자에게 문의해주세요.
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:6px;padding:10px 22px;background:#1a7a4a;color:#fff;border-radius:50px;font-weight:700;font-size:0.88rem;text-decoration:none;">
+        <i class="fas fa-arrow-left"></i> 이전 페이지
+      </a>
+      <a href="/" style="display:inline-flex;align-items:center;gap:6px;padding:10px 22px;background:#fff;color:#1a7a4a;border:1.5px solid #1a7a4a;border-radius:50px;font-weight:700;font-size:0.88rem;text-decoration:none;">
+        <i class="fas fa-home"></i> 홈으로
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

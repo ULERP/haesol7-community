@@ -613,8 +613,8 @@ def profile_edit(request):
 def volunteer_calendar(request):
     from .models import Meetup
     meetups = Meetup.objects.filter(
-        status__in=['recruiting', 'confirmed']
-    ).values('id', 'title', 'scheduled_at', 'location', 'status', 'max_participants')
+        status__in=['planned', 'recruiting', 'confirmed', 'completed']
+    ).exclude(status='cancelled').values('id', 'title', 'scheduled_at', 'location', 'status', 'max_participants')
     
     import json
     from django.utils import timezone
@@ -637,6 +637,9 @@ def volunteer_calendar(request):
 def volunteer_detail(request, pk):
     from .models import Meetup, MeetupRating
     meetup = get_object_or_404(Meetup, pk=pk)
+    if meetup.status == 'cancelled':
+        messages.warning(request, '취소된 봉사활동입니다.')
+        return redirect('volunteer_calendar')
     is_joined = False
     has_rated = False
     if request.user.is_authenticated:

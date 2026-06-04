@@ -223,8 +223,25 @@ async function sendMsg() {
   if (hasImg) fd.append('image', imgInp.files[0]);
   fd.append('csrfmiddlewaretoken', CSRF);
 
+  const optimisticMsg = msg;
   if (inp) { inp.value = ''; inp.style.height = 'auto'; }
   removeImg();
+
+  // 낙관적 업데이트: 즉시 내 말풍선 표시
+  if (optimisticMsg) {
+    const box = document.getElementById('chat-box');
+    const tempId = 'temp-' + Date.now();
+    const d = document.createElement('div');
+    d.id = tempId;
+    d.className = 'msg-row me';
+    d.innerHTML = `<div class="av av-sm" style="background:#a8d5b8;color:#1a7a4a;"></div>
+      <div class="msg-inner">
+        <div class="msg-bbl">${esc(optimisticMsg)}</div>
+        <div class="msg-time" style="opacity:.5">전송 중...</div>
+      </div>`;
+    box.appendChild(d);
+    box.scrollTop = box.scrollHeight;
+  }
 
   try {
     await fetch(MSGS_URL, { method:'POST', body: fd });
@@ -240,7 +257,7 @@ if (inp) {
   inp.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();} });
 }
 
-if (IS_AUTH) { fetchMsgs(); setInterval(fetchMsgs, 3000); }
+if (IS_AUTH) { fetchMsgs(); setInterval(fetchMsgs, 2000); }
 window.CHAT_TYPE = 'public';
 loadPolls();
 setInterval(loadPolls, 10000);
