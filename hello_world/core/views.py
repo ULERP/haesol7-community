@@ -3420,7 +3420,7 @@ def hub_together(request):
     meetups = Meetup.objects.filter(
         status__in=['recruiting','confirmed','planned']
     ).order_by('scheduled_at')[:4]
-    surveys = Survey.objects.filter(is_active=True).order_by('-created_at')[:3]
+    surveys = Survey.objects.filter(status='active').order_by('-created_at')[:3]
     return render(request, 'hub_together.html', {
         'groups': groups,
         'meetups': meetups,
@@ -3442,7 +3442,7 @@ def hub_news(request):
         }
     except: pass
     try:
-        docs = ManagementDoc.objects.filter(is_active=True).order_by('-created_at')[:4]
+        docs = ManagementDoc.objects.order_by('-created_at')[:4]
     except:
         docs = []
     return render(request, 'hub_news.html', {
