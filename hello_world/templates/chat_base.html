@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --g: #1a7a4a; --gl: #e8f5ee; --gb: #a8d5b8;
+      --g: #1F2937; --gl: #F8F7F3; --gb: #e8e0d0; --burgundy: #6E2332; --gold: #C8A86B;
       --nav-h: 52px; --mob-tab-h: 56px;
     }
     * { box-sizing: border-box; }
@@ -17,7 +17,7 @@
     /* ── 상단 네비게이션 ── */
     .top-nav {
       position: fixed; top: 0; left: 0; right: 0; height: var(--nav-h);
-      background: var(--g); display: flex; align-items: center;
+      background: #1F2937; display: flex; align-items: center;
       padding: 0 14px; gap: 8px; z-index: 200; box-shadow: 0 1px 4px rgba(0,0,0,.2);
     }
     .nav-brand { color: #fff; font-weight: 700; font-size: 1.1rem; text-decoration: none; flex-shrink: 0; }
@@ -55,9 +55,9 @@
     /* ── 왼쪽 사이드바 공통 ── */
     .sec-label { font-size: 0.67rem; color: #aaa; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 8px 4px 4px; }
     .side-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 8px; text-decoration: none; color: inherit; font-size: 0.81rem; transition: background .12s; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
-    .side-item:hover { background: var(--gl); color: inherit; }
-    .side-item.active { background: var(--gl); color: var(--g); font-weight: 700; }
-    .av { border-radius: 50%; background: var(--g); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+    .side-item:hover { background: #f3ede3; color: inherit; }
+    .side-item.active { background: #f3ede3; color: #6E2332; font-weight: 700; }
+    .av { border-radius: 50%; background: #1F2937; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
     .av-sm { width: 28px; height: 28px; font-size: 0.72rem; }
     .av-md { width: 34px; height: 34px; font-size: 0.82rem; }
     .online-dot { width: 8px; height: 8px; border-radius: 50%; background: #28a745; flex-shrink: 0; }
@@ -65,7 +65,7 @@
     /* ── 채팅 탭 드롭다운 ── */
     .chat-tab-bar { padding: 8px 10px; background: #fafbfc; border-bottom: 1px solid #f0f2f4; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
     .tab-dd { position: relative; }
-    .tab-dd-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; background: var(--g); color: #fff; border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: opacity .15s; white-space: nowrap; }
+    .tab-dd-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; background: #6E2332; color: #fff; border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: opacity .15s; white-space: nowrap; }
     .tab-dd-btn:hover { opacity: .88; }
     .tab-dd-menu { position: absolute; top: calc(100% + 6px); left: 0; background: #fff; border: 1px solid #e4e6ea; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.12); min-width: 190px; z-index: 300; display: none; overflow: hidden; }
     .tab-dd-menu.open { display: block; }
@@ -91,7 +91,7 @@
     .me .msg-name { text-align: right; }
     .msg-bbl { padding: 9px 13px; border-radius: 14px; font-size: 0.84rem; line-height: 1.5; word-break: break-word; }
     .msg-row:not(.me) .msg-bbl { background: #f2f3f5; color: #222; border-bottom-left-radius: 4px; }
-    .me .msg-bbl { background: var(--g); color: #fff; border-bottom-right-radius: 4px; }
+    .me .msg-bbl { background: #6E2332; color: #fff; border-bottom-right-radius: 4px; }
     .msg-time { font-size: 0.68rem; color: #bbb; margin-top: 2px; }
     .me .msg-time { text-align: right; }
 
@@ -100,7 +100,7 @@
     .input-row { display: flex; gap: 8px; align-items: flex-end; }
     .msg-textarea { flex: 1; border: 1px solid #e0e0e0; border-radius: 22px; padding: 9px 16px; font-size: 0.84rem; resize: none; max-height: 100px; outline: none; background: #fff; transition: border-color .15s; font-family: inherit; }
     .msg-textarea:focus { border-color: var(--g); }
-    .send-btn { width: 38px; height: 38px; border-radius: 50%; background: var(--g); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: opacity .15s; }
+    .send-btn { width: 38px; height: 38px; border-radius: 50%; background: #6E2332; border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: opacity .15s; }
     .send-btn:hover { opacity: .85; }
 
     /* ── 오른쪽 정보패널 ── */
@@ -137,7 +137,7 @@
     /* ── 입력창 툴바 ── */
     .input-toolbar { display: flex; align-items: center; gap: 6px; padding: 4px 4px 0; }
     .toolbar-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 1rem; padding: 4px 6px; border-radius: 6px; transition: color .12s, background .12s; }
-    .toolbar-btn:hover { color: var(--g); background: var(--gl); }
+    .toolbar-btn:hover { color: #C8A86B; background: #f3ede3; }
 
     /* ── 빈 상태 ── */
     .empty { text-align: center; padding: 30px 16px; }
@@ -183,7 +183,7 @@
         border: none; background: none; cursor: pointer; padding: 0;
       }
       .mob-tab i { font-size: 1.1rem; }
-      .mob-tab.active { color: var(--g); }
+      .mob-tab.active { color: #6E2332; }
       .mob-tab .tab-dot { width: 5px; height: 5px; border-radius: 50%; background: #ff4444; margin-left: 2px; display: none; }
       .mob-tab .tab-dot.show { display: inline-block; }
 

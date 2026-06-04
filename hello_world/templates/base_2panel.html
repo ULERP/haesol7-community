@@ -8,11 +8,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
   <style>
-    :root{--g:#1a7a4a;--g2:#15623c;--gl:#f0fdf7;--gb:#c6e8d8;--bg:#f8fafb;--border:#e5e7eb;--nav-h:52px;--sidebar-w:220px;--shadow:0 1px 3px rgba(0,0,0,.06);--radius:12px;}
+    :root{--g:#6E2332;--g2:#1F2937;--gl:#F8F7F3;--gb:#e8e0d0;--bg:#F8F7F3;--border:#e5e7eb;--nav-h:52px;--sidebar-w:220px;--shadow:0 1px 3px rgba(0,0,0,.06);--radius:12px;--navy:#1F2937;--burgundy:#6E2332;--gold:#C8A86B;}
     *,*::before,*::after{box-sizing:border-box;}
     body{background:var(--bg);color:#374151;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;font-size:14px;line-height:1.65;margin:0;padding-top:var(--nav-h);}
     /* 네비바 */
-    .navbar{background:var(--g)!important;height:var(--nav-h);z-index:1040;}
+    .navbar{background:#1F2937!important;height:var(--nav-h);z-index:1040;}
     .navbar-brand{color:#fff!important;font-weight:700;font-size:0.95rem;}
     .nav-link{color:rgba(255,255,255,.85)!important;font-size:0.82rem;}
     .nav-link:hover{color:#fff!important;}
@@ -37,9 +37,9 @@
     .sb-stat-n{font-size:0.95rem;font-weight:700;color:var(--g);}
     .sb-stat-l{font-size:0.6rem;color:#9ca3af;}
     .sb-label{font-size:0.93rem;font-weight:700;color:#6b7280;text-transform:none;letter-spacing:.01em;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-radius:8px;transition:all .15s;background:#f3f4f6;margin-bottom:2px;}
-    .sb-label:hover{background:#e9f5ee;color:var(--g);}
+    .sb-label:hover{background:#f3ede3;color:var(--burgundy);}
     .sb-label.folded{background:#f9fafb;color:#9ca3af;}
-    .sb-label.folded:hover{background:#f0fdf7;color:var(--g);}
+    .sb-label.folded:hover{background:#f3ede3;color:var(--burgundy);}
     .sb-label .sb-fold-icon{font-size:0.6rem;transition:transform 0.2s;opacity:0.5;}
     .sb-label.folded .sb-fold-icon{transform:rotate(-90deg);}
     .sb-section{overflow:hidden;transition:max-height 0.25s ease;}
@@ -61,7 +61,7 @@
     .btn-outline-success{border-color:var(--g)!important;color:var(--g)!important;}
     .btn-outline-success:hover{background:var(--gl)!important;color:var(--g)!important;}
     .form-control,.form-select{border:1px solid #d1d5db!important;border-radius:8px!important;font-size:0.88rem!important;}
-    .form-control:focus,.form-select:focus{border-color:var(--g)!important;box-shadow:0 0 0 3px rgba(26,122,74,.1)!important;}
+    .form-control:focus,.form-select:focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px rgba(200,168,107,.15)!important;}
     .form-label{font-size:0.83rem!important;font-weight:600!important;color:#374151!important;}
     .badge.bg-success{background:var(--g)!important;}
     .text-success{color:var(--g)!important;}
@@ -130,10 +130,10 @@
       </div>
     </a>
     {% else %}
-    <div style="background:linear-gradient(135deg,var(--g),#1e9158);border-radius:10px;padding:12px;margin-bottom:8px;text-align:center;">
+    <div style="background:linear-gradient(135deg,#1F2937,#6E2332);border-radius:10px;padding:12px;margin-bottom:8px;text-align:center;">
       <div style="color:#fff;font-weight:700;font-size:0.82rem;margin-bottom:6px;">해솔7단지 이웃이세요?</div>
       <div style="display:flex;gap:5px;">
-        <a href="/accounts/login/" style="flex:1;background:#fff;color:var(--g);border-radius:7px;padding:5px;font-size:0.73rem;font-weight:700;text-align:center;text-decoration:none;">로그인</a>
+        <a href="/accounts/login/" style="flex:1;background:#fff;color:#1F2937;border-radius:7px;padding:5px;font-size:0.73rem;font-weight:700;text-align:center;text-decoration:none;">로그인</a>
         <a href="/accounts/signup/" style="flex:1;background:rgba(255,255,255,.2);color:#fff;border-radius:7px;padding:5px;font-size:0.73rem;font-weight:600;text-align:center;text-decoration:none;border:1px solid rgba(255,255,255,.3);">가입</a>
       </div>
     </div>
@@ -254,7 +254,7 @@
       <div class="rp-section" id="rp-hot">
         {% for post in sidebar_hot_posts %}
         <a href="/posts/{{ post.pk }}/" style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f8fafb;text-decoration:none;color:inherit;">
-          <div style="font-size:1rem;font-weight:800;color:{% if forloop.counter <= 3 %}#1a7a4a{% else %}#c6e8d8{% endif %};width:16px;text-align:center;flex-shrink:0;">{{ forloop.counter }}</div>
+          <div style="font-size:1rem;font-weight:800;color:{% if forloop.counter <= 3 %}#C8A86B{% else %}#c8b99a{% endif %};width:16px;text-align:center;flex-shrink:0;">{{ forloop.counter }}</div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:0.8rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ post.title|truncatechars:22 }}</div>
             <div style="font-size:0.68rem;color:#9ca3af;">❤ {{ post.like_count }}</div>

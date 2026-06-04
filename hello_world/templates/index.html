@@ -2,7 +2,7 @@
 {% block title %}해솔7 지킴이 — 홈{% endblock %}
 {% block extra_head %}
 <style>
-:root{--g:#1a7a4a;--gl:#e8f5ee;--gb:#a8d5b8;--g2:#15623c;
+:root{--g:#6E2332;--gl:#F8F7F3;--gb:#e8e0d0;--g2:#1F2937;--navy:#1F2937;--gold:#C8A86B;
   --sidebar-w:220px;--rpanel-w:280px;--nav-h:52px;
   --border:#e5e7eb;--bg:#f8fafb;--shadow:0 1px 3px rgba(0,0,0,.06);}
 
@@ -65,7 +65,7 @@
 
 /* ── 홈 히어로 ── */
 .home-hero{position:relative;height:180px;overflow:hidden;
-  background:linear-gradient(135deg,#1a7a4a 0%,#1e9158 50%,#166b3f 100%);}
+  background:linear-gradient(135deg,#1F2937 0%,#2d3f52 50%,#1F2937 100%);}
 .home-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;z-index:1;}
 .home-hero-overlay{position:absolute;inset:0;z-index:2;
   background:linear-gradient(to bottom,rgba(0,0,0,.1) 0%,rgba(0,0,0,.5) 100%);}
@@ -171,7 +171,7 @@
 .vol-title{font-size:0.82rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 /* CTA 로그인 배너 */
-.cta-banner{background:linear-gradient(135deg,var(--g),#1e9158);border-radius:14px;
+.cta-banner{background:linear-gradient(135deg,#6E2332,#8b2d40);border-radius:14px;
   padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;}
 .cta-text{color:#fff;flex:1;}
 .cta-title{font-size:0.9rem;font-weight:700;margin-bottom:2px;}
@@ -242,7 +242,7 @@
         </div>
       </a>
       {% else %}
-      <div style="background:linear-gradient(135deg,var(--g),#1e9158);border-radius:10px;padding:12px;margin-bottom:8px;text-align:center;">
+      <div style="background:linear-gradient(135deg,#1F2937,#6E2332);border-radius:10px;padding:12px;margin-bottom:8px;text-align:center;">
         <div style="color:#fff;font-weight:700;font-size:0.82rem;margin-bottom:6px;">해솔7단지 이웃이세요?</div>
         <div style="display:flex;gap:5px;">
           <a href="/accounts/login/" style="flex:1;background:#fff;color:var(--g);border-radius:7px;padding:5px;font-size:0.73rem;font-weight:700;text-align:center;text-decoration:none;">로그인</a>
@@ -320,7 +320,7 @@
 
     <!-- 히어로 배너 -->
     <div class="home-hero">
-      <div class="home-hero-bg" style="{% if hero_image %}background-image:url('{{ hero_image }}');{% endif %}background-color:#1a7a4a;"></div>
+      <div class="home-hero-bg" style="{% if hero_image %}background-image:url('{{ hero_image }}');{% endif %}background-color:#1F2937;"></div>
       <div class="home-hero-overlay"></div>
       <div class="home-hero-stats">
         <div class="hero-stat"><div class="hero-stat-n">{{ total_users }}</div><div class="hero-stat-l">전체 회원</div></div>

@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+  {% load static %}<link rel="icon" type="image/png" href="{% static 'img/emblem.png' %}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}해솔7 지킴이{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -12,7 +12,8 @@
   <style>
     /* ── 해솔7 디자인 시스템 v2 ── */
     :root {
-      --g: #1a7a4a; --g2: #15623c; --gl: #f0fdf7; --gb: #c6e8d8; --gm: #d1f0e2;
+      --g: #1F2937; --g2: #6E2332; --gl: #F8F7F3; --gb: #e8e0d0; --gm: #f0ebe0;
+      --navy: #1F2937; --burgundy: #6E2332; --gold: #C8A86B; --ivory: #F8F7F3;
       --bg: #ffffff; --bg2: #f8fafb; --bg3: #eef1f5;
       --text1: #111827; --text2: #374151; --text3: #6b7280; --text4: #9ca3af;
       --border: #e5e7eb; --border2: #d1d5db;
@@ -100,15 +101,15 @@
     .empty-state i { font-size:2.5rem; display:block; margin-bottom:12px; opacity:.4; }
     .empty-state p { font-size:0.88rem; margin:0; }
     /* navbar */
-    .navbar { background:var(--g)!important; }
+    .navbar { background:#1F2937!important; }
     .navbar-brand { color:#fff!important; }
     .nav-link { color:rgba(255,255,255,.85)!important; }
     .nav-link:hover, .nav-link.active { color:#fff!important; }
   /* 사이드바 섹션 폴딩 */
   .sb-label{font-size:0.93rem;font-weight:700;color:#6b7280;text-transform:none;letter-spacing:.01em;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-radius:8px;transition:all .15s;background:#f3f4f6;margin-bottom:2px;}
-  .sb-label:hover{background:#e9f5ee;color:#1a7a4a;}
+  .sb-label:hover{background:#f3ede3;color:#6E2332;}
   .sb-label.folded{background:#f9fafb;color:#9ca3af;}
-  .sb-label.folded:hover{background:#f0fdf7;color:#1a7a4a;}
+  .sb-label.folded:hover{background:#f3ede3;color:#6E2332;}
   .sb-label .sb-fold-icon{font-size:0.6rem;transition:transform 0.2s;opacity:0.5;}
   .sb-label.folded .sb-fold-icon{transform:rotate(-90deg);}
   .sb-section{overflow:hidden;transition:max-height 0.25s ease;}
