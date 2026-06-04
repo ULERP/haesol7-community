@@ -78,3 +78,40 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 - feat: 채팅 폴링 2초 + 낙관적 업데이트
 - feat: cancelled 봉사활동 숨김
 - feat: 404/500 에러 페이지 (이전페이지/홈 버튼)
+## 디자인 가이드
+### 현재 색상 (녹색 테마)
+- 메인: `#1a7a4a` (녹색)
+- 밝은 녹색: `#1e9158`
+- 연녹색 배경: `#e8f5ee`
+- CSS 변수: `--g: #1a7a4a`, `--gl: #e8f5ee`
+### 목표 색상 테마 (롯데캐슬 스타일 — 추후 작업)
+- 메인 다크 네이비: `#1F2937`
+- 서브 와인 버건디: `#6E2332`
+- 포인트 골드: `#C8A86B`
+- 배경 아이보리: `#F8F7F3`
+- 텍스트 다크 그레이: `#333333`
+- 참고 이미지: 롯데캐슬 앱 UI (다크 네이비 사이드바 + 와인 버건디 강조 + 골드 버튼)
+### 색상 테마 교체 작업 계획 (7~8시간 예상)
+1. CSS 변수 시스템 구축 (`--primary`, `--secondary`, `--accent`, `--bg`, `--text`)
+2. `base.html`, `base_2panel.html`, `chat_base.html` CSS 변수 전환
+3. 각 템플릿 인라인 색상 → CSS 변수 전환
+4. 관리자 페이지에서 테마 선택 UI (SiteConfig 활용)
+5. Jazzmin 테마도 연동
+### 현재 하드코딩된 주요 색상 위치
+- `base.html` — navbar 배경
+- `base_2panel.html` — 사이드바
+- `chat_base.html` — 채팅 UI
+- `mypage.html` — 프로필 헤더 그라디언트
+- `volunteer_detail.html` — 봉사활동 헤더
+- 각 템플릿 인라인 style 속성 수백 곳
+### 관리자 색상 피커 (추후)
+- `SiteConfig` 모델에 `hero_color` 필드 이미 존재
+- 색상 피커 위젯 → 전체 CSS 변수 동적 업데이트 방식으로 구현 예정
+### 모바일 UI
+- 하단 탭바: 대화하기/기록하기/함께하기/단지소식 4개
+- 퀵 액션 바: 동일 4개 카테고리
+- 관리자 메시지 말풍선: 골드색 (모바일 디자인 추후 정리 필요)
+### 폰트/아이콘
+- Bootstrap 5 기본 폰트
+- Font Awesome 6 (아이콘)
+- Bootstrap Icons (bi-*) 일부 사용
