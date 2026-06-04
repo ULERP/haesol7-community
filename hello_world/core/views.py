@@ -334,8 +334,13 @@ def mypage(request):
 # 게시판
 # ============================================================================
 def board_list(request):
+    from .models import Post
     boards = Board.objects.filter(is_active=True).order_by('order')
-    return render(request, 'board_list.html', {'boards': boards})
+    boards_with_posts = []
+    for board in boards:
+        recent = Post.objects.filter(board=board, is_active=True).order_by('-created_at')[:2]
+        boards_with_posts.append({'board': board, 'recent_posts': recent})
+    return render(request, 'board_list.html', {'boards_with_posts': boards_with_posts})
 
 def board_detail(request, board_id):
     board = get_object_or_404(Board, pk=board_id, is_active=True)
