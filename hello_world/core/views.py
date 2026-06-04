@@ -3430,7 +3430,7 @@ def hub_together(request):
 def hub_news(request):
     """단지소식 허브"""
     from .models import Post, Board
-    from community.models import ManagementDoc
+    from hello_world.core.models import ManagementDocument
     notices = Post.objects.filter(is_active=True, board__board_type='notice').order_by('-created_at')[:5]
     stats_data = {}
     try:
@@ -3442,7 +3442,7 @@ def hub_news(request):
         }
     except: pass
     try:
-        docs = ManagementDoc.objects.order_by('-created_at')[:4]
+        docs = ManagementDocument.objects.order_by('-created_at')[:4]
     except:
         docs = []
     return render(request, 'hub_news.html', {
