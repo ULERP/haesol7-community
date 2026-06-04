@@ -1,152 +1,116 @@
-<nav class="navbar navbar-expand-lg fixed-top" style="background:#FDF6E3;box-shadow:0 2px 8px rgba(0,0,0,.1);padding:0 12px;min-height:52px;z-index:1030;border-bottom:2px solid #C8A86B;">
+{% load static %}
+<nav class="navbar navbar-expand-lg fixed-top" style="background:#242424;box-shadow:0 2px 8px rgba(0,0,0,.3);padding:0 16px;min-height:54px;z-index:1030;border-bottom:2px solid #D4B26A;">
   <div class="container-fluid px-0">
-    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/" style="font-size:1rem;color:#1F2937;">
-      {% load static %}<img src="{% static 'img/emblem.png' %}" style="height:32px;width:32px;object-fit:contain;" alt="지킴이">
-      <span style="letter-spacing:-.3px;color:#1F2937;">해솔7 지킴이</span>
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/" style="font-size:1rem;color:#FAFAFA;text-decoration:none;">
+      <img src="{% static 'img/emblem.png' %}" style="height:34px;width:34px;object-fit:contain;" alt="지킴이">
+      <span style="letter-spacing:-.3px;font-weight:800;color:#FAFAFA;">해솔7 지킴이</span>
     </a>
-    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-            style="color:#1F2937;font-size:1.2rem;padding:4px 8px;">
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" style="color:#D4B26A;font-size:1.2rem;padding:4px 8px;">
       <i class="fas fa-bars"></i>
     </button>
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="navbar-nav me-auto align-items-lg-center" style="gap:2px;">
-
-        <!-- 💬 대화하기 -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" style="color:#1F2937!important;" href="#"
-             data-bs-toggle="dropdown" style="font-size:0.82rem;">
-            <i class="fas fa-comments"></i>대화하기
-          </a>
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown" style="font-size:0.82rem;color:rgba(250,250,250,.8);"><i class="fas fa-comments"></i>대화하기</a>
           <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
             <li><div style="padding:6px 12px 4px;font-size:0.68rem;color:#9ca3af;font-weight:700;letter-spacing:.05em;">채팅</div></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/chat/public/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-comments text-success"></i>전체채팅</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/groups/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-users text-warning"></i>소모임 채팅</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/chat/dm/list/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-comment-dots text-primary"></i>1:1 채팅</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/chat/public/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-comments" style="color:#7A263A;"></i>전체채팅</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/groups/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-users" style="color:#D4B26A;"></i>소모임 채팅</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/chat/dm/list/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-comment-dots" style="color:#242424;"></i>1:1 채팅</a></li>
             <li><hr class="dropdown-divider my-1"></li>
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/letters/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-envelope text-secondary"></i>쪽지함</a></li>
           </ul>
         </li>
-
-        <!-- 📋 기록하기 -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" style="color:#1F2937!important;" href="#"
-             data-bs-toggle="dropdown" style="font-size:0.82rem;">
-            <i class="fas fa-clipboard-list"></i>기록하기
-          </a>
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown" style="font-size:0.82rem;color:rgba(250,250,250,.8);"><i class="fas fa-clipboard-list"></i>기록하기</a>
           <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-th-large text-success"></i>전체 게시판</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-th-large" style="color:#7A263A;"></i>전체 게시판</a></li>
             {% for board in active_boards %}
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/{{ board.id }}/" style="font-size:0.82rem;padding:8px 12px;"><i class="{{ board.icon }} text-secondary"></i>{{ board.name }}</a></li>
             {% endfor %}
           </ul>
         </li>
-
-        <!-- 🤝 함께하기 -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" style="color:#1F2937!important;" href="#"
-             data-bs-toggle="dropdown" style="font-size:0.82rem;">
-            <i class="fas fa-hands-helping"></i>함께하기
-          </a>
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown" style="font-size:0.82rem;color:rgba(250,250,250,.8);"><i class="fas fa-hands-helping"></i>함께하기</a>
           <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/groups/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-users text-success"></i>소모임</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/volunteer/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-heart text-danger"></i>봉사활동</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/calendar/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-calendar-alt text-primary"></i>캘린더</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/surveys/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-poll text-info"></i>설문조사</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/groups/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-users" style="color:#7A263A;"></i>소모임</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/volunteer/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-heart" style="color:#7A263A;"></i>봉사활동</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/calendar/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-calendar-alt" style="color:#D4B26A;"></i>캘린더</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/surveys/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-poll" style="color:#242424;"></i>설문조사</a></li>
             <li><hr class="dropdown-divider my-1"></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/activity/submit/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-camera text-warning"></i>활동 인증</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-handshake text-success"></i>나눔/장터</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/activity/submit/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-camera" style="color:#D4B26A;"></i>활동 인증</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-handshake" style="color:#7A263A;"></i>나눔/장터</a></li>
           </ul>
         </li>
-
-        <!-- 📢 단지소식 -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" style="color:#1F2937!important;" href="#"
-             data-bs-toggle="dropdown" style="font-size:0.82rem;">
-            <i class="fas fa-bell"></i>단지소식
-          </a>
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown" style="font-size:0.82rem;color:rgba(250,250,250,.8);"><i class="fas fa-bell"></i>단지소식</a>
           <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/notices/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-bell text-danger"></i>공지사항</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/complaints/" style="font-size:0.82rem;padding:8px 12px;"><i class="bi bi-megaphone text-warning"></i>민원·건의</a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/stats/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-chart-bar text-info"></i>단지 통계</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/notices/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-bell" style="color:#7A263A;"></i>공지사항</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/complaints/" style="font-size:0.82rem;padding:8px 12px;"><i class="bi bi-megaphone" style="color:#D4B26A;"></i>민원·건의</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/stats/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-chart-bar" style="color:#242424;"></i>단지 통계</a></li>
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/community/docs/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-file-alt text-secondary"></i>관리 문서</a></li>
             <li><hr class="dropdown-divider my-1"></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/search/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-question-circle text-primary"></i>FAQ</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/search/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-question-circle" style="color:#242424;"></i>FAQ</a></li>
           </ul>
         </li>
-
-        <!-- 검색 -->
         <li class="nav-item">
           <form method="get" action="/search/" class="d-flex align-items-center ms-1">
-            <div class="d-flex align-items-center" style="background:rgba(255,255,255,.8);border-radius:20px;height:30px;overflow:hidden;border:1px solid #C8A86B;">
-              <input type="text" name="q" placeholder="검색..." class="border-0 bg-transparent px-2" style="color:#1F2937;" style="font-size:0.78rem;width:100px;outline:none;">
-              <button type="submit" class="border-0 bg-transparent px-2" style="color:#6E2332;"><i class="fas fa-search" style="font-size:0.75rem;"></i></button>
+            <div class="d-flex align-items-center" style="background:rgba(255,255,255,.08);border-radius:20px;height:30px;overflow:hidden;border:1px solid rgba(212,178,106,.35);">
+              <input type="text" name="q" placeholder="검색..." class="border-0 bg-transparent px-2" style="font-size:0.78rem;width:110px;outline:none;color:#FAFAFA;">
+              <button type="submit" class="border-0 bg-transparent px-2" style="color:#D4B26A;"><i class="fas fa-search" style="font-size:0.75rem;"></i></button>
             </div>
           </form>
         </li>
       </ul>
-
-      <!-- 우측 사용자 메뉴 -->
       <ul class="navbar-nav align-items-lg-center" style="gap:4px;">
         {% if user.is_authenticated %}
           {% if not user_is_verified %}
           <li class="nav-item">
-            <a href="/verify/" class="nav-link d-flex align-items-center gap-1" style="font-size:0.75rem;color:#92400e;background:#fef3c7;border-radius:8px;padding:3px 8px;border:1px solid #C8A86B;">
-              <i class="bi bi-patch-exclamation"></i>인증필요
-            </a>
+            <a href="/verify/" class="nav-link d-flex align-items-center gap-1" style="font-size:0.75rem;color:#D4B26A;background:rgba(212,178,106,.12);border-radius:8px;padding:3px 8px;border:1px solid rgba(212,178,106,.35);"><i class="bi bi-patch-exclamation"></i>인증필요</a>
           </li>
           {% else %}
           <li class="nav-item">
-            <span class="nav-link" style="color:#1F2937;padding:5px 6px;">
-              <i class="bi bi-patch-check-fill" style="color:#90EE90;font-size:0.9rem;"></i>
-            </span>
+            <span class="nav-link" style="color:#D4B26A;padding:5px 6px;"><i class="bi bi-patch-check-fill" style="font-size:0.9rem;"></i></span>
           </li>
           {% endif %}
           <li class="nav-item">
-            <a href="/notifications/" class="nav-link position-relative" style="color:#1F2937;padding:5px 8px;">
+            <a href="/notifications/" class="nav-link position-relative" style="color:rgba(250,250,250,.8);padding:5px 8px;">
               <i class="fas fa-bell"></i>
-              <span id="noti-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#ff4444;border-radius:50%;border:1.5px solid #FDF6E3;"></span>
+              <span id="noti-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#7A263A;border-radius:50%;border:1.5px solid #242424;"></span>
             </a>
           </li>
           {% if user.is_staff %}
-          <li class="nav-item">
-            <a href="/admin/" class="nav-link" style="color:#1F2937;font-size:0.82rem;padding:5px 8px;">
-              <i class="fas fa-cog"></i>
-            </a>
-          </li>
+          <li class="nav-item"><a href="/admin/" class="nav-link" style="color:rgba(250,250,250,.8);font-size:0.82rem;padding:5px 8px;"><i class="fas fa-cog"></i></a></li>
           {% endif %}
           <li class="nav-item dropdown">
-            <button class="btn d-flex align-items-center gap-1 dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    style="background:#6E2332;border:none;border-radius:20px;color:#fff;padding:4px 12px;font-size:0.82rem;font-weight:600;">
+            <button class="btn d-flex align-items-center gap-1 dropdown-toggle" data-bs-toggle="dropdown"
+                    style="background:#7A263A;border:none;border-radius:20px;color:#FAFAFA;padding:4px 14px;font-size:0.82rem;font-weight:600;">
               <i class="fas fa-user" style="font-size:0.78rem;"></i>
               {{ user.nickname|default:user.username }}
-              {% if user.is_verified %}<span style="font-size:0.7rem;opacity:.7;">{{ user.dong }}동</span>{% endif %}
+              {% if user.is_verified %}<span style="font-size:0.7rem;opacity:.8;color:#D4B26A;">{{ user.dong }}동</span>{% endif %}
             </button>
-            <ul class="dropdown-menu dropdown-menu-end" style="min-width:180px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:6px;">
-              <li><div class="px-3 py-2" style="border-bottom:1px solid #f0f2f4;margin-bottom:4px;">
-                <div class="fw-bold" style="font-size:0.85rem;">{{ user.nickname|default:user.username }}</div>
-                <div class="text-muted" style="font-size:0.72rem;">{% if user.is_verified %}{{ user.dong }}동 입주민 ✓{% else %}미인증{% endif %}</div>
+            <ul class="dropdown-menu dropdown-menu-end" style="min-width:190px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:6px;">
+              <li><div class="px-3 py-2" style="border-bottom:2px solid #D4B26A;margin-bottom:4px;">
+                <div class="fw-bold" style="font-size:0.85rem;color:#242424;">{{ user.nickname|default:user.username }}</div>
+                <div style="font-size:0.72rem;color:#888;">{% if user.is_verified %}{{ user.dong }}동 입주민 ✓{% else %}미인증{% endif %}</div>
               </div></li>
-              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/mypage/" style="padding:8px 12px;font-size:0.84rem;"><i class="fas fa-home text-success"></i>마이페이지</a></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/mypage/" style="padding:8px 12px;font-size:0.84rem;"><i class="fas fa-home" style="color:#7A263A;"></i>마이페이지</a></li>
               <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/mypage/edit/" style="padding:8px 12px;font-size:0.84rem;"><i class="fas fa-pen text-muted"></i>프로필 수정</a></li>
-              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/letters/" style="padding:8px 12px;font-size:0.84rem;"><i class="fas fa-envelope text-primary"></i>쪽지함</a></li>
-              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/verify/" style="padding:8px 12px;font-size:0.84rem;"><i class="bi bi-patch-check text-warning"></i>입주민 인증</a></li>
-              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/certificate/my/" style="padding:8px 12px;font-size:0.84rem;"><i class="bi bi-file-earmark-pdf text-danger"></i>봉사 인증서</a></li>
-              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/activity/list/" style="padding:8px 12px;font-size:0.84rem;"><i class="fas fa-clipboard-check text-success"></i>활동 내역</a></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/letters/" style="padding:8px 12px;font-size:0.84rem;"><i class="fas fa-envelope" style="color:#242424;"></i>쪽지함</a></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/verify/" style="padding:8px 12px;font-size:0.84rem;"><i class="bi bi-patch-check" style="color:#D4B26A;"></i>입주민 인증</a></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/certificate/my/" style="padding:8px 12px;font-size:0.84rem;"><i class="bi bi-file-earmark-pdf" style="color:#7A263A;"></i>봉사 인증서</a></li>
+              <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/activity/list/" style="padding:8px 12px;font-size:0.84rem;"><i class="fas fa-clipboard-check" style="color:#7A263A;"></i>활동 내역</a></li>
               <li><hr style="margin:4px 0;border-color:#f0f2f4;"></li>
               <li><div class="px-3 pb-2">
-                <form method="post" action="/accounts/logout/">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="font-size:0.82rem;">
-                    <i class="fas fa-sign-out-alt me-1"></i>로그아웃
-                  </button>
+                <form method="post" action="/accounts/logout/">{% csrf_token %}
+                  <button type="submit" class="btn btn-sm w-100" style="font-size:0.82rem;background:#242424;color:#FAFAFA;border:none;border-radius:8px;"><i class="fas fa-sign-out-alt me-1"></i>로그아웃</button>
                 </form>
               </div></li>
             </ul>
           </li>
         {% else %}
-          <li class="nav-item"><a class="nav-link" href="/accounts/login/" style="color:#1F2937;font-size:0.82rem;">로그인</a></li>
-          <li class="nav-item"><a class="nav-link fw-bold" href="/accounts/signup/" style="font-size:0.82rem;background:#6E2332;border-radius:8px;padding:4px 12px;color:#fff;">회원가입</a></li>
+          <li class="nav-item"><a class="nav-link" href="/accounts/login/" style="font-size:0.82rem;color:rgba(250,250,250,.8);">로그인</a></li>
+          <li class="nav-item"><a class="nav-link fw-bold" href="/accounts/signup/" style="font-size:0.82rem;background:#7A263A;border-radius:8px;padding:4px 14px;color:#FAFAFA;">회원가입</a></li>
         {% endif %}
       </ul>
     </div>
