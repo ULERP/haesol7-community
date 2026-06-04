@@ -71,3 +71,10 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 - PA 경로: /home/ULERP/haesol7-community/ (대문자!)
 - .env는 git 제외, PA에 별도 설정 필요
 - base_3panel.html은 레거시 (base_2panel로 전환 완료)
+
+## 세션 2 완료 (2026-06-04)
+- fix: chat_base.html regex/중복 버그 3건
+- fix: 이미지 메시지 serialize 오류 (m.image.name)
+- feat: 채팅 폴링 2초 + 낙관적 업데이트
+- feat: cancelled 봉사활동 숨김
+- feat: 404/500 에러 페이지 (이전페이지/홈 버튼)
