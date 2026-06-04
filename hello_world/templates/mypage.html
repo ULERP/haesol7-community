@@ -1,408 +1,229 @@
 {% extends 'base_2panel.html' %}
-{% block menu_home %}active
-      <!-- 민원/건의 현황 -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="section-title mb-0">📢 내 민원/건의</div>
-            <a href="{% url 'complaint_list' %}" class="btn btn-outline-success btn-sm">전체보기</a>
-          </div>
-          {% if my_complaints %}
-          <div class="list-group list-group-flush">
-            {% for c in my_complaints %}
-            <a href="{% url 'complaint_detail' c.pk %}" class="list-group-item list-group-item-action px-0 py-2">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="small">
-                  {% if c.category %}<span class="badge bg-secondary me-1">{{ c.category.name }}</span>{% endif %}
-                  {{ c.title|truncatechars:30 }}
-                </div>
-                {% if c.status == 'received' %}<span class="badge bg-warning text-dark">접수됨</span>
-                {% elif c.status == 'reviewing' %}<span class="badge bg-info">검토중</span>
-                {% elif c.status == 'done' %}<span class="badge bg-success">완료</span>
-                {% else %}<span class="badge bg-danger">반려</span>{% endif %}
-              </div>
-            </a>
-            {% endfor %}
-          </div>
-          {% else %}
-          <p class="text-muted small mb-0">접수한 민원이 없어요. <a href="{% url 'complaint_create' %}">민원 접수하기 →</a></p>
-          {% endif %}
-        </div>
-      </div>
-
-{% endblock %}
+{% block menu_mypage %}active{% endblock %}
 {% block title %}마이페이지{% endblock %}
+
 {% block extra_head %}
 <style>
-:root { --g:#1a7a4a; --gl:#e8f5ee; }
-.stat-box { background:#fff; border:0.5px solid #e4e6ea; border-radius:12px; padding:16px; text-align:center; }
-.stat-num { font-size:1.8rem; font-weight:700; color:var(--g); line-height:1; }
-.stat-label { font-size:0.72rem; color:#999; margin-top:4px; }
-.section-title { font-size:0.8rem; font-weight:700; color:#999; text-transform:uppercase; letter-spacing:.05em; margin-bottom:12px; padding-bottom:6px; border-bottom:1px solid #f0f2f4; }
-.item-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:0.5px solid #f0f2f4; }
-.item-row:last-child { border-bottom:none; }
-.badge-chip { display:inline-flex; align-items:center; gap:4px; background:#fff8e1; border:1px solid #ffe082; border-radius:20px; padding:4px 10px; font-size:0.75rem; font-weight:600; color:#f57c00; }
-.warmth-bar { height:10px; border-radius:5px; background:#f0f2f4; overflow:hidden; }
-.warmth-fill { height:100%; border-radius:5px; background:linear-gradient(90deg,#a8d5b8,#1a7a4a); transition:width 1s; }
-.activity-badge { font-size:0.68rem; padding:2px 6px; border-radius:8px; font-weight:600; }
-.ab-approved { background:#e8f5ee; color:var(--g); }
-.ab-pending { background:#fff8e1; color:#f57c00; }
-.ab-rejected { background:#fce8e8; color:#d32f2f; }
+  .my-hero { background: linear-gradient(135deg,#1a7a4a,#1e9158); border-radius:16px; padding:24px; margin-bottom:16px; }
+  .my-av { width:72px; height:72px; border-radius:50%; background:rgba(255,255,255,.2); border:3px solid rgba(255,255,255,.4); display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:800; color:#fff; flex-shrink:0; }
+  .my-section { background:#fff; border-radius:14px; box-shadow:0 1px 6px rgba(0,0,0,.07); padding:18px; margin-bottom:14px; }
+  .my-section-title { font-size:0.72rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.06em; margin-bottom:14px; }
+  .my-stat-card { background:#f9fafb; border-radius:12px; padding:14px; text-align:center; text-decoration:none; color:inherit; transition:all .15s; display:block; }
+  .my-stat-card:hover { background:#e8f5ee; color:var(--g); }
+  .my-stat-num { font-size:1.4rem; font-weight:800; color:var(--g); line-height:1; }
+  .my-stat-lbl { font-size:0.68rem; color:#9ca3af; margin-top:4px; }
+  .my-menu-item { display:flex; align-items:center; gap:12px; padding:12px; border-radius:10px; text-decoration:none; color:#374151; transition:background .12s; }
+  .my-menu-item:hover { background:#f0fdf7; color:var(--g); }
+  .my-menu-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem; }
+  .my-post-item { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f3f4f6; text-decoration:none; color:inherit; }
+  .my-post-item:last-child { border-bottom:none; }
+  .my-post-item:hover { color:var(--g); }
+  .badge-item { width:52px; height:52px; border-radius:12px; background:#f0fdf7; display:flex; align-items:center; justify-content:center; font-size:1.5rem; border:2px solid #e0f2e9; }
 </style>
 {% endblock %}
+
 {% block content %}
-<div style="max-width:999px;display:none;"><div style="max-width:900px;">
 
-  <!-- 프로필 헤더 -->
-  <div class="card border-0 shadow-sm mb-4" style="border-top:4px solid var(--g) !important;">
-    <div class="card-body p-4">
-      <div class="row align-items-center">
-        <div class="col-auto">
-          <div style="width:72px;height:72px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;">
-            {{ user.nickname|default:user.username|first|upper }}
-          </div>
-        </div>
-        <div class="col">
-          <div class="d-flex align-items-center gap-2 mb-1">
-            <h4 class="fw-bold mb-0">{{ user.nickname|default:user.username }}</h4>
-            {% if user_grade %}
-            <span class="badge bg-{{ user_grade.badge_color|default:'success' }}">
-              {{ user_grade.name }}
-            </span>
-            {% endif %}
-          </div>
-          <div class="text-muted small mb-2">
-            {% if user.unit_number %}<i class="fas fa-home me-1"></i>{{ user.unit_number }} · {% endif %}
-            {% if user.phone_number %}<i class="fas fa-phone me-1"></i>{{ user.phone_number }} · {% endif %}
-            <i class="fas fa-calendar me-1"></i>{{ user.date_joined|date:"Y년 m월 가입" }}
-          </div>
-          {% if user.introduction %}
-          <p class="text-muted small mb-0">{{ user.introduction }}</p>
-          {% endif %}
-        </div>
-        <div class="col-auto">
-          <a href="/mypage/edit/" class="btn btn-outline-success btn-sm">
-            <i class="fas fa-pen me-1"></i>프로필 수정
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 핵심 통계 -->
-  <div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-      <div class="stat-box">
-        <div class="stat-num">{{ total_points }}</div>
-        <div class="stat-label">🏅 마일리지</div>
-      </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="stat-box">
-        <div class="stat-num">{{ total_activities }}</div>
-        <div class="stat-label">🤝 봉사활동</div>
-        {% if pending_activities %}
-        <div style="font-size:0.7rem;color:#f57c00;margin-top:4px;">{{ pending_activities }}건 승인 대기</div>
+<!-- 프로필 헤더 -->
+<div class="my-hero">
+  <div class="d-flex align-items-center gap-3 mb-3">
+    <div class="my-av">{{ user.nickname|default:user.username|first|upper }}</div>
+    <div class="flex-1">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="text-white fw-bold" style="font-size:1.1rem;">{{ user.nickname|default:user.username }}</span>
+        {% if user.is_verified %}
+        <span style="background:rgba(255,255,255,.2);color:#fff;font-size:0.68rem;padding:2px 8px;border-radius:10px;border:1px solid rgba(255,255,255,.3);">✓ 인증 입주민</span>
+        {% else %}
+        <a href="{% url 'verify_request' %}" style="background:#fbbf24;color:#fff;font-size:0.68rem;padding:2px 8px;border-radius:10px;text-decoration:none;">⚠ 인증 필요</a>
         {% endif %}
       </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="stat-box">
-        <div class="stat-num">{{ my_badges|length }}</div>
-        <div class="stat-label">🎖️ 배지</div>
+      <div style="color:rgba(255,255,255,.75);font-size:0.82rem;margin-top:2px;">
+        {% if user.dong %}{{ user.dong }}동 {{ user.ho }}호{% else %}동호수 미등록{% endif %}
       </div>
-    </div>
-    <div class="col-6 col-md-3">
-      <div class="stat-box">
-        <div class="stat-num">{{ user.manners_score|floatformat:0 }}</div>
-        <div class="stat-label">❤️ 온기 점수</div>
-        <div class="warmth-bar mt-2">
-          <div class="warmth-fill" style="width:{{ user.manners_score }}%"></div>
-        </div>
+      <div style="color:rgba(255,255,255,.7);font-size:0.75rem;margin-top:4px;">
+        ❤ 온기점수 {{ user.manners_score|default:0 }}점 · 🏅 {{ user.mileage_points|default:0 }}포인트
       </div>
     </div>
   </div>
-
-  <div class="row g-4">
-    <!-- 왼쪽 컬럼 -->
-    <div class="col-md-6">
-
-      <!-- 배지 -->
-  <!-- 빠른 현황 대시보드 -->
-  <div class="row g-2 mb-3">
-    <div class="col-6">
-      <a href="{% url 'letter_inbox' %}" class="text-decoration-none">
-        <div class="card border-0 shadow-sm text-center py-2 h-100 {% if unread_letters %}border-primary border-2{% endif %}">
-          <div class="card-body p-2">
-            <i class="bi bi-envelope{% if unread_letters %}-fill text-primary{% endif %} fs-4"></i>
-            <div class="fw-bold mt-1">{{ unread_letters|default:0 }}</div>
-            <div class="small text-muted">미읽은 쪽지</div>
-          </div>
-        </div>
-      </a>
-    </div>
-    <div class="col-6">
-      <a href="{% url 'notification_list' %}" class="text-decoration-none">
-        <div class="card border-0 shadow-sm text-center py-2 h-100 {% if unread_noti %}border-warning border-2{% endif %}">
-          <div class="card-body p-2">
-            <i class="bi bi-bell{% if unread_noti %}-fill text-warning{% endif %} fs-4"></i>
-            <div class="fw-bold mt-1">{{ unread_noti|default:0 }}</div>
-            <div class="small text-muted">새 알림</div>
-          </div>
-        </div>
-      </a>
-    </div>
-    <div class="col-6">
-      <a href="{% url 'complaint_list' %}" class="text-decoration-none">
-        <div class="card border-0 shadow-sm text-center py-2 h-100">
-          <div class="card-body p-2">
-            <i class="bi bi-megaphone fs-4 text-success"></i>
-            <div class="fw-bold mt-1">{{ pending_complaints|default:0 }}</div>
-            <div class="small text-muted">처리중 민원</div>
-          </div>
-        </div>
-      </a>
-    </div>
-    <div class="col-6">
-      <a href="{% url 'activity_list' %}" class="text-decoration-none">
-        <div class="card border-0 shadow-sm text-center py-2 h-100">
-          <div class="card-body p-2">
-            <i class="bi bi-star-fill text-warning fs-4"></i>
-            <div class="fw-bold mt-1">{{ total_points|default:0 }}</div>
-            <div class="small text-muted">마일리지</div>
-          </div>
-        </div>
-      </a>
-    </div>
+  <!-- 빠른 설정 버튼 -->
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="/mypage/edit/" style="background:rgba(255,255,255,.2);color:#fff;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.3);">
+      ✏️ 내 정보 수정
+    </a>
+    <a href="/accounts/password_change/" style="background:rgba(255,255,255,.15);color:#fff;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.25);">
+      🔑 비밀번호 변경
+    </a>
+    <a href="{% url 'friend_list' %}" style="background:rgba(255,255,255,.15);color:#fff;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.25);">
+      👥 친구 목록
+    </a>
   </div>
+</div>
 
-  <!-- 인증 상태 배너 -->
-  {% if not user.is_verified %}
-  <div class="alert alert-warning d-flex align-items-center gap-2 py-2 mb-3">
-    <i class="bi bi-patch-exclamation-fill"></i>
-    <div class="flex-grow-1 small">입주민 인증을 완료하면 더 많은 기능을 이용할 수 있어요.</div>
-    <a href="{% url 'verify_request' %}" class="btn btn-warning btn-sm">인증하기</a>
+<!-- 활동 현황 카드 -->
+<div class="row g-2 mb-3">
+  <div class="col-3">
+    <a href="{% url 'letter_inbox' %}" class="my-stat-card {% if unread_letters %}border border-primary border-2{% endif %}">
+      <div class="my-stat-num">{{ unread_letters|default:0 }}</div>
+      <div class="my-stat-lbl">📨 쪽지</div>
+    </a>
   </div>
+  <div class="col-3">
+    <a href="{% url 'notification_list' %}" class="my-stat-card {% if unread_noti %}border border-warning border-2{% endif %}">
+      <div class="my-stat-num">{{ unread_noti|default:0 }}</div>
+      <div class="my-stat-lbl">🔔 알림</div>
+    </a>
+  </div>
+  <div class="col-3">
+    <a href="{% url 'complaint_list' %}" class="my-stat-card">
+      <div class="my-stat-num">{{ pending_complaints|default:0 }}</div>
+      <div class="my-stat-lbl">📢 민원</div>
+    </a>
+  </div>
+  <div class="col-3">
+    <a href="/activity/list/" class="my-stat-card">
+      <div class="my-stat-num">{{ total_activities|default:0 }}</div>
+      <div class="my-stat-lbl">🤝 활동</div>
+    </a>
+  </div>
+</div>
+
+<!-- 내 메뉴 -->
+<div class="my-section">
+  <div class="my-section-title">내 활동 관리</div>
+
+  <a href="{% url 'complaint_create' %}" class="my-menu-item">
+    <div class="my-menu-icon" style="background:#fef3c7;">📢</div>
+    <div class="flex-1">
+      <div style="font-size:0.88rem;font-weight:600;">민원·건의 접수</div>
+      <div style="font-size:0.72rem;color:#9ca3af;">관리사무소에 민원을 접수합니다</div>
+    </div>
+    <i class="fas fa-chevron-right text-muted" style="font-size:0.7rem;"></i>
+  </a>
+
+  <a href="/activity/submit/" class="my-menu-item">
+    <div class="my-menu-icon" style="background:#d1fae5;">📸</div>
+    <div class="flex-1">
+      <div style="font-size:0.88rem;font-weight:600;">활동 인증 제출</div>
+      <div style="font-size:0.72rem;color:#9ca3af;">봉사·활동 사진을 제출합니다</div>
+    </div>
+    <i class="fas fa-chevron-right text-muted" style="font-size:0.7rem;"></i>
+  </a>
+
+  <a href="/groups/" class="my-menu-item">
+    <div class="my-menu-icon" style="background:#ede9fe;">🤝</div>
+    <div class="flex-1">
+      <div style="font-size:0.88rem;font-weight:600;">내 소모임</div>
+      <div style="font-size:0.72rem;color:#9ca3af;">참여 중인 소모임을 관리합니다</div>
+    </div>
+    <i class="fas fa-chevron-right text-muted" style="font-size:0.7rem;"></i>
+  </a>
+
+  <a href="/calendar/" class="my-menu-item">
+    <div class="my-menu-icon" style="background:#dbeafe;">📅</div>
+    <div class="flex-1">
+      <div style="font-size:0.88rem;font-weight:600;">캘린더</div>
+      <div style="font-size:0.72rem;color:#9ca3af;">일정을 확인하고 등록합니다</div>
+    </div>
+    <i class="fas fa-chevron-right text-muted" style="font-size:0.7rem;"></i>
+  </a>
+
+  <a href="/surveys/" class="my-menu-item">
+    <div class="my-menu-icon" style="background:#fce7f3;">📊</div>
+    <div class="flex-1">
+      <div style="font-size:0.88rem;font-weight:600;">설문조사</div>
+      <div style="font-size:0.72rem;color:#9ca3af;">진행 중인 설문에 참여합니다</div>
+    </div>
+    <i class="fas fa-chevron-right text-muted" style="font-size:0.7rem;"></i>
+  </a>
+</div>
+
+<!-- 내가 쓴 글 -->
+<div class="my-section">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="my-section-title mb-0">내가 쓴 글</div>
+    <a href="/boards/" style="font-size:0.72rem;color:var(--g);text-decoration:none;">전체 보기 →</a>
+  </div>
+  {% if my_posts %}
+    {% for post in my_posts %}
+    <a href="{% url 'post_detail' post.pk %}" class="my-post-item">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.84rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ post.title }}</div>
+        <div style="font-size:0.7rem;color:#9ca3af;">{{ post.board.name }} · {{ post.created_at|date:"m/d" }} · ❤ {{ post.like_count }}</div>
+      </div>
+    </a>
+    {% endfor %}
   {% else %}
-  <div class="alert alert-success d-flex align-items-center gap-2 py-2 mb-3">
-    <i class="bi bi-patch-check-fill"></i>
-    <div class="small">인증된 입주민이에요! <strong>{{ user.dong }}동</strong> 거주 확인됨</div>
+    <div class="text-center py-3 text-muted" style="font-size:0.82rem;">
+      아직 작성한 글이 없어요
+      <br><a href="/boards/" class="text-success" style="font-size:0.78rem;">게시판 둘러보기 →</a>
+    </div>
+  {% endif %}
+</div>
+
+<!-- 배지 -->
+{% if user_badges %}
+<div class="my-section">
+  <div class="my-section-title">획득한 배지</div>
+  <div class="d-flex flex-wrap gap-2">
+    {% for ub in user_badges %}
+    <div class="badge-item" title="{{ ub.badge.title }}">
+      {{ ub.badge.icon|default:"🏅" }}
+    </div>
+    {% endfor %}
   </div>
+</div>
+{% endif %}
+
+<!-- 계정 설정 -->
+<div class="my-section">
+  <div class="my-section-title">계정 설정</div>
+
+  <a href="/mypage/edit/" class="my-menu-item">
+    <div class="my-menu-icon" style="background:#f0fdf7;">✏️</div>
+    <div class="flex-1">
+      <div style="font-size:0.88rem;font-weight:600;">내 정보 수정</div>
+      <div style="font-size:0.72rem;color:#9ca3af;">닉네임, 연락처 등을 변경합니다</div>
+    </div>
+    <i class="fas fa-chevron-right text-muted" style="font-size:0.7rem;"></i>
+  </a>
+
+  <a href="/accounts/password_change/" class="my-menu-item">
+    <div class="my-menu-icon" style="background:#fef3c7;">🔑</div>
+    <div class="flex-1">
+      <div style="font-size:0.88rem;font-weight:600;">비밀번호 변경</div>
+      <div style="font-size:0.72rem;color:#9ca3af;">계정 비밀번호를 변경합니다</div>
+    </div>
+    <i class="fas fa-chevron-right text-muted" style="font-size:0.7rem;"></i>
+  </a>
+
+  {% if not user.is_verified %}
+  <a href="{% url 'verify_request' %}" class="my-menu-item">
+    <div class="my-menu-icon" style="background:#fef3c7;">🏠</div>
+    <div class="flex-1">
+      <div style="font-size:0.88rem;font-weight:600;">입주민 인증 신청</div>
+      <div style="font-size:0.72rem;color:#f59e0b;">인증 후 모든 서비스를 이용할 수 있어요</div>
+    </div>
+    <i class="fas fa-chevron-right text-muted" style="font-size:0.7rem;"></i>
+  </a>
   {% endif %}
 
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-          <div class="section-title">🎖️ 내 배지</div>
-          {% if my_badges %}
-          <div class="d-flex flex-wrap gap-2">
-            {% for ub in my_badges %}
-            <span class="badge-chip">🏅 {{ ub.badge.title }}</span>
-            {% endfor %}
-          </div>
-          {% else %}
-          <div class="text-muted small text-center py-2">
-            봉사활동에 참여하면 배지를 받을 수 있어요!
-            <br><a href="/activity/submit/" class="text-success fw-semibold">활동 인증 제출하기 →</a>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- 활동 이력 -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="section-title mb-0">🤝 활동 이력</div>
-            <a href="/activity/submit/" class="btn btn-success btn-sm">인증 제출</a>
-          </div>
-          {% if my_activities %}
-          {% for a in my_activities %}
-          <div class="item-row">
-            <div style="flex:1;min-width:0;">
-              <div class="fw-semibold small" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ a.activity.name }}</div>
-              <div class="text-muted" style="font-size:0.72rem;">{{ a.submitted_at|date:"m.d" }} · {{ a.duration_hours }}시간 · {{ a.points_earned }}P</div>
-            </div>
-            <span class="activity-badge {% if a.status == 'approved' %}ab-approved{% elif a.status == 'pending' %}ab-pending{% else %}ab-rejected{% endif %}">
-              {% if a.status == 'approved' %}승인{% elif a.status == 'pending' %}대기{% else %}반려{% endif %}
-            </span>
-          </div>
-          {% endfor %}
-          <div class="text-center mt-2">
-            <a href="/activity/list/" class="text-muted small">전체 보기 →</a>
-          </div>
-          {% else %}
-          <div class="text-muted small text-center py-2">활동 이력이 없어요</div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- 소모임 -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="section-title mb-0">👥 내 소모임</div>
-            <a href="/groups/create/" class="btn btn-outline-success btn-sm">만들기</a>
-          </div>
-          {% if my_groups %}
-          {% for g in my_groups %}
-          <div class="item-row">
-            <div style="width:32px;height:32px;border-radius:8px;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0;">
-              {{ g.name|first|upper }}
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div class="fw-semibold small">{{ g.name }}</div>
-              <div class="text-muted" style="font-size:0.72rem;">{{ g.members.count }}명 참여</div>
-            </div>
-            <div class="d-flex gap-1">
-              <a href="/groups/{{ g.pk }}/" class="btn btn-sm btn-outline-secondary" style="font-size:0.7rem;padding:2px 8px;">게시판</a>
-              <a href="/chat/group/{{ g.pk }}/" class="btn btn-sm btn-outline-success" style="font-size:0.7rem;padding:2px 8px;">채팅</a>
-            </div>
-          </div>
-          {% endfor %}
-          {% else %}
-          <div class="text-muted small text-center py-2">
-            참여 중인 소모임이 없어요
-            <br><a href="/groups/" class="text-success fw-semibold">소모임 둘러보기 →</a>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-
+  <a href="{% url 'friend_list' %}" class="my-menu-item">
+    <div class="my-menu-icon" style="background:#ede9fe;">👥</div>
+    <div class="flex-1">
+      <div style="font-size:0.88rem;font-weight:600;">친구 목록</div>
+      <div style="font-size:0.72rem;color:#9ca3af;">팔로우·친구 관계를 관리합니다</div>
     </div>
+    <i class="fas fa-chevron-right text-muted" style="font-size:0.7rem;"></i>
+  </a>
 
-    <!-- 오른쪽 컬럼 -->
-    <div class="col-md-6">
-
-      <!-- 이웃 온기 -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-          <div class="section-title">❤️ 받은 이웃 온기</div>
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <div style="font-size:2.5rem;font-weight:800;color:var(--g);">{{ user.manners_score|floatformat:1 }}</div>
-            <div style="flex:1;">
-              <div class="warmth-bar mb-1"><div class="warmth-fill" style="width:{{ user.manners_score }}%"></div></div>
-              <div class="d-flex justify-content-between" style="font-size:0.68rem;color:#bbb;">
-                <span>차가워요🥶</span><span>따뜻해요🔥</span>
-              </div>
-            </div>
-          </div>
-          {% if received_ratings %}
-          {% for r in received_ratings %}
-          <div class="item-row">
-            <div>
-              {% for i in "12345" %}
-              <span style="font-size:0.8rem;" class="{% if r.score >= forloop.counter %}text-warning{% else %}text-muted{% endif %}">⭐</span>
-              {% endfor %}
-            </div>
-            <div style="flex:1;min-width:0;">
-              {% if r.comment %}<div class="small text-muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.comment }}</div>{% endif %}
-              <div style="font-size:0.7rem;color:#bbb;">{{ r.created_at|date:"m.d" }}</div>
-            </div>
-          </div>
-          {% endfor %}
-          {% else %}
-          <div class="text-muted small text-center py-2">아직 받은 온기가 없어요</div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- 내 게시글 -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-          <div class="section-title">✏️ 내가 쓴 게시글</div>
-          {% if my_posts %}
-          {% for p in my_posts %}
-          <div class="item-row">
-            <div style="flex:1;min-width:0;">
-              <a href="/posts/{{ p.pk }}/" class="text-decoration-none text-dark">
-                <div class="fw-semibold small" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                  {% if p.tag %}<span class="badge bg-success me-1" style="font-size:0.62rem;">{{ p.tag }}</span>{% endif %}
-                  {{ p.title }}
-                </div>
-              </a>
-              <div class="text-muted" style="font-size:0.72rem;">{{ p.created_at|date:"m.d" }} · {{ p.board.name }}</div>
-            </div>
-          </div>
-          {% endfor %}
-          {% else %}
-          <div class="text-muted small text-center py-2">작성한 게시글이 없어요</div>
-          {% endif %}
-        </div>
-      </div>
-
-      <!-- 내 설문 -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="section-title mb-0">📊 내 설문</div>
-            <a href="/surveys/create/" class="btn btn-outline-success btn-sm">만들기</a>
-          </div>
-          {% if my_surveys %}
-          {% for s in my_surveys %}
-          <div class="item-row">
-            <div style="flex:1;min-width:0;">
-              <div class="fw-semibold small" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ s.title }}</div>
-              <div class="text-muted" style="font-size:0.72rem;">{{ s.total_responses }}명 응답 · {{ s.get_status_display }}</div>
-            </div>
-            <a href="/surveys/{{ s.pk }}/result/" class="btn btn-sm btn-outline-success" style="font-size:0.7rem;padding:2px 8px;white-space:nowrap;">결과</a>
-          </div>
-          {% endfor %}
-          <div class="text-center mt-2">
-            <a href="/surveys/" class="text-muted small">전체 보기 →</a>
-          </div>
-          {% else %}
-          <div class="text-muted small text-center py-2">만든 설문이 없어요</div>
-          {% endif %}
-        </div>
-      </div>
-
-    </div>
+  <div style="padding:12px 0 4px;">
+    <form method="post" action="/accounts/logout/">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger btn-sm w-100" style="border-radius:10px;font-size:0.82rem;">
+        <i class="fas fa-sign-out-alt me-1"></i>로그아웃
+      </button>
+    </form>
   </div>
-
-  <!-- 빠른 액션 -->
-  <div class="card border-0 shadow-sm">
-    <div class="card-body p-4">
-      <div class="section-title">⚡ 빠른 실행</div>
-      <div class="row g-2">
-        <div class="col-6 col-md-3">
-          <a href="/activity/submit/" class="btn btn-outline-success w-100 py-3 d-flex flex-column align-items-center gap-1">
-            <i class="fas fa-medal fa-lg"></i>
-            <span class="small fw-semibold">활동 인증</span>
-          </a>
-        </div>
-        <div class="col-6 col-md-3">
-          <a href="/surveys/create/" class="btn btn-outline-success w-100 py-3 d-flex flex-column align-items-center gap-1">
-            <i class="fas fa-poll fa-lg"></i>
-            <span class="small fw-semibold">설문 만들기</span>
-          </a>
-        </div>
-        <div class="col-6 col-md-3">
-          <a href="/groups/create/" class="btn btn-outline-success w-100 py-3 d-flex flex-column align-items-center gap-1">
-            <i class="fas fa-users fa-lg"></i>
-            <span class="small fw-semibold">소모임 만들기</span>
-          </a>
-        </div>
-        <div class="col-6 col-md-3">
-          <a href="/chat/public/" class="btn btn-outline-success w-100 py-3 d-flex flex-column align-items-center gap-1">
-            <i class="fas fa-comments fa-lg"></i>
-            <span class="small fw-semibold">오픈채팅</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-    <!-- 로그아웃 -->
-    <div class="mt-3">
-      <form method="post" action="/accounts/logout/">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-danger w-100 py-2"
-          style="border-radius:10px;font-size:0.88rem;font-weight:600;">
-          <i class="fas fa-sign-out-alt me-2"></i>로그아웃
-        </button>
-      </form>
-    </div>
-
 </div>
+
 {% endblock %}
