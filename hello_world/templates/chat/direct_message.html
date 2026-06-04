@@ -114,7 +114,7 @@ fetchMsgs(); setInterval(fetchMsgs, 3000);
 initTabDropdown([
   { id: 'public', icon: 'fa-globe',   label: '전체 채팅',  desc: '단지 전체 오픈채팅',  url: '/chat/public/' },
   { id: 'dm',     icon: 'fa-envelope',label: '1:1 쪽지',   desc: '개인 대화 중',        fn: null },
-  { id: 'group',  icon: 'fa-users',   label: '소모임 채팅', desc: '소모임 대화방',       url: '/groups/' },
+  { id: 'group',  icon: 'fa-users',   label: '소모임 채팅', desc: '소모임 대화방',       url: '/chat/group/' },
 ]);
 </script>
 {% endblock %}

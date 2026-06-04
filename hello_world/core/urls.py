@@ -101,6 +101,7 @@ urlpatterns = [
     path('chat/dm/<int:user_id>/',         views.direct_message,       name='direct_message'),
     path('chat/dm/<int:user_id>/messages/', views.dm_messages,         name='dm_messages'),
     path('chat/dm/list/',                  views.dm_list,              name='dm_list'),
+    path('chat/group/',                    views.group_chat_redirect,  name='group_chat_redirect'),
     path('chat/group/<int:group_id>/',     views.group_chat,           name='group_chat'),
     path('chat/group/<int:group_id>/messages/', views.group_chat_messages, name='group_chat_messages'),
     path('notifications/',                 views.notification_list,    name='notification_list'),
