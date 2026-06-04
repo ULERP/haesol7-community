@@ -1,61 +1,68 @@
 {% extends 'admin/base_site.html' %}
 {% load i18n %}
 
+{% block content_title %}<h1>Dashboard</h1>{% endblock %}
+
 {% block content %}
 <!-- 통계 카드 -->
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px;">
-
-  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #1a7a4a;">
-    <div style="font-size:0.72rem;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">전체 회원</div>
-    <div style="font-size:2.2rem;font-weight:800;color:#1a7a4a;line-height:1;">{{ stat_total_users }}</div>
-    <a href="/admin/core/customuser/" style="font-size:0.72rem;color:#6b7280;text-decoration:none;">회원 관리 →</a>
-  </div>
-
-  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #f59e0b;">
-    <div style="font-size:0.72rem;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">인증 대기</div>
-    <div style="font-size:2.2rem;font-weight:800;color:#f59e0b;line-height:1;">{{ stat_unverified }}</div>
-    <a href="/verify/admin/" style="font-size:0.72rem;color:#6b7280;text-decoration:none;">인증 관리 →</a>
-  </div>
-
-  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #3b82f6;">
-    <div style="font-size:0.72rem;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">활동인증 대기</div>
-    <div style="font-size:2.2rem;font-weight:800;color:#3b82f6;line-height:1;">{{ stat_pending_proofs }}</div>
-    <a href="/admin/core/activityproof/?status__exact=pending" style="font-size:0.72rem;color:#6b7280;text-decoration:none;">인증 처리 →</a>
-  </div>
-
-  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #8b5cf6;">
-    <div style="font-size:0.72rem;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">소모임 승인대기</div>
-    <div style="font-size:2.2rem;font-weight:800;color:#8b5cf6;line-height:1;">{{ stat_pending_groups }}</div>
-    <a href="/admin/core/group/?status__exact=pending" style="font-size:0.72rem;color:#6b7280;text-decoration:none;">소모임 관리 →</a>
-  </div>
-
-  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #10b981;">
-    <div style="font-size:0.72rem;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">전체 게시글</div>
-    <div style="font-size:2.2rem;font-weight:800;color:#10b981;line-height:1;">{{ stat_total_posts }}</div>
-    <a href="/admin/core/post/" style="font-size:0.72rem;color:#6b7280;text-decoration:none;">게시글 관리 →</a>
-  </div>
-
-  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #ef4444;">
-    <div style="font-size:0.72rem;color:#9ca3af;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">진행중 설문</div>
-    <div style="font-size:2.2rem;font-weight:800;color:#ef4444;line-height:1;">{{ stat_active_surveys }}</div>
-    <a href="/admin/core/survey/?status__exact=active" style="font-size:0.72rem;color:#6b7280;text-decoration:none;">설문 관리 →</a>
-  </div>
-
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:24px;">
+  <a href="/admin/core/customuser/" style="text-decoration:none;">
+    <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #1a7a4a;">
+      <div style="font-size:0.7rem;color:#9ca3af;font-weight:600;margin-bottom:6px;">전체 회원</div>
+      <div style="font-size:2rem;font-weight:800;color:#1a7a4a;line-height:1;">{{ stat_total_users }}</div>
+      <div style="font-size:0.7rem;color:#6b7280;margin-top:4px;">회원 관리 →</div>
+    </div>
+  </a>
+  <a href="/verify/admin/" style="text-decoration:none;">
+    <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #f59e0b;">
+      <div style="font-size:0.7rem;color:#9ca3af;font-weight:600;margin-bottom:6px;">인증 대기</div>
+      <div style="font-size:2rem;font-weight:800;color:#f59e0b;line-height:1;">{{ stat_unverified }}</div>
+      <div style="font-size:0.7rem;color:#6b7280;margin-top:4px;">인증 관리 →</div>
+    </div>
+  </a>
+  <a href="/admin/core/activityproof/?status__exact=pending" style="text-decoration:none;">
+    <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #3b82f6;">
+      <div style="font-size:0.7rem;color:#9ca3af;font-weight:600;margin-bottom:6px;">활동인증 대기</div>
+      <div style="font-size:2rem;font-weight:800;color:#3b82f6;line-height:1;">{{ stat_pending_proofs }}</div>
+      <div style="font-size:0.7rem;color:#6b7280;margin-top:4px;">인증 처리 →</div>
+    </div>
+  </a>
+  <a href="/admin/core/group/?status__exact=pending" style="text-decoration:none;">
+    <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #8b5cf6;">
+      <div style="font-size:0.7rem;color:#9ca3af;font-weight:600;margin-bottom:6px;">소모임 승인대기</div>
+      <div style="font-size:2rem;font-weight:800;color:#8b5cf6;line-height:1;">{{ stat_pending_groups }}</div>
+      <div style="font-size:0.7rem;color:#6b7280;margin-top:4px;">소모임 관리 →</div>
+    </div>
+  </a>
+  <a href="/admin/core/post/" style="text-decoration:none;">
+    <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #10b981;">
+      <div style="font-size:0.7rem;color:#9ca3af;font-weight:600;margin-bottom:6px;">전체 게시글</div>
+      <div style="font-size:2rem;font-weight:800;color:#10b981;line-height:1;">{{ stat_total_posts }}</div>
+      <div style="font-size:0.7rem;color:#6b7280;margin-top:4px;">게시글 관리 →</div>
+    </div>
+  </a>
+  <a href="/admin/core/survey/?status__exact=active" style="text-decoration:none;">
+    <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.08);border-left:4px solid #ef4444;">
+      <div style="font-size:0.7rem;color:#9ca3af;font-weight:600;margin-bottom:6px;">진행중 설문</div>
+      <div style="font-size:2rem;font-weight:800;color:#ef4444;line-height:1;">{{ stat_active_surveys }}</div>
+      <div style="font-size:0.7rem;color:#6b7280;margin-top:4px;">설문 관리 →</div>
+    </div>
+  </a>
 </div>
 
-<!-- 바로가기 퀵 액션 -->
-<div style="background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:24px;">
-  <div style="font-size:0.75rem;font-weight:700;color:#6b7280;margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em;">⚡ 빠른 작업</div>
+<!-- 퀵 액션 -->
+<div style="background:#fff;border-radius:12px;padding:14px 18px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:24px;">
+  <div style="font-size:0.72rem;font-weight:700;color:#6b7280;margin-bottom:10px;">⚡ 빠른 작업</div>
   <div style="display:flex;flex-wrap:wrap;gap:8px;">
     <a href="/verify/admin/" style="background:#e8f5ee;color:#1a7a4a;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;">✅ 입주민 인증</a>
     <a href="/admin/core/activityproof/?status__exact=pending" style="background:#eff6ff;color:#3b82f6;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;">📸 활동 인증</a>
     <a href="/admin/core/group/?status__exact=pending" style="background:#f5f3ff;color:#8b5cf6;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;">👥 소모임 승인</a>
     <a href="/admin/core/customuser/add/" style="background:#f0fdf4;color:#10b981;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;">➕ 회원 추가</a>
-    <a href="/admin/core/post/?is_active__exact=1" style="background:#fff7ed;color:#f59e0b;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;">📝 게시글 목록</a>
+    <a href="/admin/core/post/" style="background:#fff7ed;color:#f59e0b;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;">📝 게시글 목록</a>
     <a href="/admin/core/notification/add/" style="background:#fef2f2;color:#ef4444;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;">🔔 공지 발송</a>
   </div>
 </div>
 
-<!-- 기존 앱 목록 -->
-{{ block.super }}
+<!-- 앱 목록 -->
+{% include "admin/app_index.html" ignore missing %}
 {% endblock %}
