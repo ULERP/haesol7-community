@@ -481,3 +481,42 @@ AdminSite.index = _patched_index
 
 
 
+
+
+# ════════════════════════════════════════════════════
+# 🤝 봉사활동 (Meetup)
+# ════════════════════════════════════════════════════
+from .models import Meetup, MeetupRating
+
+@admin.register(Meetup)
+class MeetupAdmin(admin.ModelAdmin):
+    list_display  = ('title', 'creator', 'status', 'is_confirmed', 'scheduled_at',
+                      'participant_count', 'avg_rating', 'rating_count')
+    list_filter   = ('status', 'is_confirmed')
+    search_fields = ('title', 'creator__nickname', 'location')
+    raw_id_fields = ('creator', 'confirmed_by', 'group')
+    list_editable = ('status', 'is_confirmed')
+    list_per_page = 20
+    readonly_fields = ('created_at', 'updated_at', 'avg_rating', 'rating_count')
+    actions = ['confirm_meetups']
+
+    def participant_count(self, obj):
+        return format_html('<b>{}</b>명', obj.participants.count())
+    participant_count.short_description = '참가자'
+
+    @admin.action(description='✅ 선택 봉사활동 승인')
+    def confirm_meetups(self, request, queryset):
+        from django.utils import timezone
+        queryset.update(is_confirmed=True, status='recruiting',
+                       confirmed_by=request.user, confirmed_at=timezone.now())
+        self.message_user(request, f"✅ {queryset.count()}개 승인 완료")
+
+
+@admin.register(MeetupRating)
+class MeetupRatingAdmin(admin.ModelAdmin):
+    list_display  = ('meetup', 'rater', 'score', 'comment', 'created_at')
+    list_filter   = ('score',)
+    search_fields = ('meetup__title', 'rater__nickname')
+    raw_id_fields = ('meetup', 'rater')
+    list_per_page = 30
+    readonly_fields = ('created_at',)
