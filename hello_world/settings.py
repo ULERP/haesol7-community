@@ -34,6 +34,11 @@ INSTALLED_APPS = [
     "corsheaders",
     "storages",
     "hello_world.core",
+    "hello_world.core.apps_member",
+    "hello_world.core.apps_board",
+    "hello_world.core.apps_group",
+    "hello_world.core.apps_activity",
+    "hello_world.core.apps_operation",
     "community",
 ]
 
