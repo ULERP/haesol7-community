@@ -41,15 +41,20 @@
     <div class="tab-dd-menu" id="tabDdMenu">
       <button class="tab-opt active" id="tabOpt-public">
         <div class="tab-opt-icon" style="background:#e8f5ee;color:var(--g);"><i class="fas fa-globe"></i></div>
-        <div><div style="font-weight:600;">전체 채팅</div><div style="font-size:0.72rem;color:#999;">단지 전체 전체채팅</div></div>
-      </button>
-      <button class="tab-opt" id="tabOpt-dm">
-        <div class="tab-opt-icon" style="background:#e8f0fe;color:#4285f4;"><i class="fas fa-envelope"></i></div>
-        <div><div style="font-weight:600;">1:1 쪽지</div><div style="font-size:0.72rem;color:#999;">이웃과 개인 대화</div></div>
+        <div><div style="font-weight:600;">전체 채팅</div><div class="tab-desc">단지 전체 입주민과 대화</div></div>
       </button>
       <button class="tab-opt" id="tabOpt-group">
         <div class="tab-opt-icon" style="background:#fff3e0;color:#f57c00;"><i class="fas fa-users"></i></div>
-        <div><div style="font-weight:600;">소모임 채팅</div><div style="font-size:0.72rem;color:#999;">내 소모임 대화방</div></div>
+        <div><div style="font-weight:600;">소모임 채팅</div><div class="tab-desc">내 소모임 대화방</div></div>
+      </button>
+      <button class="tab-opt" id="tabOpt-dm">
+        <div class="tab-opt-icon" style="background:#e8f0fe;color:#4285f4;"><i class="fas fa-comment-dots"></i></div>
+        <div><div style="font-weight:600;">1:1 채팅</div><div class="tab-desc">이웃과 개인 대화</div></div>
+      </button>
+      <hr style="margin:4px 14px;">
+      <button class="tab-opt" id="tabOpt-letter">
+        <div class="tab-opt-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="fas fa-envelope"></i></div>
+        <div><div style="font-weight:600;">쪽지 보내기</div><div class="tab-desc">이웃에게 쪽지 전송</div></div>
       </button>
     </div>
   </div>
@@ -263,9 +268,10 @@ loadPolls();
 setInterval(loadPolls, 10000);
 
 initTabDropdown([
-  { id:'public', icon:'fa-globe',    label:'전체 채팅',  desc:'단지 전체 전체채팅', fn: null },
-  { id:'dm',     icon:'fa-envelope', label:'1:1 쪽지',   desc:'이웃과 개인 대화',   url:'/chat/dm/list/' },
-  { id:'group',  icon:'fa-users',    label:'소모임 채팅', desc:'소모임 대화방',      url:'/groups/' },
+  { id:'public', icon:'fa-globe',        label:'전체 채팅',  desc:'단지 전체 입주민과 대화', fn: null },
+  { id:'group',  icon:'fa-users',        label:'소모임 채팅', desc:'내 소모임 대화방',       url:'/groups/' },
+  { id:'dm',     icon:'fa-comment-dots', label:'1:1 채팅',   desc:'이웃과 개인 대화',       url:'/chat/dm/list/' },
+  { id:'letter', icon:'fa-envelope',     label:'쪽지 보내기', desc:'이웃에게 쪽지 전송',     url:'/letters/' },
 ]);
 </script>
 

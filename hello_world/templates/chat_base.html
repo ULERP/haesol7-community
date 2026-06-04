@@ -276,17 +276,17 @@
     <a href="/" class="mob-tab {% block tab_home %}{% endblock %}">
       <i class="fas fa-home"></i><span>홈</span>
     </a>
-    <button class="mob-tab {% block tab_chat %}{% endblock %}" onclick="location.href='/chat/public/'">
-      <i class="fas fa-comments"></i><span>채팅</span>
-    </button>
-    <button class="mob-tab {% block tab_groups %}{% endblock %}" onclick="location.href='/groups/'">
-      <i class="fas fa-users"></i><span>소모임</span>
-    </button>
-    <a href="/boards/" class="mob-tab {% block tab_boards %}{% endblock %}">
-      <i class="fas fa-clipboard"></i><span>게시판</span>
+    <a href="/chat/public/" class="mob-tab {% block tab_chat %}active{% endblock %}">
+      <i class="fas fa-comments"></i><span>대화하기</span>
     </a>
-    <a href="/mypage/" class="mob-tab {% block tab_mypage %}{% endblock %}">
-      <i class="fas fa-user"></i><span>내정보</span>
+    <a href="/boards/" class="mob-tab {% block tab_boards %}{% endblock %}">
+      <i class="fas fa-clipboard-list"></i><span>기록하기</span>
+    </a>
+    <a href="/hub/together/" class="mob-tab {% block tab_together %}{% endblock %}">
+      <i class="fas fa-hands-helping"></i><span>함께하기</span>
+    </a>
+    <a href="/hub/news/" class="mob-tab {% block tab_news %}{% endblock %}">
+      <i class="fas fa-bullhorn"></i><span>단지소식</span>
     </a>
   </nav>
 
@@ -296,14 +296,19 @@
     function initTabDropdown(tabs) {
       const btn = document.getElementById('tabDdBtn');
       const menu = document.getElementById('tabDdMenu');
+      if (!btn || !menu) return;
       btn.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('open'); });
       document.addEventListener('click', () => menu.classList.remove('open'));
       tabs.forEach(t => {
         const el = document.getElementById('tabOpt-' + t.id);
+        if (!el) return;
         el.addEventListener('click', () => {
-          document.getElementById('tabDdIcon').className = 'fas ' + t.icon;
-          document.getElementById('tabDdLabel').textContent = t.label;
-          document.getElementById('tabDdDesc').textContent = t.desc;
+          const iconEl = document.getElementById('tabDdIcon');
+          const labelEl = document.getElementById('tabDdLabel');
+          const descEl = document.querySelector('.chat-tab-bar .tab-desc');
+          if (iconEl) iconEl.className = 'fas ' + t.icon;
+          if (labelEl) labelEl.textContent = t.label;
+          if (descEl) descEl.textContent = t.desc;
           tabs.forEach(x => document.getElementById('tabOpt-' + x.id)?.classList.remove('active'));
           el.classList.add('active');
           menu.classList.remove('open');
