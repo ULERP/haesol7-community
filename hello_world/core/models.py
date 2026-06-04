@@ -477,8 +477,8 @@ class Group(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = '소그룹'
-        verbose_name_plural = '소그룹'
+        verbose_name = '소모임'
+        verbose_name_plural = '소모임'
 
     def __str__(self):
         return self.name
