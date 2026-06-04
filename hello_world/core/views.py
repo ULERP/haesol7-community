@@ -3450,9 +3450,16 @@ def hub_together(request):
 
 def hub_news(request):
     """단지소식 허브"""
-    from .models import Post, Board
-    from hello_world.core.models import ManagementDocument
-    notices = Post.objects.filter(is_active=True, board__board_type='notice').order_by('-created_at')[:5]
+    from .models import Post, Board, ManagementDocument, Group, Meetup
+
+    notices = Post.objects.filter(is_active=True, board__board_type='notice').order_by('-created_at')[:4]
+    faq_posts = Post.objects.filter(is_active=True, board__board_type='faq').order_by('-created_at')[:4]
+    docs = ManagementDocument.objects.order_by('-created_at')[:4]
+
+    # 민원·건의
+    complaints = Post.objects.filter(is_active=True, board__board_type='complaint').order_by('-created_at')[:3]
+
+    # 단지통계
     stats_data = {}
     try:
         from django.contrib.auth import get_user_model
@@ -3460,14 +3467,15 @@ def hub_news(request):
         stats_data = {
             'total_users': User.objects.count(),
             'verified_users': User.objects.filter(is_verified=True).count(),
+            'total_groups': Group.objects.filter(is_active=True).count(),
+            'total_meetups': Meetup.objects.filter(status='completed').count(),
         }
     except: pass
-    try:
-        docs = ManagementDocument.objects.order_by('-created_at')[:4]
-    except:
-        docs = []
+
     return render(request, 'hub_news.html', {
         'notices': notices,
+        'complaints': complaints,
         'stats_data': stats_data,
         'docs': docs,
+        'faq_posts': faq_posts,
     })
