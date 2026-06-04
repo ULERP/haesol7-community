@@ -995,7 +995,7 @@ def group_chat_redirect(request):
     from django.shortcuts import redirect
     if not request.user.is_authenticated:
         return redirect('/groups/')
-    from hello_world.models import GroupMember
+    from hello_world.core.models import GroupMember
     membership = GroupMember.objects.filter(user=request.user).select_related('group').order_by('joined_at').first()
     if membership:
         return redirect(f'/chat/group/{membership.group.id}/')
