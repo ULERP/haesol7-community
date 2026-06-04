@@ -481,7 +481,3 @@ AdminSite.index = _patched_index
 
 
 
-# ════════════════════════════════════════════════════
-# 가상 앱용 Proxy 모델 (사이드바 그룹핑)
-# ════════════════════════════════════════════════════
-from django.db import models as db_models

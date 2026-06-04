@@ -113,6 +113,7 @@ urlpatterns = [
 
     # 입주민 인증
     path('verify/', views_verify.verify_request, name='verify_request'),
+    path('verify/request/', views_verify.verify_request, name='verify_request_alt'),
     path('verify/admin/', views_verify.verify_admin, name='verify_admin'),
     path('verify/approve/<int:user_id>/', views_verify.verify_approve, name='verify_approve'),
     path('verify/reject/<int:user_id>/', views_verify.verify_reject, name='verify_reject'),
