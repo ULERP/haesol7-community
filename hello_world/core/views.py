@@ -2228,6 +2228,14 @@ def community_stats(request):
         ).count()
         monthly_joins.append({"month": d.strftime("%m월"), "count": cnt})
 
+    # 설문 결과 - 참여자 수 높은 순으로 공개
+    from django.db.models import Count as DCount
+    surveys_by_response = Survey.objects.annotate(
+        response_count=DCount('responses')
+    ).filter(
+        status__in=['active', 'closed']
+    ).order_by('-response_count')[:10]
+
     return render(request, "stats_dashboard.html", {
         "total_users": total_users, "new_users": new_users,
         "total_posts": total_posts, "week_posts": week_posts,
@@ -2238,6 +2246,7 @@ def community_stats(request):
         "week_public": week_public, "week_dm": week_dm, "week_letter": week_letter,
         "top_users": top_users,
         "monthly_joins": monthly_joins,
+        "surveys_by_response": surveys_by_response,
     })
 
 
