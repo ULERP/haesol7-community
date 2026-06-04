@@ -34,11 +34,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "storages",
     "hello_world.core",
-    "hello_world.core.apps_member",
-    "hello_world.core.apps_board",
-    "hello_world.core.apps_group",
-    "hello_world.core.apps_activity",
-    "hello_world.core.apps_operation",
     "community",
 ]
 
@@ -248,6 +243,104 @@ JAZZMIN_SETTINGS = {
         "core.notification": "fas fa-bell",
         "core.siteconfig": "fas fa-cog",
         "core.adminactionlog": "fas fa-shield-alt",
+    },
+    "groups": {
+        "👥 회원 관리": {
+            "models": [
+                "core.CustomUser",
+                "core.MemberGrade",
+                "core.Badge",
+                "core.UserBadge",
+                "core.UserFollow",
+                "core.Rating",
+            ],
+            "icon": "fas fa-users",
+        },
+        "📋 게시판": {
+            "models": [
+                "core.Board",
+                "core.Post",
+                "core.Comment",
+                "core.ManagementDocument",
+            ],
+            "icon": "fas fa-clipboard-list",
+        },
+        "🤝 소모임": {
+            "models": [
+                "core.Group",
+                "core.GroupMember",
+                "core.GroupLeaderLog",
+                "core.GroupDissolveVote",
+            ],
+            "icon": "fas fa-users",
+        },
+        "📅 활동/봉사": {
+            "models": [
+                "core.Activity",
+                "core.ActivityProof",
+                "core.CalendarEvent",
+                "core.Event",
+            ],
+            "icon": "fas fa-calendar",
+        },
+        "⚙️ 운영": {
+            "models": [
+                "core.Survey",
+                "core.Notification",
+                "core.SiteConfig",
+                "core.AdminActionLog",
+            ],
+            "icon": "fas fa-cog",
+        },
+    },
+    "groups": {
+        "👥 회원 관리": {
+            "models": [
+                "core.CustomUser",
+                "core.MemberGrade",
+                "core.Badge",
+                "core.UserBadge",
+                "core.UserFollow",
+                "core.Rating",
+            ],
+            "icon": "fas fa-users",
+        },
+        "📋 게시판": {
+            "models": [
+                "core.Board",
+                "core.Post",
+                "core.Comment",
+                "core.ManagementDocument",
+            ],
+            "icon": "fas fa-clipboard-list",
+        },
+        "🤝 소모임": {
+            "models": [
+                "core.Group",
+                "core.GroupMember",
+                "core.GroupLeaderLog",
+                "core.GroupDissolveVote",
+            ],
+            "icon": "fas fa-users",
+        },
+        "📅 활동/봉사": {
+            "models": [
+                "core.Activity",
+                "core.ActivityProof",
+                "core.CalendarEvent",
+                "core.Event",
+            ],
+            "icon": "fas fa-calendar",
+        },
+        "⚙️ 운영": {
+            "models": [
+                "core.Survey",
+                "core.Notification",
+                "core.SiteConfig",
+                "core.AdminActionLog",
+            ],
+            "icon": "fas fa-cog",
+        },
     },
     "order_with_respect_to": [
         "core.customuser", "core.membergrade", "core.badge",
