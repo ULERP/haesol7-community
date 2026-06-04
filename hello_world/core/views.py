@@ -336,8 +336,8 @@ def mypage(request):
 def board_list(request):
     from .models import Post
     # 기록하기: 나눔/장터(trade), 민원·건의(complaint), FAQ(faq) 제외
-    EXCLUDE_TYPES = ['trade', 'complaint', 'faq']
-    boards = Board.objects.filter(is_active=True).exclude(board_type__in=EXCLUDE_TYPES).order_by('order')
+    # 기록하기: 건의와FAQ(id=13), 나눔/장터(id=14) 제외
+    boards = Board.objects.filter(is_active=True).exclude(id__in=[13, 14]).order_by('order')
     boards_with_posts = []
     for board in boards:
         recent = Post.objects.filter(board=board, is_active=True).order_by('-created_at')[:2]
