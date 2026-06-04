@@ -3,112 +3,213 @@
 {% block tab_together %}active{% endblock %}
 
 {% block content %}
-<div class="page-title">
-  <span><i class="fas fa-hands-helping me-2" style="color:#D4B26A;"></i>함께하기</span>
+{% load static %}
+
+<style>
+.hub-card{background:#fff;border:1px solid #e8e8e8;border-radius:14px;overflow:hidden;transition:border-color .15s,box-shadow .15s;}
+.hub-card:hover{border-color:#D4B26A;box-shadow:0 4px 20px rgba(212,178,106,.15);}
+.hub-header{background:linear-gradient(135deg,#242424,#333);padding:14px 16px;display:flex;align-items:center;gap:10px;text-decoration:none;}
+.hub-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;}
+.hub-title{font-size:0.9rem;font-weight:800;color:#FAFAFA;margin-bottom:2px;}
+.hub-sub{font-size:0.7rem;color:rgba(250,250,250,.5);}
+.hub-count{text-align:center;flex-shrink:0;background:rgba(255,255,255,.08);border-radius:10px;padding:5px 10px;border:1px solid rgba(212,178,106,.4);}
+.hub-count-n{font-size:1.3rem;font-weight:800;color:#D4B26A;line-height:1;}
+.hub-count-l{font-size:0.58rem;color:rgba(250,250,250,.5);margin-top:1px;}
+.item-row{display:flex;align-items:center;gap:8px;padding:7px 14px;text-decoration:none;transition:background .1s;}
+.item-row:hover{background:#fafafa;}
+.item-dot{width:5px;height:5px;border-radius:50%;background:#D4B26A;flex-shrink:0;}
+.item-text{flex:1;font-size:0.8rem;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.item-meta{font-size:0.68rem;color:#bbb;flex-shrink:0;}
+.btn-view{display:block;text-align:center;padding:7px;background:#FAFAFA;border:1px solid #e8e8e8;border-radius:8px;font-size:0.78rem;font-weight:700;color:#242424;text-decoration:none;transition:all .15s;margin:8px 14px 12px;}
+.btn-view:hover{background:#242424;color:#FAFAFA;border-color:#242424;}
+.status-badge{font-size:0.65rem;padding:2px 7px;border-radius:10px;font-weight:600;flex-shrink:0;}
+.empty-msg{padding:14px;font-size:0.78rem;color:#bbb;text-align:center;}
+</style>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+  <h3 style="font-size:1.1rem;font-weight:800;color:#242424;margin:0;">
+    <i class="fas fa-hands-helping me-2" style="color:#D4B26A;"></i>함께하기
+  </h3>
+  <span style="font-size:0.78rem;color:#9ca3af;">6개 카테고리</span>
 </div>
 
-<!-- 소모임 -->
-<div class="card mb-3">
-  <div class="card-header d-flex align-items-center justify-content-between">
-    <span><i class="fas fa-users me-2" style="color:#7A263A;"></i>소모임</span>
-    <a href="/groups/" style="font-size:0.78rem;color:#7A263A;text-decoration:none;">전체보기 →</a>
-  </div>
-  <div class="card-body">
-    {% if groups %}
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">
-      {% for g in groups %}
-      <a href="/groups/{{ g.id }}/" style="text-decoration:none;">
-        <div style="background:#FAFAFA;border:1px solid #e8e8e8;border-radius:10px;padding:12px;transition:border-color .15s;" onmouseover="this.style.borderColor='#D4B26A'" onmouseout="this.style.borderColor='#e8e8e8'">
-          <div style="width:36px;height:36px;border-radius:10px;background:#242424;color:#D4B26A;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;margin-bottom:8px;">{{ g.name|first|upper }}</div>
-          <div style="font-size:0.83rem;font-weight:700;color:#242424;margin-bottom:2px;">{{ g.name }}</div>
-          <div style="font-size:0.72rem;color:#9ca3af;">멤버 {{ g.member_count }}명</div>
-        </div>
-      </a>
-      {% endfor %}
-    </div>
-    {% else %}
-    <div style="text-align:center;padding:20px;color:#9ca3af;font-size:0.84rem;">아직 소모임이 없어요 <a href="/groups/create/" style="color:#7A263A;font-weight:600;">만들기 →</a></div>
-    {% endif %}
-  </div>
-</div>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">
 
-<!-- 봉사활동 -->
-<div class="card mb-3">
-  <div class="card-header d-flex align-items-center justify-content-between">
-    <span><i class="fas fa-heart me-2" style="color:#7A263A;"></i>봉사활동</span>
-    <a href="/volunteer/" style="font-size:0.78rem;color:#7A263A;text-decoration:none;">전체보기 →</a>
-  </div>
-  <div class="card-body">
-    {% if meetups %}
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      {% for m in meetups %}
-      <a href="/volunteer/{{ m.id }}/" style="text-decoration:none;display:flex;align-items:center;gap:12px;padding:10px;background:#FAFAFA;border:1px solid #e8e8e8;border-radius:10px;" onmouseover="this.style.borderColor='#D4B26A'" onmouseout="this.style.borderColor='#e8e8e8'">
-        <div style="width:40px;height:40px;border-radius:10px;background:#7A263A;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-heart" style="font-size:1rem;"></i></div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:0.84rem;font-weight:700;color:#242424;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.title }}</div>
-          <div style="font-size:0.72rem;color:#9ca3af;margin-top:2px;">{{ m.scheduled_at|date:"m.d" }} · {{ m.location|truncatechars:20 }}</div>
-        </div>
-        <span style="font-size:0.7rem;padding:3px 8px;border-radius:20px;background:{% if m.status == 'recruiting' %}#fdf5f6{% else %}#f5f5f5{% endif %};color:{% if m.status == 'recruiting' %}#7A263A{% else %}#888{% endif %};font-weight:600;flex-shrink:0;">{{ m.get_status_display }}</span>
-      </a>
-      {% endfor %}
-    </div>
-    {% else %}
-    <div style="text-align:center;padding:20px;color:#9ca3af;font-size:0.84rem;">모집 중인 봉사활동이 없어요</div>
-    {% endif %}
-  </div>
-</div>
-
-<!-- 2열: 캘린더 + 설문조사 -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-  <div class="card">
-    <div class="card-header d-flex align-items-center justify-content-between">
-      <span><i class="fas fa-calendar-alt me-2" style="color:#D4B26A;"></i>캘린더</span>
-      <a href="/calendar/" style="font-size:0.78rem;color:#7A263A;text-decoration:none;">보기 →</a>
-    </div>
-    <div class="card-body" style="text-align:center;padding:16px!important;">
-      <div style="font-size:2rem;margin-bottom:8px;">📅</div>
-      <div style="font-size:0.8rem;color:#666;">단지 일정을<br>한눈에 확인하세요</div>
-      <a href="/calendar/" class="btn btn-sm mt-3 w-100" style="background:#242424;color:#FAFAFA;border:none;font-size:0.78rem;">캘린더 보기</a>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-header d-flex align-items-center justify-content-between">
-      <span><i class="fas fa-poll me-2" style="color:#D4B26A;"></i>설문조사</span>
-      <a href="/surveys/" style="font-size:0.78rem;color:#7A263A;text-decoration:none;">전체보기 →</a>
-    </div>
-    <div class="card-body">
-      {% if surveys %}
-        {% for s in surveys %}
-        <a href="/surveys/{{ s.id }}/" style="display:block;text-decoration:none;padding:6px 0;border-bottom:1px solid #f0f0f0;">
-          <div style="font-size:0.8rem;color:#242424;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ s.title }}</div>
-          <div style="font-size:0.7rem;color:#9ca3af;">{{ s.created_at|date:"m.d" }}</div>
+  <!-- 소모임 -->
+  <div class="hub-card" style="border-top:3px solid #7A263A;">
+    <a href="/groups/" class="hub-header">
+      <div class="hub-icon" style="background:#fdf5f6;border:1px solid #f0e0e3;">
+        <i class="fas fa-users" style="color:#7A263A;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="hub-title">소모임</div>
+        <div class="hub-sub">취미·운동·봉사 모임</div>
+      </div>
+      <div class="hub-count">
+        <div class="hub-count-n">{{ groups|length }}</div>
+        <div class="hub-count-l">소모임</div>
+      </div>
+    </a>
+    <div style="padding:8px 0;">
+      {% if groups %}
+        {% for g in groups %}
+        <a href="/groups/{{ g.id }}/" class="item-row">
+          <div class="item-dot" style="background:#7A263A;"></div>
+          <div class="item-text">{{ g.name }}</div>
+          <div class="item-meta">{{ g.member_count }}명</div>
         </a>
         {% endfor %}
       {% else %}
-        <div style="text-align:center;padding:12px;color:#9ca3af;font-size:0.8rem;">진행 중인 설문 없음</div>
+        <div class="empty-msg">소모임이 없어요</div>
       {% endif %}
     </div>
+    <a href="/groups/" class="btn-view">소모임 전체보기 →</a>
   </div>
-</div>
 
-<!-- 구분선 -->
-<div style="height:1px;background:#e8e8e8;margin:4px 0 12px;"></div>
+  <!-- 봉사활동 -->
+  <div class="hub-card" style="border-top:3px solid #7A263A;">
+    <a href="/volunteer/" class="hub-header">
+      <div class="hub-icon" style="background:#fdf5f6;border:1px solid #f0e0e3;">
+        <i class="fas fa-heart" style="color:#7A263A;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="hub-title">봉사활동</div>
+        <div class="hub-sub">단지 봉사 모집·참여</div>
+      </div>
+      <div class="hub-count">
+        <div class="hub-count-n">{{ meetups|length }}</div>
+        <div class="hub-count-l">모집중</div>
+      </div>
+    </a>
+    <div style="padding:8px 0;">
+      {% if meetups %}
+        {% for m in meetups %}
+        <a href="/volunteer/{{ m.id }}/" class="item-row">
+          <div class="item-dot" style="background:#7A263A;"></div>
+          <div class="item-text">{{ m.title }}</div>
+          <span class="status-badge" style="background:#fdf5f6;color:#7A263A;">{{ m.get_status_display }}</span>
+        </a>
+        {% endfor %}
+      {% else %}
+        <div class="empty-msg">모집 중인 봉사활동이 없어요</div>
+      {% endif %}
+    </div>
+    <a href="/volunteer/" class="btn-view">봉사활동 전체보기 →</a>
+  </div>
 
-<!-- 활동인증 + 나눔/장터 -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-  <a href="/activity/submit/" style="text-decoration:none;">
-    <div class="card" style="text-align:center;padding:16px;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='#D4B26A'" onmouseout="this.style.borderColor='#e8e8e8'">
-      <div style="font-size:1.8rem;margin-bottom:6px;">📸</div>
-      <div style="font-size:0.84rem;font-weight:700;color:#242424;">활동 인증</div>
-      <div style="font-size:0.72rem;color:#9ca3af;margin-top:3px;">봉사 활동을 인증하고<br>마일리지를 받으세요</div>
+  <!-- 캘린더 -->
+  <div class="hub-card" style="border-top:3px solid #D4B26A;">
+    <a href="/calendar/" class="hub-header">
+      <div class="hub-icon" style="background:#fdf9f0;border:1px solid #f0e4c0;">
+        <i class="fas fa-calendar-alt" style="color:#D4B26A;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="hub-title">캘린더</div>
+        <div class="hub-sub">단지 일정 한눈에 보기</div>
+      </div>
+    </a>
+    <div style="padding:16px 14px;text-align:center;">
+      <div style="font-size:2rem;margin-bottom:6px;">📅</div>
+      <div style="font-size:0.8rem;color:#666;line-height:1.5;">공지·봉사·소모임 일정을<br>통합 캘린더에서 확인하세요</div>
     </div>
-  </a>
-  <a href="/boards/" style="text-decoration:none;">
-    <div class="card" style="text-align:center;padding:16px;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='#D4B26A'" onmouseout="this.style.borderColor='#e8e8e8'">
-      <div style="font-size:1.8rem;margin-bottom:6px;">🤝</div>
-      <div style="font-size:0.84rem;font-weight:700;color:#242424;">나눔 / 장터</div>
-      <div style="font-size:0.72rem;color:#9ca3af;margin-top:3px;">이웃과 물건을<br>나누고 거래해요</div>
+    <a href="/calendar/" class="btn-view">캘린더 보기 →</a>
+  </div>
+
+  <!-- 설문조사 -->
+  <div class="hub-card" style="border-top:3px solid #D4B26A;">
+    <a href="/surveys/" class="hub-header">
+      <div class="hub-icon" style="background:#fdf9f0;border:1px solid #f0e4c0;">
+        <i class="fas fa-poll" style="color:#D4B26A;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="hub-title">설문조사</div>
+        <div class="hub-sub">단지 의견 수렴</div>
+      </div>
+      <div class="hub-count">
+        <div class="hub-count-n">{{ surveys|length }}</div>
+        <div class="hub-count-l">진행중</div>
+      </div>
+    </a>
+    <div style="padding:8px 0;">
+      {% if surveys %}
+        {% for s in surveys %}
+        <a href="/surveys/{{ s.id }}/" class="item-row">
+          <div class="item-dot" style="background:#D4B26A;"></div>
+          <div class="item-text">{{ s.title }}</div>
+          <div class="item-meta">{{ s.created_at|date:"m.d" }}</div>
+        </a>
+        {% endfor %}
+      {% else %}
+        <div class="empty-msg">진행 중인 설문이 없어요</div>
+      {% endif %}
     </div>
-  </a>
+    <a href="/surveys/" class="btn-view">설문조사 전체보기 →</a>
+  </div>
+
+  <!-- 활동 인증 -->
+  <div class="hub-card" style="border-top:3px solid #242424;">
+    <a href="/activity/submit/" class="hub-header">
+      <div class="hub-icon" style="background:#f5f5f5;border:1px solid #e0e0e0;">
+        <i class="fas fa-camera" style="color:#242424;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="hub-title">활동 인증</div>
+        <div class="hub-sub">봉사 인증 및 마일리지</div>
+      </div>
+      <div class="hub-count">
+        <div class="hub-count-n">{{ activity_proofs|length }}</div>
+        <div class="hub-count-l">최근인증</div>
+      </div>
+    </a>
+    <div style="padding:8px 0;">
+      {% if activity_proofs %}
+        {% for ap in activity_proofs %}
+        <a href="/activity/list/" class="item-row">
+          <div class="item-dot" style="background:#242424;"></div>
+          <div class="item-text">{{ ap.user.nickname|default:ap.user.username }} — {{ ap.activity.name }}</div>
+          <div class="item-meta">{{ ap.approved_at|date:"m.d" }}</div>
+        </a>
+        {% endfor %}
+      {% else %}
+        <div class="empty-msg">승인된 활동 인증이 없어요</div>
+      {% endif %}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 14px 12px;">
+      <a href="/activity/submit/" style="display:block;text-align:center;padding:7px;background:#242424;border-radius:8px;font-size:0.78rem;font-weight:700;color:#FAFAFA;text-decoration:none;">인증 등록</a>
+      <a href="/activity/list/" style="display:block;text-align:center;padding:7px;background:#FAFAFA;border:1px solid #e8e8e8;border-radius:8px;font-size:0.78rem;font-weight:700;color:#242424;text-decoration:none;">내역 보기</a>
+    </div>
+  </div>
+
+  <!-- 나눔/장터 -->
+  <div class="hub-card" style="border-top:3px solid #242424;">
+    <a href="{% if trade_board %}/board/{{ trade_board.id }}/{% else %}/boards/{% endif %}" class="hub-header">
+      <div class="hub-icon" style="background:#f5f5f5;border:1px solid #e0e0e0;">
+        <i class="fas fa-handshake" style="color:#242424;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="hub-title">나눔 / 장터</div>
+        <div class="hub-sub">이웃과 나누고 거래해요</div>
+      </div>
+      <div class="hub-count">
+        <div class="hub-count-n">{{ trade_posts|length }}</div>
+        <div class="hub-count-l">최근글</div>
+      </div>
+    </a>
+    <div style="padding:8px 0;">
+      {% if trade_posts %}
+        {% for p in trade_posts %}
+        <a href="/posts/{{ p.id }}/" class="item-row">
+          <div class="item-dot" style="background:#242424;"></div>
+          <div class="item-text">{{ p.title }}</div>
+          <div class="item-meta">{{ p.created_at|date:"m.d" }}</div>
+        </a>
+        {% endfor %}
+      {% else %}
+        <div class="empty-msg">등록된 글이 없어요</div>
+      {% endif %}
+    </div>
+    <a href="{% if trade_board %}/board/{{ trade_board.id }}/{% else %}/boards/{% endif %}" class="btn-view">나눔/장터 전체보기 →</a>
+  </div>
+
 </div>
 {% endblock %}

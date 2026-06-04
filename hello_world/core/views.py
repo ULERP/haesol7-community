@@ -3421,17 +3421,31 @@ def volunteer_rate(request, pk):
 # ============================================================================
 def hub_together(request):
     """함께하기 허브"""
-    from .models import Group, Meetup, Survey
+    from .models import Group, Meetup, Survey, Post, Board, ActivityProof
     from django.utils import timezone
-    groups = Group.objects.filter(is_active=True).order_by('-created_at')[:6]
+
+    groups = Group.objects.filter(is_active=True).order_by('-created_at')[:4]
     meetups = Meetup.objects.filter(
         status__in=['recruiting','confirmed','planned']
-    ).order_by('scheduled_at')[:4]
-    surveys = Survey.objects.filter(status='active').order_by('-created_at')[:3]
+    ).order_by('scheduled_at')[:3]
+    surveys = Survey.objects.order_by('-created_at')[:3]
+    activity_proofs = ActivityProof.objects.filter(status='approved').order_by('-approved_at')[:3]
+
+    # 나눔/장터 게시판 게시글
+    trade_posts = []
+    try:
+        trade_board = Board.objects.filter(name__icontains='나눔').first()
+        if trade_board:
+            trade_posts = Post.objects.filter(board=trade_board, is_active=True).order_by('-created_at')[:4]
+    except: pass
+
     return render(request, 'hub_together.html', {
         'groups': groups,
         'meetups': meetups,
         'surveys': surveys,
+        'activity_proofs': activity_proofs,
+        'trade_posts': trade_posts,
+        'trade_board': trade_board if 'trade_board' in dir() else None,
     })
 
 def hub_news(request):
