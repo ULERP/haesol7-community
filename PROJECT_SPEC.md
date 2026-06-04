@@ -115,3 +115,11 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 - Bootstrap 5 기본 폰트
 - Font Awesome 6 (아이콘)
 - Bootstrap Icons (bi-*) 일부 사용
+
+## 세션 3 추가 작업 (2026-06-04 오후)
+- feat: 게시판 목록 카드 UI (최근글 미리보기, 게시글수 강조, NEW 배지)
+- feat: 게시판 2열 + 지킴이 아카이브 하단 가로형 전체폭
+- feat: 기록하기 게시판 목록 5개로 정리 (나눔/장터, 건의FAQ 제외)
+- feat: 네비바 기록하기 드롭다운 5개 게시판으로 정리
+- feat: 함께하기/단지소식 허브 페이지 오류 수정
+- 다음: 함께하기 허브에 나눔/장터 추가, 단지소식 허브에 FAQ/건의 추가
