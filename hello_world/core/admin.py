@@ -49,14 +49,13 @@ class CustomUserAdmin(UserAdmin):
                        'grade_display', 'mileage_points', 'is_verified',
                        'is_active', 'date_joined')
     list_filter    = ('is_verified', 'is_staff', 'is_active', 'groups')
-    search_fields  = ('username', 'nickname', 'real_name', 'dong', 'ho', 'email')
+    search_fields  = ('username', 'nickname', 'dong', 'ho', 'email')
     ordering       = ('-date_joined',)
     list_per_page  = 30
     actions        = ['action_send_temp_password', 'action_activate', 'action_deactivate']
 
     fieldsets = UserAdmin.fieldsets + (
-        ('🏠 입주민 정보', {'fields': ('nickname', 'real_name', 'dong', 'ho',
-                                      'unit_number', 'phone_number', 'bio', 'avatar')}),
+        ('🏠 입주민 정보', {'fields': ('nickname', 'dong', 'ho', 'unit_number', 'phone_number')}),
         ('🔐 보안 질문 (비밀번호 찾기용)', {'fields': ('security_question', 'security_answer')}),
         ('🏅 활동 및 포인트', {'fields': ('mileage_points', 'manners_score',
                                           'is_verified', 'current_badges')}),
