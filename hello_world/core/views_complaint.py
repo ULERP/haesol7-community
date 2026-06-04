@@ -28,7 +28,7 @@ def complaint_create(request):
                 author=request.user, title=title, content=content,
                 category=cat, is_anonymous=is_anon
             )
-            messages.success(request, "민원/건의가 접수됐어요! 관리자 검토 후 답변드립니다.")
+            messages.success(request, "민원/오류가 접수됐어요! 관리자 검토 후 답변드립니다.")
             return redirect("complaint_list")
     return render(request, "complaint/form.html", {"categories": categories})
 

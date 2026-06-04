@@ -335,7 +335,7 @@ def mypage(request):
 # ============================================================================
 def board_list(request):
     from .models import Post
-    # 기록하기: 나눔/장터(trade), 민원·건의(complaint), FAQ(faq) 제외
+    # 기록하기: 나눔/장터(trade), 민원/오류(complaint), FAQ(faq) 제외
     # 기록하기: 건의와FAQ(id=13), 나눔/장터(id=14) 제외
     boards = Board.objects.filter(is_active=True).exclude(id__in=[13, 14]).order_by('order')
     boards_with_posts = []
@@ -3456,7 +3456,7 @@ def hub_news(request):
     faq_posts = Post.objects.filter(is_active=True, board__board_type='faq').order_by('-created_at')[:4]
     docs = ManagementDocument.objects.order_by('-created_at')[:4]
 
-    # 민원·건의
+    # 민원/오류
     complaints = Post.objects.filter(is_active=True, board__board_type='complaint').order_by('-created_at')[:3]
 
     # 단지통계
