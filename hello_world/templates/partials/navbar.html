@@ -25,9 +25,12 @@
           <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown" style="font-size:0.82rem;color:rgba(250,250,250,.8);"><i class="fas fa-clipboard-list"></i>기록하기</a>
           <ul class="dropdown-menu" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:180px;padding:6px;">
             <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/boards/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-th-large" style="color:#7A263A;"></i>전체 게시판</a></li>
-            {% for board in active_boards %}
-            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/{{ board.id }}/" style="font-size:0.82rem;padding:8px 12px;"><i class="{{ board.icon }} text-secondary"></i>{{ board.name }}</a></li>
-            {% endfor %}
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/8/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-bullhorn" style="color:#7A263A;"></i>공지 및 행정</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/9/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-comments" style="color:#D4B26A;"></i>우리 동네 소통</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/10/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-lightbulb" style="color:#D4B26A;"></i>생활 정보 공유</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/11/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-hiking" style="color:#242424;"></i>여가와 활동</a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="/board/12/" style="font-size:0.82rem;padding:8px 12px;"><i class="fas fa-archive" style="color:#242424;"></i>지킴이 아카이브</a></li>
           </ul>
         </li>
         <li class="nav-item dropdown">
