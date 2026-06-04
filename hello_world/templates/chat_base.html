@@ -402,9 +402,7 @@
       // 관리자 메시지 처리: 링크 제거하고 표시
       let displayMsg = m.message || '';
       if (linkBtn) {
-        displayMsg = displayMsg.replace(/
-
-👉 자세히 보기: \/volunteer\/\d+\//, '').trim();
+        displayMsg = displayMsg.replace(/\n\n👉 자세히 보기: \/volunteer\/\d+\//, '').trim();
       }
 
       const msgHtml = displayMsg
