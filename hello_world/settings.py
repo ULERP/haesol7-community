@@ -194,13 +194,29 @@ JAZZMIN_SETTINGS = {
     "topmenu_links": [
         {"name": "🏠 사이트", "url": "/", "new_window": True},
         {"name": "📋 게시판", "url": "/boards/", "new_window": True},
-        {"name": "👥 회원관리", "model": "core.CustomUser"},
+        {"name": "✅ 인증관리", "url": "/verify/admin/", "new_window": True},
+        {"name": "👥 회원", "model": "core.CustomUser"},
+        {"name": "📝 게시글", "model": "core.Post"},
     ],
     "usermenu_links": [
         {"name": "🏠 사이트 보기", "url": "/", "new_window": True},
+        {"name": "✅ 인증 관리", "url": "/verify/admin/", "new_window": True},
     ],
     "show_sidebar": True,
     "navigation_expanded": False,
+    "custom_links": {
+        "core": [{
+            "name": "🏠 사이트 바로가기",
+            "url": "/",
+            "icon": "fas fa-home",
+            "new_window": True,
+        }, {
+            "name": "✅ 입주민 인증 관리",
+            "url": "/verify/admin/",
+            "icon": "fas fa-id-card",
+            "new_window": True,
+        }]
+    },
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",

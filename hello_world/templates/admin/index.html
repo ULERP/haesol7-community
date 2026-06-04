@@ -1,0 +1,48 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+
+{% block content %}
+<!-- 통계 카드 -->
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:24px;">
+
+  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #1a7a4a;">
+    <div style="font-size:0.75rem;color:#9ca3af;margin-bottom:4px;">전체 회원</div>
+    <div style="font-size:2rem;font-weight:800;color:#1a7a4a;">{{ stat_total_users }}</div>
+    <a href="/admin/core/customuser/" style="font-size:0.72rem;color:#6b7280;">회원 관리 →</a>
+  </div>
+
+  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #f59e0b;">
+    <div style="font-size:0.75rem;color:#9ca3af;margin-bottom:4px;">인증 대기</div>
+    <div style="font-size:2rem;font-weight:800;color:#f59e0b;">{{ stat_unverified }}</div>
+    <a href="/verify/admin/" style="font-size:0.72rem;color:#6b7280;">인증 관리 →</a>
+  </div>
+
+  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #3b82f6;">
+    <div style="font-size:0.75rem;color:#9ca3af;margin-bottom:4px;">활동 인증 대기</div>
+    <div style="font-size:2rem;font-weight:800;color:#3b82f6;">{{ stat_pending_proofs }}</div>
+    <a href="/admin/core/activityproof/?status__exact=pending" style="font-size:0.72rem;color:#6b7280;">인증 처리 →</a>
+  </div>
+
+  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #8b5cf6;">
+    <div style="font-size:0.75rem;color:#9ca3af;margin-bottom:4px;">소모임 승인 대기</div>
+    <div style="font-size:2rem;font-weight:800;color:#8b5cf6;">{{ stat_pending_groups }}</div>
+    <a href="/admin/core/group/?status__exact=pending" style="font-size:0.72rem;color:#6b7280;">소모임 관리 →</a>
+  </div>
+
+  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #10b981;">
+    <div style="font-size:0.75rem;color:#9ca3af;margin-bottom:4px;">전체 게시글</div>
+    <div style="font-size:2rem;font-weight:800;color:#10b981;">{{ stat_total_posts }}</div>
+    <a href="/admin/core/post/" style="font-size:0.72rem;color:#6b7280;">게시글 관리 →</a>
+  </div>
+
+  <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid #ef4444;">
+    <div style="font-size:0.75rem;color:#9ca3af;margin-bottom:4px;">진행중 설문</div>
+    <div style="font-size:2rem;font-weight:800;color:#ef4444;">{{ stat_active_surveys }}</div>
+    <a href="/admin/core/survey/?status__exact=active" style="font-size:0.72rem;color:#6b7280;">설문 관리 →</a>
+  </div>
+
+</div>
+
+<!-- 기존 앱 목록 -->
+{{ block.super }}
+{% endblock %}
