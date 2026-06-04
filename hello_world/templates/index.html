@@ -73,12 +73,11 @@
   display:flex;flex-direction:column;justify-content:flex-end;}
 .home-hero-title{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:4px;text-shadow:0 1px 8px rgba(0,0,0,.4);}
 .home-hero-sub{font-size:0.8rem;color:rgba(255,255,255,.85);}
-.home-hero-stats{position:absolute;bottom:14px;right:14px;z-index:3;
-  display:flex;gap:8px;}
-.hero-stat{background:rgba(36,36,36,.5);border:1px solid rgba(212,178,106,.4);
-  border-radius:10px;padding:6px 12px;text-align:center;}
-.hero-stat-n{font-size:1.1rem;font-weight:700;color:#fff;line-height:1;}
-.hero-stat-l{font-size:0.62rem;color:rgba(255,255,255,.8);}
+.home-hero-stats{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.hero-stat{background:rgba(36,36,36,.6);border:1px solid rgba(212,178,106,.5);
+  border-radius:10px;padding:5px 14px;text-align:center;flex:1;min-width:70px;}
+.hero-stat-n{font-size:1.1rem;font-weight:700;color:#D4B26A;line-height:1;}
+.hero-stat-l{font-size:0.62rem;color:rgba(255,255,255,.75);}
 
 /* ── 퀵 액션 바 ── */
 .quick-bar{display:flex;gap:8px;padding:12px 16px;background:#fff;
@@ -322,11 +321,6 @@
     <div class="home-hero">
       <div class="home-hero-bg" style="{% if hero_image %}background-image:url('{{ hero_image }}');{% endif %}background-color:#1F2937;"></div>
       <div class="home-hero-overlay"></div>
-      <div class="home-hero-stats">
-        <div class="hero-stat"><div class="hero-stat-n">{{ total_users }}</div><div class="hero-stat-l">전체 회원</div></div>
-        <div class="hero-stat"><div class="hero-stat-n">{{ verified_users }}</div><div class="hero-stat-l">인증 입주민</div></div>
-        <div class="hero-stat"><div class="hero-stat-n">{{ groups_count }}</div><div class="hero-stat-l">소모임</div></div>
-      </div>
       <div class="home-hero-content">
         {% if user.is_authenticated %}
         <div class="home-hero-title">안녕하세요, {{ user.nickname|default:user.username }}님 👋</div>
@@ -335,6 +329,11 @@
         <div class="home-hero-title">🌿 해솔마을 7단지 지킴이</div>
         <div class="home-hero-sub">함께 만드는 더 좋은 우리 단지 · 경기 파주시 목동동</div>
         {% endif %}
+        <div class="home-hero-stats">
+          <div class="hero-stat"><div class="hero-stat-n">{{ total_users }}</div><div class="hero-stat-l">전체 회원</div></div>
+          <div class="hero-stat"><div class="hero-stat-n">{{ verified_users }}</div><div class="hero-stat-l">인증 입주민</div></div>
+          <div class="hero-stat"><div class="hero-stat-n">{{ groups_count }}</div><div class="hero-stat-l">소모임</div></div>
+        </div>
       </div>
     </div>
 
