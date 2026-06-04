@@ -6,11 +6,12 @@ from django.core.mail import send_mail
 import random, string
 from .models import (
     AdminActionLog,
-    CustomUser, Badge, UserBadge,
+    CustomUser, Badge, UserBadge, UserFollow,
     Activity, ActivityProof, ActivityVerification,
     Rating, Board, Category, Post, PostImage, Comment, PostLike,
     Event, Notification, ManagementDocument,
     Group, GroupMember, GroupPost, GroupComment, GroupChat,
+    GroupLeaderLog, GroupDissolveVote,
     MemberGrade, BoardGradePermission,
     Survey, SurveyQuestion, SurveyResponse,
     PublicChat, DirectMessage, ChatHistory, ChatPoll,
@@ -24,6 +25,14 @@ from .models import (
 admin.site.site_header  = '🌿 해솔마을 7단지 지킴이 관리자'
 admin.site.site_title   = '해솔7 관리자'
 admin.site.index_title  = '📋 관리 메뉴 — 모든 관리 행위는 자동으로 기록됩니다'
+
+# 앱 레이블 한국어 설정
+from django.apps import AppConfig
+class CoreConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'hello_world.core'
+    verbose_name = '해솔7 지킴이'
+
 
 
 # ── 공통 유틸 ────────────────────────────────────────────────────────
@@ -267,16 +276,16 @@ class BoardAdmin(admin.ModelAdmin):
 class PostAdmin(admin.ModelAdmin):
     """입주민이 작성한 게시글을 관리합니다. 부적절한 게시글은 비활성화로 숨길 수 있습니다"""
     list_display   = ('title', 'author', 'board', 'view_count',
-                       'like_count', 'created_at', 'status_display')
+                       'likes_count_display', 'created_at', 'status_display')
     list_filter    = ('board', 'is_active')
     search_fields  = ('title', 'content', 'author__nickname')
     raw_id_fields  = ('author', 'board')
     list_per_page  = 30
     readonly_fields = ('created_at', 'view_count')
 
-    def like_count(self, obj):
-        return obj.likes.count()
-    like_count.short_description = '좋아요 수'
+    def likes_count_display(self, obj):
+        return obj.like_count
+    likes_count_display.short_description = '좋아요 수'
 
     def status_display(self, obj):
         if obj.is_active:
@@ -518,6 +527,56 @@ class SiteConfigAdmin(admin.ModelAdmin):
             reverse('admin:core_siteconfig_change', args=[obj.pk])
         )
 
+
+
+
+# ════════════════════════════════════════════════════════════════════
+# 👥 팔로우/친구
+# ════════════════════════════════════════════════════════════════════
+@admin.register(UserFollow)
+class UserFollowAdmin(admin.ModelAdmin):
+    """입주민 간 팔로우 관계를 관리합니다"""
+    list_display  = ('follower', 'following', 'created_at')
+    search_fields = ('follower__nickname', 'following__nickname')
+    raw_id_fields = ('follower', 'following')
+    list_per_page = 30
+    readonly_fields = ('created_at',)
+
+
+# ════════════════════════════════════════════════════════════════════
+# 📋 소모임 방장 활동 기록
+# ════════════════════════════════════════════════════════════════════
+@admin.register(GroupLeaderLog)
+class GroupLeaderLogAdmin(admin.ModelAdmin):
+    """소모임 방장의 모든 관리 행위가 기록됩니다"""
+    list_display  = ('created_at', 'group', 'actor', 'action', 'target', 'detail')
+    list_filter   = ('action',)
+    search_fields = ('group__name', 'actor__nickname')
+    raw_id_fields = ('group', 'actor', 'target')
+    list_per_page = 30
+    readonly_fields = ('created_at',)
+
+    def has_add_permission(self, request):
+        return False
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(GroupDissolveVote)
+class GroupDissolveVoteAdmin(admin.ModelAdmin):
+    """소모임 해체 투표 현황을 관리합니다"""
+    list_display  = ('group', 'started_by', 'started_at', 'ends_at', 'oppose_count_display')
+    search_fields = ('group__name',)
+    raw_id_fields = ('group', 'started_by')
+    list_per_page = 20
+    readonly_fields = ('started_at',)
+
+    def oppose_count_display(self, obj):
+        total = obj.group.member_count()
+        oppose = obj.oppose_count()
+        return format_html('<b>{}</b> / {} (과반: {})',
+            oppose, total, total // 2 + 1)
+    oppose_count_display.short_description = '반대 현황'
 
 # ════════════════════════════════════════════════════════════════════
 # 📋 관리자 행위 로그 (개인정보보호법 제29조)
