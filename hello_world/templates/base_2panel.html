@@ -105,8 +105,13 @@
     @media(max-width:768px){
       .layout-2p{grid-template-columns:1fr!important;}
       .sidebar{display:none;}
-      .main-content{padding:14px;}
+      .main-content{padding:14px 14px 76px;}
+      .mob-tabbar{display:flex!important;}
     }
+    .mob-tabbar{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:2px solid #D4B26A;z-index:500;box-shadow:0 -2px 12px rgba(0,0,0,.08);}
+    .mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;border:none;background:none;cursor:pointer;padding:0;}
+    .mob-tab.active{color:#7A263A;}
+    .mob-tab i{font-size:1.2rem;}
   </style>
   {% block extra_head %}{% endblock %}
 </head>
@@ -350,5 +355,12 @@ function switchRp(name, btn) {
 })();
 </script>
 {% block extra_scripts %}{% endblock %}
+<nav class="mob-tabbar">
+  <a href="/" class="mob-tab {% block tab_home %}{% endblock %}"><i class="fas fa-home"></i>홈</a>
+  <a href="/chat/public/" class="mob-tab {% block tab_chat %}{% endblock %}"><i class="fas fa-comments"></i>대화하기</a>
+  <a href="/board/" class="mob-tab {% block tab_board %}{% endblock %}"><i class="fas fa-clipboard-list"></i>기록하기</a>
+  <a href="/hub/together/" class="mob-tab {% block tab_together %}{% endblock %}"><i class="fas fa-hands-helping"></i>함께하기</a>
+  <a href="/hub/news/" class="mob-tab {% block tab_news %}{% endblock %}"><i class="fas fa-bell"></i>단지소식</a>
+</nav>
 </body>
 </html>

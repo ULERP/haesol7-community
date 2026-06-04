@@ -139,4 +139,7 @@ urlpatterns = [
     path('notices/', views_complaint.notice_list, name='notice_list'),
     path('notices/create/', views_complaint.notice_create, name='notice_create'),
     path('notices/<int:pk>/delete/', views_complaint.notice_delete, name='notice_delete'),
+    # 허브 페이지
+    path('hub/together/', views.hub_together, name='hub_together'),
+    path('hub/news/', views.hub_news, name='hub_news'),
 ]

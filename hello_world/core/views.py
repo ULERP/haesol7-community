@@ -3408,3 +3408,45 @@ def volunteer_rate(request, pk):
         return redirect('volunteer_detail', pk=pk)
 
     return render(request, 'volunteer_rate.html', {'meetup': meetup})
+
+# ============================================================================
+# 허브 페이지
+# ============================================================================
+def hub_together(request):
+    """함께하기 허브"""
+    from .models import Group, Meetup, Survey
+    from django.utils import timezone
+    groups = Group.objects.filter(is_active=True).order_by('-created_at')[:6]
+    meetups = Meetup.objects.filter(
+        status__in=['recruiting','confirmed','planned']
+    ).order_by('scheduled_at')[:4]
+    surveys = Survey.objects.filter(is_active=True).order_by('-created_at')[:3]
+    return render(request, 'hub_together.html', {
+        'groups': groups,
+        'meetups': meetups,
+        'surveys': surveys,
+    })
+
+def hub_news(request):
+    """단지소식 허브"""
+    from .models import Post, Board
+    from community.models import ManagementDoc
+    notices = Post.objects.filter(is_active=True, board__board_type='notice').order_by('-created_at')[:5]
+    stats_data = {}
+    try:
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        stats_data = {
+            'total_users': User.objects.count(),
+            'verified_users': User.objects.filter(is_verified=True).count(),
+        }
+    except: pass
+    try:
+        docs = ManagementDoc.objects.filter(is_active=True).order_by('-created_at')[:4]
+    except:
+        docs = []
+    return render(request, 'hub_news.html', {
+        'notices': notices,
+        'stats_data': stats_data,
+        'docs': docs,
+    })

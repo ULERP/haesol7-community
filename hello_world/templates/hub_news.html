@@ -1,0 +1,117 @@
+{% extends 'base_2panel.html' %}
+{% block title %}단지소식 — 해솔7{% endblock %}
+{% block tab_news %}active{% endblock %}
+
+{% block content %}
+<div class="page-title">
+  <span><i class="fas fa-bell me-2" style="color:#D4B26A;"></i>단지소식</span>
+</div>
+
+<!-- 공지사항 -->
+<div class="card mb-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span><i class="fas fa-bell me-2" style="color:#7A263A;"></i>공지사항</span>
+    <a href="/notices/" style="font-size:0.78rem;color:#7A263A;text-decoration:none;">전체보기 →</a>
+  </div>
+  <div class="card-body">
+    {% if notices %}
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      {% for p in notices %}
+      <a href="/posts/{{ p.id }}/" style="text-decoration:none;display:flex;align-items:center;gap:10px;padding:9px 10px;background:#FAFAFA;border-radius:8px;border:1px solid #f0f0f0;" onmouseover="this.style.borderColor='#D4B26A'" onmouseout="this.style.borderColor='#f0f0f0'">
+        <div style="width:6px;height:6px;border-radius:50%;background:#7A263A;flex-shrink:0;"></div>
+        <div style="flex:1;font-size:0.83rem;color:#242424;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.title }}</div>
+        <div style="font-size:0.7rem;color:#9ca3af;flex-shrink:0;">{{ p.created_at|date:"m.d" }}</div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:16px;color:#9ca3af;font-size:0.84rem;">등록된 공지사항이 없어요</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 민원·건의 -->
+<div class="card mb-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span><i class="bi bi-megaphone me-2" style="color:#D4B26A;"></i>민원·건의</span>
+    <a href="/complaints/" style="font-size:0.78rem;color:#7A263A;text-decoration:none;">전체보기 →</a>
+  </div>
+  <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <a href="/complaints/" style="text-decoration:none;">
+      <div style="background:#FAFAFA;border:1px solid #e8e8e8;border-radius:10px;padding:14px;text-align:center;" onmouseover="this.style.borderColor='#D4B26A'" onmouseout="this.style.borderColor='#e8e8e8'">
+        <i class="bi bi-megaphone" style="font-size:1.6rem;color:#D4B26A;display:block;margin-bottom:6px;"></i>
+        <div style="font-size:0.82rem;font-weight:700;color:#242424;">민원 목록</div>
+        <div style="font-size:0.7rem;color:#9ca3af;margin-top:2px;">접수된 민원 확인</div>
+      </div>
+    </a>
+    <a href="/complaints/create/" style="text-decoration:none;">
+      <div style="background:#fdf5f6;border:1px solid #f0e0e3;border-radius:10px;padding:14px;text-align:center;" onmouseover="this.style.borderColor='#7A263A'" onmouseout="this.style.borderColor='#f0e0e3'">
+        <i class="fas fa-pen" style="font-size:1.6rem;color:#7A263A;display:block;margin-bottom:6px;"></i>
+        <div style="font-size:0.82rem;font-weight:700;color:#7A263A;">민원 접수</div>
+        <div style="font-size:0.7rem;color:#9ca3af;margin-top:2px;">새 민원 등록하기</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- 2열: 단지통계 + 관리문서 -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+  <div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <span><i class="fas fa-chart-bar me-2" style="color:#D4B26A;"></i>단지 통계</span>
+      <a href="/stats/" style="font-size:0.78rem;color:#7A263A;text-decoration:none;">보기 →</a>
+    </div>
+    <div class="card-body">
+      {% if stats_data %}
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#FAFAFA;border-radius:7px;">
+          <span style="font-size:0.78rem;color:#666;">전체 회원</span>
+          <span style="font-size:0.9rem;font-weight:700;color:#242424;">{{ stats_data.total_users }}명</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:#FAFAFA;border-radius:7px;">
+          <span style="font-size:0.78rem;color:#666;">인증 입주민</span>
+          <span style="font-size:0.9rem;font-weight:700;color:#7A263A;">{{ stats_data.verified_users }}명</span>
+        </div>
+      </div>
+      {% endif %}
+      <a href="/stats/" class="btn btn-sm w-100 mt-3" style="background:#242424;color:#FAFAFA;border:none;font-size:0.78rem;">상세 통계 보기</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <span><i class="fas fa-file-alt me-2" style="color:#D4B26A;"></i>관리 문서</span>
+      <a href="/community/docs/" style="font-size:0.78rem;color:#7A263A;text-decoration:none;">전체보기 →</a>
+    </div>
+    <div class="card-body">
+      {% if docs %}
+        {% for d in docs %}
+        <a href="/community/docs/{{ d.id }}/" style="display:block;text-decoration:none;padding:5px 0;border-bottom:1px solid #f0f0f0;">
+          <div style="font-size:0.79rem;color:#242424;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ d.title }}</div>
+          <div style="font-size:0.7rem;color:#9ca3af;">{{ d.category }}</div>
+        </a>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center;padding:12px;color:#9ca3af;font-size:0.8rem;">등록된 문서 없음</div>
+      {% endif %}
+      <a href="/community/docs/" class="btn btn-sm w-100 mt-2" style="background:#FAFAFA;color:#242424;border:1px solid #e8e8e8;font-size:0.78rem;">문서 목록 보기</a>
+    </div>
+  </div>
+</div>
+
+<!-- 구분선 -->
+<div style="height:1px;background:#e8e8e8;margin:4px 0 12px;"></div>
+
+<!-- FAQ -->
+<a href="/search/" style="text-decoration:none;">
+  <div class="card" style="display:flex;align-items:center;gap:14px;padding:16px 18px!important;cursor:pointer;transition:border-color .15s;" onmouseover="this.style.borderColor='#D4B26A'" onmouseout="this.style.borderColor='#e8e8e8'">
+    <div style="width:44px;height:44px;border-radius:12px;background:#242424;color:#D4B26A;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="fas fa-question-circle" style="font-size:1.3rem;"></i>
+    </div>
+    <div>
+      <div style="font-size:0.88rem;font-weight:700;color:#242424;">FAQ</div>
+      <div style="font-size:0.75rem;color:#9ca3af;margin-top:2px;">자주 묻는 질문과 답변을 확인하세요</div>
+    </div>
+    <i class="fas fa-chevron-right" style="margin-left:auto;color:#D4B26A;"></i>
+  </div>
+</a>
+{% endblock %}
