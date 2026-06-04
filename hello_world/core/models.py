@@ -367,6 +367,7 @@ class Notification(models.Model):
     is_read            = models.BooleanField(default=False)
     is_sent            = models.BooleanField(default=False)
     related_activity   = models.ForeignKey(Activity, blank=True, null=True, on_delete=models.SET_NULL)
+    link               = models.CharField(max_length=200, blank=True)
     created_at         = models.DateTimeField(auto_now_add=True)
     read_at            = models.DateTimeField(blank=True, null=True)
 
