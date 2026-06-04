@@ -2422,90 +2422,89 @@ def certificate_pdf(request, user_id):
 # 통합 캘린더 (봉사 + 소모임 + 단지행사)
 # ============================================================
 def integrated_calendar(request):
-    from .models import Meetup, Event, Group
+    from .models import Meetup, Event, Group, CalendarEvent, GroupMember
     import json
-    from django.utils import timezone
+    from django.db.models import Q
 
+    user = request.user
     events = []
 
-    # 1. 봉사 일정 (Meetup)
-    meetups = Meetup.objects.filter(
-        status__in=['recruiting', 'confirmed', 'planned']
-    ).select_related('creator').prefetch_related('participants')
-    for m in meetups:
-        if m.scheduled_at:
-            events.append({
-                'id': f'meetup_{m.id}',
-                'title': f'🤝 {m.title}',
-                'start': m.scheduled_at.isoformat(),
-                'url': f'/volunteer/{m.id}/',
-                'backgroundColor': '#1a7a4a',
-                'borderColor': '#1a7a4a',
-                'extendedProps': {
-                    'type': '봉사',
-                    'location': m.location,
-                    'participants': m.participants.count(),
-                    'max': m.max_participants if hasattr(m, 'max_participants') else 0,
-                    'status': m.get_status_display(),
-                }
-            })
+    # 내가 속한 소모임 ID 목록
+    my_group_ids = []
+    if user.is_authenticated:
+        my_group_ids = list(GroupMember.objects.filter(
+            user=user, join_status='approved'
+        ).values_list('group_id', flat=True))
 
-    # 2. 단지 행사 (Event - Post 연결)
-    events_qs = Event.objects.filter(
-        start_time__isnull=False
-    ).select_related('post')
-    for e in events_qs:
+    # 1. CalendarEvent (권한 기반)
+    if user.is_authenticated:
+        ce_qs = CalendarEvent.objects.filter(
+            Q(visibility='public', is_approved=True) |
+            Q(visibility='group', group_id__in=my_group_ids) |
+            Q(creator=user)
+        ).select_related('creator', 'group')
+    else:
+        ce_qs = CalendarEvent.objects.filter(
+            visibility='public', is_approved=True
+        ).select_related('creator', 'group')
+
+    color_map = {'volunteer': '#1a7a4a', 'event': '#e74c3c', 'group': '#f39c12'}
+    icon_map  = {'volunteer': '🤝', 'event': '📅', 'group': '👥'}
+    for ce in ce_qs:
+        color = '#9ca3af' if ce.visibility == 'private' else color_map.get(ce.event_type, '#6b7280')
+        icon  = icon_map.get(ce.event_type, '📌')
+        events.append({
+            'id': f'ce_{ce.id}',
+            'title': f'{icon} {ce.title}',
+            'start': ce.start_time.isoformat(),
+            'end': ce.end_time.isoformat() if ce.end_time else None,
+            'backgroundColor': color,
+            'borderColor': color,
+            'extendedProps': {
+                'type': ce.get_event_type_display(),
+                'visibility': ce.get_visibility_display(),
+                'location': ce.location,
+                'creator': ce.creator.nickname or ce.creator.username,
+                'group': ce.group.name if ce.group else None,
+                'is_mine': user.is_authenticated and ce.creator == user,
+            }
+        })
+
+    # 2. 봉사활동 (승인된 것 전체 공개)
+    meetups = Meetup.objects.filter(
+        is_confirmed=True,
+        status__in=['recruiting', 'confirmed'],
+        scheduled_at__isnull=False,
+    ).select_related('creator', 'group')
+    for m in meetups:
+        events.append({
+            'id': f'meetup_{m.id}',
+            'title': f'🤝 {m.title}',
+            'start': m.scheduled_at.isoformat(),
+            'url': f'/volunteer/{m.id}/',
+            'backgroundColor': '#1a7a4a',
+            'borderColor': '#1a7a4a',
+            'extendedProps': {'type': '봉사활동', 'location': m.location}
+        })
+
+    # 3. 단지 행사
+    for e in Event.objects.filter(start_time__isnull=False).select_related('post'):
         events.append({
             'id': f'event_{e.id}',
-            'title': f'📅 {e.post.title}',
+            'title': f'📢 {e.post.title}',
             'start': e.start_time.isoformat(),
             'end': e.end_time.isoformat() if e.end_time else None,
             'url': f'/posts/{e.post.id}/',
             'backgroundColor': '#e74c3c',
             'borderColor': '#e74c3c',
-            'extendedProps': {
-                'type': '행사',
-                'location': e.location,
-            }
+            'extendedProps': {'type': '단지행사', 'location': e.location}
         })
-
-    # 3. 소모임 일정 (Meetup 중 group이 있는 것)
-    group_meetups = Meetup.objects.filter(
-        group__isnull=False,
-        status__in=['recruiting', 'confirmed', 'planned']
-    ).select_related('group', 'creator')
-    for m in group_meetups:
-        if m.scheduled_at:
-            # 이미 추가된 것 제외
-            if not any(e['id'] == f'meetup_{m.id}' for e in events):
-                events.append({
-                    'id': f'group_{m.id}',
-                    'title': f'👥 [{m.group.name}] {m.title}',
-                    'start': m.scheduled_at.isoformat(),
-                    'url': f'/groups/{m.group.id}/',
-                    'backgroundColor': '#f39c12',
-                    'borderColor': '#f39c12',
-                    'extendedProps': {
-                        'type': '소모임',
-                        'location': m.location,
-                        'group': m.group.name,
-                    }
-                })
-
-    # 내 일정 (로그인시)
-    my_events = []
-    if request.user.is_authenticated:
-        my_meetups = request.user.joined_meetups.filter(
-            scheduled_at__isnull=False
-        ).values('id', 'title', 'scheduled_at')
-        my_events = [m['id'] for m in my_meetups]
 
     return render(request, 'integrated_calendar.html', {
         'events_json': json.dumps(events, ensure_ascii=False, default=str),
-        'my_events_json': json.dumps(my_events, ensure_ascii=False),
+        'my_group_ids': my_group_ids,
         'total_events': len(events),
     })
-
 def error_404(request, exception=None):
     return render(request, '404.html', status=404)
 

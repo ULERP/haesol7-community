@@ -1035,8 +1035,9 @@ class CalendarEvent(models.Model):
         ('group',     '소모임'),
     ]
     VISIBILITY_CHOICES = [
-        ('public',  '전체공개'),
+        ('private', '개인'),
         ('group',   '소모임'),
+        ('public',  '전체공개'),
         ('pending', '승인대기'),
     ]
     title        = models.CharField('제목', max_length=200)
