@@ -381,20 +381,56 @@
     function renderMsg(box, m) {
       const d = document.createElement('div');
       d.id = 'msg-' + m.id;
-      d.className = 'msg-row' + (m.is_me ? ' me' : '');
+      const isAdmin = m.is_admin || m.is_pinned;
+      d.className = 'msg-row' + (m.is_me ? ' me' : '') + (isAdmin ? ' admin-msg' : '');
+
       const imgHtml = m.image
         ? `<div class="msg-img-wrap"><img class="msg-img" src="${m.image}" onclick="window.open('${m.image}','_blank')" alt="이미지"></div>`
         : '';
-      const msgHtml = m.message
-        ? `<div class="msg-bbl">${esc(m.message)}</div>`
+
+      // 메시지에서 링크 추출 (/volunteer/숫자/ 패턴)
+      let linkBtn = '';
+      if (m.message) {
+        const linkMatch = m.message.match(/\/volunteer\/(\d+)\//);
+        if (linkMatch) {
+          linkBtn = `<a href="${linkMatch[0]}" class="admin-link-btn">
+            <i class="fas fa-hand-holding-heart me-1"></i>봉사활동 자세히 보기 →
+          </a>`;
+        }
+      }
+
+      // 관리자 메시지 처리: 링크 제거하고 표시
+      let displayMsg = m.message || '';
+      if (linkBtn) {
+        displayMsg = displayMsg.replace(/
+
+👉 자세히 보기: \/volunteer\/\d+\//, '').trim();
+      }
+
+      const msgHtml = displayMsg
+        ? `<div class="msg-bbl ${isAdmin ? 'admin-bbl' : ''}">${esc(displayMsg)}${linkBtn}</div>`
         : '';
-      d.innerHTML = `
-        <div class="av av-sm" style="${m.is_me ? 'background:#a8d5b8;color:#1a7a4a;' : ''}">${esc(m.author.charAt(0).toUpperCase())}</div>
-        <div class="msg-inner">
-          <div class="msg-name">${esc(m.author)}${m.unit ? ' · ' + esc(m.unit) : ''}</div>
-          ${imgHtml}${msgHtml}
-          <div class="msg-time">${m.time}</div>
-        </div>`;
+
+      if (isAdmin) {
+        d.innerHTML = `
+          <div class="admin-av">${esc(m.author.charAt(0).toUpperCase())}</div>
+          <div class="msg-inner">
+            <div class="msg-name admin-name">
+              <i class="fas fa-shield-alt me-1" style="color:#f59e0b;font-size:0.7rem;"></i>
+              ${esc(m.author)} <span class="admin-badge">관리자</span>
+            </div>
+            ${imgHtml}${msgHtml}
+            <div class="msg-time">${m.time}</div>
+          </div>`;
+      } else {
+        d.innerHTML = `
+          <div class="av av-sm" style="${m.is_me ? 'background:#a8d5b8;color:#1a7a4a;' : ''}">${esc(m.author.charAt(0).toUpperCase())}</div>
+          <div class="msg-inner">
+            <div class="msg-name">${esc(m.author)}${m.unit ? ' · ' + esc(m.unit) : ''}</div>
+            ${imgHtml}${msgHtml}
+            <div class="msg-time">${m.time}</div>
+          </div>`;
+      }
       box.appendChild(d);
     }
   </script>

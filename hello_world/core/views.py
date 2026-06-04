@@ -873,13 +873,14 @@ def public_chat_messages(request):
     def serialize(m):
         return {
             'id': m.id,
-            'author': m.author.username,
+            'author': m.author.nickname or m.author.username,
             'unit': m.author.unit_number,
             'message': m.message,
             'image': request.build_absolute_uri(m.image.url) if m.image else None,
             'time': m.created_at.strftime('%H:%M'),
             'is_me': m.author == request.user,
             'is_pinned': m.is_pinned,
+            'is_admin': m.author.is_staff,
             'can_pin': request.user.is_staff,
         }
 
