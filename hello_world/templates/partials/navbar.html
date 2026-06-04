@@ -96,20 +96,20 @@
           </li>
           {% else %}
           <li class="nav-item">
-            <span class="nav-link" style="color:rgba(255,255,255,.6);padding:5px 6px;">
+            <span class="nav-link" style="color:#1F2937;padding:5px 6px;">
               <i class="bi bi-patch-check-fill" style="color:#90EE90;font-size:0.9rem;"></i>
             </span>
           </li>
           {% endif %}
           <li class="nav-item">
-            <a href="/notifications/" class="nav-link position-relative" style="color:#1F2937;" style="padding:5px 8px;">
+            <a href="/notifications/" class="nav-link position-relative" style="color:#1F2937;padding:5px 8px;">
               <i class="fas fa-bell"></i>
               <span id="noti-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#ff4444;border-radius:50%;border:1.5px solid #FDF6E3;"></span>
             </a>
           </li>
           {% if user.is_staff %}
           <li class="nav-item">
-            <a href="/admin/" class="nav-link" style="color:#1F2937;" style="font-size:0.82rem;padding:5px 8px;">
+            <a href="/admin/" class="nav-link" style="color:#1F2937;font-size:0.82rem;padding:5px 8px;">
               <i class="fas fa-cog"></i>
             </a>
           </li>
@@ -145,7 +145,7 @@
             </ul>
           </li>
         {% else %}
-          <li class="nav-item"><a class="nav-link" href="/accounts/login/" style="color:#1F2937;" style="font-size:0.82rem;">로그인</a></li>
+          <li class="nav-item"><a class="nav-link" href="/accounts/login/" style="color:#1F2937;font-size:0.82rem;">로그인</a></li>
           <li class="nav-item"><a class="nav-link fw-bold" href="/accounts/signup/" style="font-size:0.82rem;background:#6E2332;border-radius:8px;padding:4px 12px;color:#fff;">회원가입</a></li>
         {% endif %}
       </ul>
