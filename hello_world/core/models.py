@@ -248,8 +248,8 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['-is_pinned', '-created_at']
-        verbose_name = '게시글'
-        verbose_name_plural = '게시글'
+        verbose_name = '📋 게시글'
+        verbose_name_plural = '📋 게시글'
 
     def __str__(self):
         return self.title
@@ -477,8 +477,8 @@ class Group(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = '소모임'
-        verbose_name_plural = '소모임'
+        verbose_name = '🤝 소모임'
+        verbose_name_plural = '🤝 소모임'
 
     def __str__(self):
         return self.name
@@ -605,8 +605,8 @@ class GroupLeaderLog(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = '방장 활동 기록'
-        verbose_name_plural = '방장 활동 기록'
+        verbose_name = '🤝 방장 활동 기록'
+        verbose_name_plural = '🤝 방장 활동 기록'
 
     def __str__(self):
         return f"[{self.get_action_display()}] {self.actor} → {self.group.name}"
@@ -621,8 +621,8 @@ class GroupDissolveVote(models.Model):
     oppose_users = models.ManyToManyField('CustomUser', blank=True, related_name='opposed_dissolves')
 
     class Meta:
-        verbose_name = '해체 투표'
-        verbose_name_plural = '해체 투표'
+        verbose_name = '🤝 해체 투표'
+        verbose_name_plural = '🤝 해체 투표'
 
     def oppose_count(self):
         return self.oppose_users.count()
@@ -781,8 +781,8 @@ class Survey(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = '설문조사'
-        verbose_name_plural = '설문조사'
+        verbose_name = '⚙️ 설문조사'
+        verbose_name_plural = '⚙️ 설문조사'
 
     def __str__(self):
         return self.title
@@ -1030,8 +1030,8 @@ class CalendarEvent(models.Model):
 
     class Meta:
         ordering = ['start_time']
-        verbose_name = '캘린더 일정'
-        verbose_name_plural = '캘린더 일정'
+        verbose_name = '📅 캘린더 일정'
+        verbose_name_plural = '📅 캘린더 일정'
 
     def __str__(self):
         return f"[{self.get_event_type_display()}] {self.title}"
@@ -1066,8 +1066,8 @@ class UserFollow(models.Model):
     class Meta:
         unique_together = ('follower', 'following')
         ordering = ['-created_at']
-        verbose_name = '팔로우'
-        verbose_name_plural = '팔로우'
+        verbose_name = '👥 팔로우'
+        verbose_name_plural = '👥 팔로우'
 
     def __str__(self):
         return f"{self.follower.username} → {self.following.username}"
