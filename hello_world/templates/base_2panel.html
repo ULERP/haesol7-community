@@ -159,7 +159,7 @@
     {% for board in sb_boards %}
     <a href="/board/{{ board.id }}/" class="sb-item" data-tooltip="{{ board.name }}"><i class="{{ board.icon }}"></i><span class="sb-text">{{ board.name }}</span></a>
     {% empty %}
-    <a href="/board/" class="sb-item" data-tooltip="게시판"><i class="fas fa-clipboard-list"></i><span class="sb-text">게시판</span></a>
+    <a href="/boards/" class="sb-item" data-tooltip="게시판"><i class="fas fa-clipboard-list"></i><span class="sb-text">게시판</span></a>
     {% endfor %}
     </div>
     <div class="sb-divider"></div>
@@ -358,7 +358,7 @@ function switchRp(name, btn) {
 <nav class="mob-tabbar">
   <a href="/" class="mob-tab {% block tab_home %}{% endblock %}"><i class="fas fa-home"></i>홈</a>
   <a href="/chat/public/" class="mob-tab {% block tab_chat %}{% endblock %}"><i class="fas fa-comments"></i>대화하기</a>
-  <a href="/board/" class="mob-tab {% block tab_board %}{% endblock %}"><i class="fas fa-clipboard-list"></i>기록하기</a>
+  <a href="/boards/" class="mob-tab {% block tab_board %}{% endblock %}"><i class="fas fa-clipboard-list"></i>기록하기</a>
   <a href="/hub/together/" class="mob-tab {% block tab_together %}{% endblock %}"><i class="fas fa-hands-helping"></i>함께하기</a>
   <a href="/hub/news/" class="mob-tab {% block tab_news %}{% endblock %}"><i class="fas fa-bell"></i>단지소식</a>
 </nav>
