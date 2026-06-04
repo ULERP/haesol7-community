@@ -340,18 +340,10 @@
 
     <!-- 퀵 액션 바 -->
     <div class="quick-bar">
-      <a href="/chat/public/" class="qb-btn"><i class="fas fa-comments"></i>전체채팅</a>
-      <a href="/boards/" class="qb-btn"><i class="fas fa-clipboard-list"></i>게시판</a>
-      <a href="/notices/" class="qb-btn"><i class="fas fa-bell"></i>공지</a>
-      <a href="/complaints/" class="qb-btn"><i class="bi bi-megaphone"></i>민원·건의</a>
-      <a href="/surveys/" class="qb-btn"><i class="fas fa-poll"></i>설문</a>
-      <a href="/volunteer/" class="qb-btn"><i class="fas fa-calendar-alt"></i>봉사</a>
-      <a href="/groups/" class="qb-btn"><i class="fas fa-users"></i>소모임</a>
-      <a href="/community/docs/" class="qb-btn"><i class="fas fa-file-alt"></i>단지정보</a>
-      {% if user.is_authenticated %}
-      <a href="/activity/submit/" class="qb-btn"><i class="fas fa-camera"></i>활동인증</a>
-      <a href="/calendar/" class="qb-btn"><i class="fas fa-calendar"></i>캘린더</a>
-      {% endif %}
+      <a href="/chat/public/" class="qb-btn"><i class="fas fa-comments"></i>💬 대화하기</a>
+      <a href="/board/" class="qb-btn"><i class="fas fa-clipboard-list"></i>📋 기록하기</a>
+      <a href="/groups/" class="qb-btn"><i class="fas fa-hands-helping"></i>🤝 함께하기</a>
+      <a href="/notices/" class="qb-btn"><i class="fas fa-bell"></i>📢 단지소식</a>
     </div>
 
     <!-- 2컬럼 대시보드 -->
