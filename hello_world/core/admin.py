@@ -458,21 +458,24 @@ class AdminActionLogAdmin(admin.ModelAdmin):
 
 
 # ════════════════════════════════════════════════════
-# 커스텀 AdminSite — 대시보드 통계
+# 대시보드 통계 — admin.site.index 오버라이드
 # ════════════════════════════════════════════════════
-from django.contrib.admin import AdminSite as BaseAdminSite
+from django.contrib.admin import AdminSite
 
-class HaesolAdminSite(BaseAdminSite):
-    def index(self, request, extra_context=None):
-        from .models import CustomUser, Post, Group, ActivityProof, CalendarEvent, Survey
-        extra_context = extra_context or {}
-        extra_context.update({
-            'stat_total_users':    CustomUser.objects.filter(is_active=True).count(),
-            'stat_unverified':     CustomUser.objects.filter(is_verified=False, is_active=True).count(),
-            'stat_pending_proofs': ActivityProof.objects.filter(status='pending').count(),
-            'stat_pending_groups': Group.objects.filter(status='pending').count(),
-            'stat_total_posts':    Post.objects.filter(is_active=True).count(),
-            'stat_active_surveys': Survey.objects.filter(status='active').count(),
-        })
-        return super().index(request, extra_context)
+_original_index = AdminSite.index
+
+def _patched_index(self, request, extra_context=None):
+    from .models import CustomUser, Post, Group, ActivityProof, Survey
+    extra_context = extra_context or {}
+    extra_context.update({
+        'stat_total_users':    CustomUser.objects.filter(is_active=True).count(),
+        'stat_unverified':     CustomUser.objects.filter(is_verified=False, is_active=True).count(),
+        'stat_pending_proofs': ActivityProof.objects.filter(status='pending').count(),
+        'stat_pending_groups': Group.objects.filter(status='pending').count(),
+        'stat_total_posts':    Post.objects.filter(is_active=True).count(),
+        'stat_active_surveys': Survey.objects.filter(status='active').count(),
+    })
+    return _original_index(self, request, extra_context)
+
+AdminSite.index = _patched_index
 
