@@ -1,11 +1,11 @@
-<nav class="navbar navbar-expand-lg fixed-top" style="background:#1F2937;box-shadow:0 2px 8px rgba(0,0,0,.3);padding:0 12px;min-height:52px;z-index:1030;">
+<nav class="navbar navbar-expand-lg fixed-top" style="background:#FDF6E3;box-shadow:0 2px 8px rgba(0,0,0,.1);padding:0 12px;min-height:52px;z-index:1030;border-bottom:2px solid #C8A86B;">
   <div class="container-fluid px-0">
-    <a class="navbar-brand fw-bold text-white d-flex align-items-center gap-2" href="/" style="font-size:1rem;">
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="/" style="font-size:1rem;color:#1F2937;">
       {% load static %}<img src="{% static 'img/emblem.png' %}" style="height:32px;width:32px;object-fit:contain;" alt="지킴이">
-      <span style="letter-spacing:-.3px;">해솔7 지킴이</span>
+      <span style="letter-spacing:-.3px;color:#1F2937;">해솔7 지킴이</span>
     </a>
     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-            style="color:#fff;font-size:1.2rem;padding:4px 8px;">
+            style="color:#1F2937;font-size:1.2rem;padding:4px 8px;">
       <i class="fas fa-bars"></i>
     </button>
     <div class="collapse navbar-collapse" id="mainNav">
@@ -13,7 +13,7 @@
 
         <!-- 💬 대화하기 -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" style="color:#1F2937!important;" href="#"
              data-bs-toggle="dropdown" style="font-size:0.82rem;">
             <i class="fas fa-comments"></i>대화하기
           </a>
@@ -29,7 +29,7 @@
 
         <!-- 📋 기록하기 -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" style="color:#1F2937!important;" href="#"
              data-bs-toggle="dropdown" style="font-size:0.82rem;">
             <i class="fas fa-clipboard-list"></i>기록하기
           </a>
@@ -43,7 +43,7 @@
 
         <!-- 🤝 함께하기 -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" style="color:#1F2937!important;" href="#"
              data-bs-toggle="dropdown" style="font-size:0.82rem;">
             <i class="fas fa-hands-helping"></i>함께하기
           </a>
@@ -60,7 +60,7 @@
 
         <!-- 📢 단지소식 -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#"
+          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" style="color:#1F2937!important;" href="#"
              data-bs-toggle="dropdown" style="font-size:0.82rem;">
             <i class="fas fa-bell"></i>단지소식
           </a>
@@ -77,9 +77,9 @@
         <!-- 검색 -->
         <li class="nav-item">
           <form method="get" action="/search/" class="d-flex align-items-center ms-1">
-            <div class="d-flex align-items-center" style="background:rgba(255,255,255,.12);border-radius:20px;height:30px;overflow:hidden;border:1px solid rgba(200,168,107,.3);">
-              <input type="text" name="q" placeholder="검색..." class="border-0 bg-transparent text-white px-2" style="font-size:0.78rem;width:100px;outline:none;">
-              <button type="submit" class="border-0 bg-transparent text-white px-2"><i class="fas fa-search" style="font-size:0.75rem;"></i></button>
+            <div class="d-flex align-items-center" style="background:rgba(255,255,255,.8);border-radius:20px;height:30px;overflow:hidden;border:1px solid #C8A86B;">
+              <input type="text" name="q" placeholder="검색..." class="border-0 bg-transparent px-2" style="color:#1F2937;" style="font-size:0.78rem;width:100px;outline:none;">
+              <button type="submit" class="border-0 bg-transparent px-2" style="color:#6E2332;"><i class="fas fa-search" style="font-size:0.75rem;"></i></button>
             </div>
           </form>
         </li>
@@ -90,7 +90,7 @@
         {% if user.is_authenticated %}
           {% if not user_is_verified %}
           <li class="nav-item">
-            <a href="/verify/" class="nav-link d-flex align-items-center gap-1" style="font-size:0.75rem;color:#ffd700;background:rgba(255,215,0,.15);border-radius:8px;padding:3px 8px;border:1px solid rgba(255,215,0,.3);">
+            <a href="/verify/" class="nav-link d-flex align-items-center gap-1" style="font-size:0.75rem;color:#92400e;background:#fef3c7;border-radius:8px;padding:3px 8px;border:1px solid #C8A86B;">
               <i class="bi bi-patch-exclamation"></i>인증필요
             </a>
           </li>
@@ -102,14 +102,14 @@
           </li>
           {% endif %}
           <li class="nav-item">
-            <a href="/notifications/" class="nav-link text-white position-relative" style="padding:5px 8px;">
+            <a href="/notifications/" class="nav-link position-relative" style="color:#1F2937;" style="padding:5px 8px;">
               <i class="fas fa-bell"></i>
-              <span id="noti-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#ff4444;border-radius:50%;border:1.5px solid #1F2937;"></span>
+              <span id="noti-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#ff4444;border-radius:50%;border:1.5px solid #FDF6E3;"></span>
             </a>
           </li>
           {% if user.is_staff %}
           <li class="nav-item">
-            <a href="/admin/" class="nav-link text-white" style="font-size:0.82rem;padding:5px 8px;">
+            <a href="/admin/" class="nav-link" style="color:#1F2937;" style="font-size:0.82rem;padding:5px 8px;">
               <i class="fas fa-cog"></i>
             </a>
           </li>
@@ -117,7 +117,7 @@
           <li class="nav-item dropdown">
             <button class="btn d-flex align-items-center gap-1 dropdown-toggle"
                     data-bs-toggle="dropdown"
-                    style="background:rgba(200,168,107,.2);border:1px solid rgba(200,168,107,.4);border-radius:20px;color:#fff;padding:4px 12px;font-size:0.82rem;font-weight:600;">
+                    style="background:#6E2332;border:none;border-radius:20px;color:#fff;padding:4px 12px;font-size:0.82rem;font-weight:600;">
               <i class="fas fa-user" style="font-size:0.78rem;"></i>
               {{ user.nickname|default:user.username }}
               {% if user.is_verified %}<span style="font-size:0.7rem;opacity:.7;">{{ user.dong }}동</span>{% endif %}
@@ -145,8 +145,8 @@
             </ul>
           </li>
         {% else %}
-          <li class="nav-item"><a class="nav-link text-white" href="/accounts/login/" style="font-size:0.82rem;">로그인</a></li>
-          <li class="nav-item"><a class="nav-link fw-bold" href="/accounts/signup/" style="font-size:0.82rem;background:rgba(255,255,255,.2);border-radius:8px;padding:4px 12px;color:#fff;">회원가입</a></li>
+          <li class="nav-item"><a class="nav-link" href="/accounts/login/" style="color:#1F2937;" style="font-size:0.82rem;">로그인</a></li>
+          <li class="nav-item"><a class="nav-link fw-bold" href="/accounts/signup/" style="font-size:0.82rem;background:#6E2332;border-radius:8px;padding:4px 12px;color:#fff;">회원가입</a></li>
         {% endif %}
       </ul>
     </div>
