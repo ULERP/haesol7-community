@@ -22,6 +22,7 @@ else:
     CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:8000').split(',')
 
 INSTALLED_APPS = [
+    'jazzmin',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -179,3 +180,101 @@ DEFAULT_FROM_EMAIL  = config('EMAIL_HOST_USER', default='noreply@haesol7.com')
 # 개발 중 이메일 미설정 시 콘솔 출력으로 폴백
 if not EMAIL_HOST_USER:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# ════════════════════════════════════════════════════
+# Jazzmin 관리자 UI 설정
+# ════════════════════════════════════════════════════
+JAZZMIN_SETTINGS = {
+    "site_title": "해솔7 지킴이",
+    "site_header": "해솔7 지킴이 관리자",
+    "site_brand": "🌿 해솔7",
+    "welcome_sign": "해솔마을 7단지 지킴이 관리자 페이지입니다",
+    "copyright": "해솔마을7단지 지킴이",
+    "search_model": ["core.CustomUser", "core.Post"],
+    "topmenu_links": [
+        {"name": "🏠 사이트", "url": "/", "new_window": True},
+        {"name": "📋 게시판", "url": "/boards/", "new_window": True},
+        {"name": "👥 회원관리", "model": "core.CustomUser"},
+    ],
+    "usermenu_links": [
+        {"name": "🏠 사이트 보기", "url": "/", "new_window": True},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": False,
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.group": "fas fa-users",
+        "core.customuser": "fas fa-user-circle",
+        "core.membergrade": "fas fa-trophy",
+        "core.badge": "fas fa-medal",
+        "core.userbadge": "fas fa-award",
+        "core.userfollow": "fas fa-user-friends",
+        "core.rating": "fas fa-heart",
+        "core.board": "fas fa-clipboard-list",
+        "core.post": "fas fa-file-alt",
+        "core.comment": "fas fa-comment",
+        "core.managementdocument": "fas fa-file-pdf",
+        "core.group": "fas fa-users",
+        "core.groupmember": "fas fa-user-plus",
+        "core.groupleaderlog": "fas fa-history",
+        "core.groupdissolvevote": "fas fa-vote-yea",
+        "core.activity": "fas fa-running",
+        "core.activityproof": "fas fa-camera",
+        "core.calendarevent": "fas fa-calendar-alt",
+        "core.event": "fas fa-calendar",
+        "core.survey": "fas fa-poll",
+        "core.notification": "fas fa-bell",
+        "core.siteconfig": "fas fa-cog",
+        "core.adminactionlog": "fas fa-shield-alt",
+    },
+    "order_with_respect_to": [
+        "core.customuser", "core.membergrade", "core.badge",
+        "core.userbadge", "core.userfollow", "core.rating",
+        "core.board", "core.post", "core.comment", "core.managementdocument",
+        "core.group", "core.groupmember", "core.groupleaderlog", "core.groupdissolvevote",
+        "core.activity", "core.activityproof", "core.calendarevent", "core.event",
+        "core.survey", "core.notification",
+        "core.siteconfig", "core.adminactionlog",
+    ],
+    "default_icon_parents": "fas fa-folder",
+    "default_icon_children": "fas fa-circle",
+    "related_modal_active": True,
+    "custom_css": None,
+    "custom_js": None,
+    "show_ui_builder": False,
+    "changeform_format": "horizontal_tabs",
+    "language_chooser": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-success",
+    "accent": "accent-teal",
+    "navbar": "navbar-success navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-success",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": True,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
+}
