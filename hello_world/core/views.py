@@ -635,14 +635,19 @@ def volunteer_calendar(request):
     })
 
 def volunteer_detail(request, pk):
-    from .models import Meetup
+    from .models import Meetup, MeetupRating
     meetup = get_object_or_404(Meetup, pk=pk)
     is_joined = False
+    has_rated = False
     if request.user.is_authenticated:
         is_joined = meetup.participants.filter(pk=request.user.pk).exists()
+        has_rated = MeetupRating.objects.filter(meetup=meetup, rater=request.user).exists()
+    ratings = MeetupRating.objects.filter(meetup=meetup).select_related('rater').order_by('-created_at')
     return render(request, 'volunteer_detail.html', {
         'meetup': meetup,
         'is_joined': is_joined,
+        'has_rated': has_rated,
+        'ratings': ratings,
         'participant_count': meetup.participants.count(),
     })
 
@@ -3181,3 +3186,196 @@ def user_search_api(request):
         for u in qs[:8]
     ]
     return JsonResponse({'results': results})
+
+
+# ============================================================================
+# 봉사활동 CRUD (소모임장 + 관리자만 작성/편집/삭제)
+# ============================================================================
+@login_required
+def volunteer_create(request):
+    from .models import Meetup, Group, GroupMember
+    # 소모임장이거나 관리자
+    is_leader = GroupMember.objects.filter(
+        user=request.user, role='leader', is_active=True
+    ).exists()
+    if not (request.user.is_staff or is_leader):
+        messages.error(request, '소모임장 또는 관리자만 봉사활동을 등록할 수 있어요.')
+        return redirect('volunteer_calendar')
+
+    my_groups = []
+    if request.user.is_staff:
+        my_groups = Group.objects.filter(is_active=True)
+    else:
+        my_groups = Group.objects.filter(
+            groupmember__user=request.user,
+            groupmember__role='leader',
+            groupmember__is_active=True
+        )
+
+    if request.method == 'POST':
+        title       = request.POST.get('title','').strip()
+        description = request.POST.get('description','').strip()
+        location    = request.POST.get('location','').strip()
+        scheduled_at = request.POST.get('scheduled_at','').strip()
+        max_participants = request.POST.get('max_participants') or None
+        group_id    = request.POST.get('group_id') or None
+        status      = request.POST.get('status','recruiting')
+
+        if not title:
+            messages.error(request, '제목을 입력해주세요.')
+            return render(request, 'volunteer_form.html', {'my_groups': my_groups})
+
+        from django.utils.dateparse import parse_datetime
+        meetup = Meetup.objects.create(
+            title=title,
+            description=description,
+            location=location,
+            scheduled_at=parse_datetime(scheduled_at) if scheduled_at else None,
+            max_participants=int(max_participants) if max_participants else None,
+            group_id=group_id,
+            creator=request.user,
+            status=status,
+        )
+        messages.success(request, f'"{title}" 봉사활동이 등록됐어요!')
+        return redirect('volunteer_detail', pk=meetup.pk)
+
+    return render(request, 'volunteer_form.html', {'my_groups': my_groups})
+
+
+@login_required
+def volunteer_edit(request, pk):
+    from .models import Meetup, Group, GroupMember
+    meetup = get_object_or_404(Meetup, pk=pk)
+    is_leader = meetup.creator == request.user or request.user.is_staff
+    if not is_leader:
+        messages.error(request, '수정 권한이 없어요.')
+        return redirect('volunteer_detail', pk=pk)
+
+    my_groups = Group.objects.filter(is_active=True) if request.user.is_staff else         Group.objects.filter(groupmember__user=request.user, groupmember__role='leader', groupmember__is_active=True)
+
+    if request.method == 'POST':
+        from django.utils.dateparse import parse_datetime
+        meetup.title       = request.POST.get('title', meetup.title).strip()
+        meetup.description = request.POST.get('description', meetup.description).strip()
+        meetup.location    = request.POST.get('location', meetup.location).strip()
+        scheduled_at       = request.POST.get('scheduled_at','').strip()
+        if scheduled_at:
+            meetup.scheduled_at = parse_datetime(scheduled_at)
+        max_p = request.POST.get('max_participants') or None
+        meetup.max_participants = int(max_p) if max_p else None
+        meetup.status      = request.POST.get('status', meetup.status)
+        group_id           = request.POST.get('group_id') or None
+        meetup.group_id    = group_id
+        meetup.save()
+        messages.success(request, '봉사활동이 수정됐어요.')
+        return redirect('volunteer_detail', pk=pk)
+
+    return render(request, 'volunteer_form.html', {
+        'meetup': meetup,
+        'my_groups': my_groups,
+        'edit': True,
+    })
+
+
+@login_required
+def volunteer_delete(request, pk):
+    from .models import Meetup
+    meetup = get_object_or_404(Meetup, pk=pk)
+    if meetup.creator != request.user and not request.user.is_staff:
+        messages.error(request, '삭제 권한이 없어요.')
+        return redirect('volunteer_detail', pk=pk)
+    if request.method == 'POST':
+        meetup.delete()
+        messages.success(request, '봉사활동이 삭제됐어요.')
+        return redirect('volunteer_calendar')
+    return redirect('volunteer_detail', pk=pk)
+
+
+# ============================================================================
+# 봉사활동 - 관리자 승인 / 완료 처리 / 평가
+# ============================================================================
+@login_required
+def volunteer_confirm(request, pk):
+    """관리자 승인 → 모집중으로 변경 + 전체 알림"""
+    from .models import Meetup, Notification
+    if not request.user.is_staff:
+        messages.error(request, '관리자만 승인할 수 있어요.')
+        return redirect('volunteer_detail', pk=pk)
+    meetup = get_object_or_404(Meetup, pk=pk)
+    if request.method == 'POST':
+        from django.utils import timezone
+        meetup.is_confirmed = True
+        meetup.status = 'recruiting'
+        meetup.confirmed_by = request.user
+        meetup.confirmed_at = timezone.now()
+        meetup.save()
+        # 전체 알림 발송
+        from .models import CustomUser
+        users = CustomUser.objects.filter(is_active=True).exclude(pk=meetup.creator.pk)
+        notifications = [
+            Notification(
+                recipient=u,
+                title=f'새 봉사활동 모집: {meetup.title}',
+                message=f'{meetup.scheduled_at.strftime("%m/%d") if meetup.scheduled_at else ""} | {meetup.location} | 최대 {meetup.max_participants}명',
+                notification_type='activity',
+                link=f'/volunteer/{meetup.pk}/',
+            ) for u in users
+        ]
+        Notification.objects.bulk_create(notifications, ignore_conflicts=True)
+        messages.success(request, f'"{meetup.title}" 승인 완료! {len(notifications)}명에게 알림을 보냈어요.')
+    return redirect('volunteer_detail', pk=pk)
+
+
+@login_required
+def volunteer_complete(request, pk):
+    """활동 완료 처리"""
+    from .models import Meetup
+    meetup = get_object_or_404(Meetup, pk=pk)
+    if meetup.creator != request.user and not request.user.is_staff:
+        messages.error(request, '권한이 없어요.')
+        return redirect('volunteer_detail', pk=pk)
+    if request.method == 'POST':
+        meetup.status = 'completed'
+        meetup.result_note = request.POST.get('result_note', '').strip()
+        meetup.save()
+        messages.success(request, '활동이 완료 처리됐어요. 참가자들이 평가를 남길 수 있어요.')
+    return redirect('volunteer_detail', pk=pk)
+
+
+@login_required
+def volunteer_rate(request, pk):
+    """봉사활동 평가 (참가자만)"""
+    from .models import Meetup, MeetupRating
+    meetup = get_object_or_404(Meetup, pk=pk)
+
+    if meetup.status != 'completed':
+        messages.error(request, '완료된 활동만 평가할 수 있어요.')
+        return redirect('volunteer_detail', pk=pk)
+
+    if not meetup.participants.filter(pk=request.user.pk).exists():
+        messages.error(request, '참가자만 평가할 수 있어요.')
+        return redirect('volunteer_detail', pk=pk)
+
+    if MeetupRating.objects.filter(meetup=meetup, rater=request.user).exists():
+        messages.warning(request, '이미 평가를 남기셨어요.')
+        return redirect('volunteer_detail', pk=pk)
+
+    if request.method == 'POST':
+        score   = int(request.POST.get('score', 3))
+        comment = request.POST.get('comment', '').strip()
+        MeetupRating.objects.create(meetup=meetup, rater=request.user, score=score, comment=comment)
+
+        # 평균 평점 업데이트
+        ratings = MeetupRating.objects.filter(meetup=meetup)
+        meetup.avg_rating   = sum(r.score for r in ratings) / len(ratings)
+        meetup.rating_count = len(ratings)
+        meetup.save(update_fields=['avg_rating', 'rating_count'])
+
+        # 평가자에게 포인트 지급
+        request.user.mileage_points = (request.user.mileage_points or 0) + 5
+        request.user.save(update_fields=['mileage_points'])
+
+        messages.success(request, f'평가 완료! 포인트 5점이 적립됐어요.')
+        return redirect('volunteer_detail', pk=pk)
+
+    return render(request, 'volunteer_rate.html', {'meetup': meetup})

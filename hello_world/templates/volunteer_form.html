@@ -1,0 +1,72 @@
+{% extends 'base_2panel.html' %}
+{% block title %}{% if edit %}봉사활동 수정{% else %}봉사활동 등록{% endif %}{% endblock %}
+{% block content %}
+<div class="card border-0" style="border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);max-width:600px;margin:0 auto;">
+  <div class="p-4" style="background:linear-gradient(135deg,#1a7a4a,#1e9158);">
+    <h5 class="text-white fw-bold mb-0">
+      <i class="fas fa-heart me-2"></i>{% if edit %}봉사활동 수정{% else %}봉사활동 등록{% endif %}
+    </h5>
+  </div>
+  <div class="p-4">
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">제목 <span class="text-danger">*</span></label>
+        <input type="text" name="title" class="form-control" value="{{ meetup.title|default:'' }}" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">내용</label>
+        <textarea name="description" class="form-control" rows="4">{{ meetup.description|default:'' }}</textarea>
+      </div>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">장소</label>
+          <input type="text" name="location" class="form-control" value="{{ meetup.location|default:'' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">최대 인원</label>
+          <input type="number" name="max_participants" class="form-control" value="{{ meetup.max_participants|default:'' }}" min="1">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">일정</label>
+        <input type="datetime-local" name="scheduled_at" class="form-control"
+               value="{% if meetup.scheduled_at %}{{ meetup.scheduled_at|date:'Y-m-d' }}T{{ meetup.scheduled_at|date:'H:i' }}{% endif %}">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">상태</label>
+        <select name="status" class="form-select">
+          <option value="recruiting" {% if meetup.status == 'recruiting' %}selected{% endif %}>모집중</option>
+          <option value="confirmed" {% if meetup.status == 'confirmed' %}selected{% endif %}>확정</option>
+          <option value="completed" {% if meetup.status == 'completed' %}selected{% endif %}>완료</option>
+          <option value="cancelled" {% if meetup.status == 'cancelled' %}selected{% endif %}>취소</option>
+        </select>
+      </div>
+      {% if my_groups %}
+      <div class="mb-3">
+        <label class="form-label">연결 소모임 (선택)</label>
+        <select name="group_id" class="form-select">
+          <option value="">전체 공개</option>
+          {% for g in my_groups %}
+          <option value="{{ g.pk }}" {% if meetup.group_id == g.pk %}selected{% endif %}>{{ g.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-success px-4">
+          <i class="fas fa-save me-1"></i>{% if edit %}저장{% else %}등록{% endif %}
+        </button>
+        <a href="{% url 'volunteer_calendar' %}" class="btn btn-outline-secondary px-4">취소</a>
+        {% if edit %}
+        <form method="post" action="{% url 'volunteer_delete' meetup.pk %}" class="d-inline ms-auto">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-danger px-4"
+                  onclick="return confirm('삭제하시겠어요?')">삭제</button>
+        </form>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

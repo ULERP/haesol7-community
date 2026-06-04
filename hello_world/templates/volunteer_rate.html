@@ -1,0 +1,46 @@
+{% extends 'base_2panel.html' %}
+{% block title %}봉사활동 평가{% endblock %}
+{% block content %}
+<div class="card border-0" style="border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);max-width:500px;margin:0 auto;">
+  <div class="p-4" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+    <h5 class="text-white fw-bold mb-0">⭐ 봉사활동 평가</h5>
+    <div style="color:rgba(255,255,255,.85);font-size:0.82rem;margin-top:4px;">{{ meetup.title }}</div>
+  </div>
+  <div class="p-4">
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-4 text-center">
+        <div style="font-size:0.82rem;color:#6b7280;margin-bottom:16px;">활동은 어떠셨나요?</div>
+        <div class="d-flex justify-content-center gap-3" id="starRating">
+          {% for i in "12345" %}
+          <label style="cursor:pointer;font-size:2rem;" class="star-label" data-score="{{ forloop.counter }}">
+            <input type="radio" name="score" value="{{ forloop.counter }}" style="display:none;" {% if forloop.counter == 3 %}checked{% endif %}>
+            <span class="star">⭐</span>
+          </label>
+          {% endfor %}
+        </div>
+        <div id="scoreText" style="font-size:0.82rem;color:#f59e0b;margin-top:8px;font-weight:600;">보통이에요</div>
+      </div>
+      <div class="mb-3">
+        <textarea name="comment" class="form-control" rows="3" placeholder="한마디 남겨주세요 (선택)"></textarea>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-warning px-4 fw-bold">평가 제출</button>
+        <a href="{% url 'volunteer_detail' meetup.pk %}" class="btn btn-outline-secondary px-4">취소</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+const texts = ['', '별로였어요😞', '아쉬웠어요😐', '보통이에요😊', '좋았어요😄', '최고였어요🎉'];
+document.querySelectorAll('.star-label').forEach(label => {
+  label.addEventListener('click', function() {
+    const score = parseInt(this.dataset.score);
+    document.getElementById('scoreText').textContent = texts[score];
+    document.querySelectorAll('.star-label').forEach((l, i) => {
+      l.querySelector('.star').style.opacity = i < score ? '1' : '0.3';
+    });
+  });
+});
+</script>
+{% endblock %}

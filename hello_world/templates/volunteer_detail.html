@@ -1,72 +1,159 @@
 {% extends 'base_2panel.html' %}
-{% block menu_volunteer %}active{% endblock %}
 {% block title %}{{ meetup.title }}{% endblock %}
 {% block content %}
-  <div class="row justify-content-center">
-    <div class="col-12 col-md-8">
-      <div class="card shadow-sm border-0">
-        <div class="card-header bg-success text-white py-3">
-          <h5 class="mb-0 fw-bold"><i class="fas fa-hands-helping me-2"></i>{{ meetup.title }}</h5>
-        </div>
-        <div class="card-body p-4">
-          <div class="row g-3 mb-4">
-            <div class="col-6">
-              <div class="bg-light rounded p-3 text-center">
-                <div class="text-muted small mb-1"><i class="fas fa-calendar me-1"></i>일시</div>
-                <div class="fw-bold">{{ meetup.scheduled_at|date:"m.d H:i" }}</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="bg-light rounded p-3 text-center">
-                <div class="text-muted small mb-1"><i class="fas fa-map-marker-alt me-1"></i>장소</div>
-                <div class="fw-bold">{{ meetup.location|default:"미정" }}</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="bg-light rounded p-3 text-center">
-                <div class="text-muted small mb-1"><i class="fas fa-users me-1"></i>참가 인원</div>
-                <div class="fw-bold">
-                  {{ participant_count }}
-                  {% if meetup.max_participants %} / {{ meetup.max_participants }}명{% endif %}
-                </div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="bg-light rounded p-3 text-center">
-                <div class="text-muted small mb-1"><i class="fas fa-clock me-1"></i>소요시간</div>
-                <div class="fw-bold">{{ meetup.duration_minutes }}분</div>
-              </div>
-            </div>
-          </div>
-          <div class="mb-4">
-            <h6 class="fw-bold">활동 내용</h6>
-            <p style="white-space:pre-wrap">{{ meetup.description }}</p>
-          </div>
-          {% if user.is_authenticated %}
-          <form method="post" action="{% url 'volunteer_join' meetup.pk %}">
-            {% csrf_token %}
-            {% if is_joined %}
-            <button type="submit" class="btn btn-outline-danger w-100 py-3">
-              <i class="fas fa-times me-2"></i>참가 신청 취소
-            </button>
+<div style="max-width:680px;margin:0 auto;">
+
+  <!-- 헤더 -->
+  <div class="card border-0 mb-3" style="border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
+    <div class="p-4" style="background:linear-gradient(135deg,#1a7a4a,#1e9158);">
+      <div class="d-flex align-items-start justify-content-between">
+        <div>
+          <div class="d-flex gap-2 mb-2 flex-wrap">
+            {% if meetup.is_confirmed %}
+              {% if meetup.status == 'recruiting' %}<span class="badge bg-warning text-dark">🙋 모집중</span>
+              {% elif meetup.status == 'confirmed' %}<span class="badge bg-info">✅ 확정</span>
+              {% elif meetup.status == 'completed' %}<span class="badge bg-secondary">🏁 완료</span>
+              {% elif meetup.status == 'cancelled' %}<span class="badge bg-danger">❌ 취소</span>
+              {% endif %}
             {% else %}
-            <button type="submit" class="btn btn-success w-100 py-3 fw-bold">
-              <i class="fas fa-check me-2"></i>참가 신청하기
-            </button>
+              <span class="badge bg-secondary">⏳ 승인 대기</span>
             {% endif %}
-          </form>
-          {% else %}
-          <a href="/accounts/login/" class="btn btn-outline-success w-100 py-3">
-            로그인 후 참가 신청 가능합니다
-          </a>
-          {% endif %}
+            {% if meetup.group %}<span class="badge" style="background:rgba(255,255,255,.2);color:#fff;">🤝 {{ meetup.group.name }}</span>{% endif %}
+          </div>
+          <h5 class="text-white fw-bold mb-1">{{ meetup.title }}</h5>
+          <div style="color:rgba(255,255,255,.8);font-size:0.82rem;">
+            {% if meetup.scheduled_at %}📅 {{ meetup.scheduled_at|date:"Y년 m월 d일 H:i" }}{% endif %}
+            {% if meetup.location %} · 📍 {{ meetup.location }}{% endif %}
+          </div>
         </div>
-      </div>
-      <div class="mt-3">
-        <a href="{% url 'volunteer_calendar' %}" class="btn btn-outline-secondary">
-          <i class="fas fa-arrow-left me-1"></i>달력으로
-        </a>
+        {% if meetup.avg_rating > 0 %}
+        <div class="text-center" style="background:rgba(255,255,255,.15);border-radius:12px;padding:8px 14px;">
+          <div class="text-white fw-bold" style="font-size:1.4rem;">{{ meetup.avg_rating|floatformat:1 }}</div>
+          <div style="color:rgba(255,255,255,.8);font-size:0.68rem;">⭐ {{ meetup.rating_count }}명 평가</div>
+        </div>
+        {% endif %}
       </div>
     </div>
+
+    <!-- 인원 현황 -->
+    <div class="px-4 py-3 border-bottom d-flex gap-4">
+      <div class="text-center">
+        <div class="fw-bold" style="color:var(--g);font-size:1.2rem;">{{ participant_count }}</div>
+        <div style="font-size:0.7rem;color:#9ca3af;">현재 인원</div>
+      </div>
+      {% if meetup.min_participants %}
+      <div class="text-center">
+        <div class="fw-bold text-warning" style="font-size:1.2rem;">{{ meetup.min_participants }}</div>
+        <div style="font-size:0.7rem;color:#9ca3af;">최소 인원</div>
+      </div>
+      {% endif %}
+      {% if meetup.max_participants %}
+      <div class="text-center">
+        <div class="fw-bold text-info" style="font-size:1.2rem;">{{ meetup.max_participants }}</div>
+        <div style="font-size:0.7rem;color:#9ca3af;">최대 인원</div>
+      </div>
+      {% endif %}
+      <div class="text-center ms-auto">
+        <div style="font-size:0.72rem;color:#6b7280;">주최자</div>
+        <div class="fw-semibold" style="font-size:0.84rem;">{{ meetup.creator.nickname|default:meetup.creator.username }}</div>
+      </div>
+    </div>
+
+    <!-- 내용 -->
+    <div class="p-4">
+      <p style="color:#374151;line-height:1.7;white-space:pre-line;">{{ meetup.description }}</p>
+
+      {% if meetup.result_note %}
+      <div style="background:#f0fdf7;border-radius:10px;padding:14px;margin-top:12px;border-left:3px solid var(--g);">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--g);margin-bottom:6px;">📋 활동 결과</div>
+        <p style="font-size:0.84rem;color:#374151;margin:0;white-space:pre-line;">{{ meetup.result_note }}</p>
+      </div>
+      {% endif %}
+    </div>
   </div>
+
+  <!-- 액션 버튼 -->
+  <div class="card border-0 mb-3 p-3" style="border-radius:14px;box-shadow:0 1px 6px rgba(0,0,0,.07);">
+
+    {% if user.is_authenticated %}
+    <div class="d-flex flex-wrap gap-2">
+
+      <!-- 참가/취소 -->
+      {% if meetup.status == 'recruiting' and meetup.is_confirmed %}
+      <form method="post" action="{% url 'volunteer_join' meetup.pk %}">
+        {% csrf_token %}
+        {% if is_joined %}
+        <button class="btn btn-outline-danger btn-sm px-3">참가 취소</button>
+        {% else %}
+        <button class="btn btn-success btn-sm px-3">🙋 참가 신청</button>
+        {% endif %}
+      </form>
+      {% endif %}
+
+      <!-- 관리자 승인 -->
+      {% if user.is_staff and not meetup.is_confirmed %}
+      <form method="post" action="{% url 'volunteer_confirm' meetup.pk %}">
+        {% csrf_token %}
+        <button class="btn btn-warning btn-sm px-3">✅ 승인 및 모집 시작</button>
+      </form>
+      {% endif %}
+
+      <!-- 완료 처리 -->
+      {% if meetup.status == 'recruiting' or meetup.status == 'confirmed' %}
+      {% if meetup.creator == user or user.is_staff %}
+      <button class="btn btn-outline-secondary btn-sm px-3" data-bs-toggle="collapse" data-bs-target="#completeForm">
+        🏁 완료 처리
+      </button>
+      {% endif %}
+      {% endif %}
+
+      <!-- 평가 -->
+      {% if meetup.status == 'completed' and is_joined and not has_rated %}
+      <a href="{% url 'volunteer_rate' meetup.pk %}" class="btn btn-outline-warning btn-sm px-3">⭐ 평가하기</a>
+      {% endif %}
+
+      <!-- 수정 -->
+      {% if meetup.creator == user or user.is_staff %}
+      <a href="{% url 'volunteer_edit' meetup.pk %}" class="btn btn-outline-success btn-sm px-3">✏️ 수정</a>
+      {% endif %}
+
+    </div>
+
+    <!-- 완료 처리 폼 -->
+    {% if meetup.creator == user or user.is_staff %}
+    <div class="collapse mt-3" id="completeForm">
+      <form method="post" action="{% url 'volunteer_complete' meetup.pk %}">
+        {% csrf_token %}
+        <textarea name="result_note" class="form-control mb-2" rows="3" placeholder="활동 결과를 간단히 적어주세요"></textarea>
+        <button class="btn btn-success btn-sm">완료 처리</button>
+      </form>
+    </div>
+    {% endif %}
+
+    {% endif %}
+  </div>
+
+  <!-- 평가 목록 -->
+  {% if ratings %}
+  <div class="card border-0 p-4" style="border-radius:14px;box-shadow:0 1px 6px rgba(0,0,0,.07);">
+    <div style="font-size:0.72rem;font-weight:700;color:#9ca3af;margin-bottom:14px;">참가자 평가</div>
+    {% for r in ratings %}
+    <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+      <div style="width:36px;height:36px;border-radius:50%;background:#e8f5ee;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--g);flex-shrink:0;">
+        {{ r.rater.nickname|default:r.rater.username|first|upper }}
+      </div>
+      <div>
+        <div class="d-flex align-items-center gap-2">
+          <span style="font-size:0.84rem;font-weight:600;">{{ r.rater.nickname|default:r.rater.username }}</span>
+          <span style="color:#f59e0b;">{% for i in "12345" %}{% if forloop.counter <= r.score %}⭐{% endif %}{% endfor %}</span>
+        </div>
+        {% if r.comment %}<div style="font-size:0.8rem;color:#6b7280;margin-top:2px;">{{ r.comment }}</div>{% endif %}
+        <div style="font-size:0.7rem;color:#d1d5db;">{{ r.created_at|date:"m/d" }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
 {% endblock %}

@@ -533,7 +533,14 @@ class Meetup(models.Model):
     scheduled_at     = models.DateTimeField(null=True, blank=True)
     duration_minutes = models.IntegerField(default=60)
     max_participants = models.IntegerField(blank=True, null=True)
-    status           = models.CharField(max_length=20, choices=STATUS_CHOICES, default='recruiting')
+    status           = models.CharField(max_length=20, choices=STATUS_CHOICES, default='planned')
+    min_participants = models.IntegerField(default=2, verbose_name='최소 인원')
+    avg_rating       = models.FloatField(default=0.0, verbose_name='평균 평점')
+    rating_count     = models.IntegerField(default=0, verbose_name='평가 수')
+    is_confirmed     = models.BooleanField(default=False, verbose_name='관리자 승인')
+    confirmed_by     = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='confirmed_meetups')
+    confirmed_at     = models.DateTimeField(null=True, blank=True)
+    result_note      = models.TextField(blank=True, verbose_name='활동 결과')
     thumbnail        = models.ImageField(upload_to='meetups/', blank=True, null=True)
     created_at       = models.DateTimeField(auto_now_add=True)
     updated_at       = models.DateTimeField(auto_now=True)
@@ -547,6 +554,23 @@ class Meetup(models.Model):
         return self.title
 
 
+
+
+class MeetupRating(models.Model):
+    """봉사활동 평가"""
+    meetup     = models.ForeignKey(Meetup, on_delete=models.CASCADE, related_name='ratings')
+    rater      = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='meetup_ratings')
+    score      = models.IntegerField(choices=[(i,i) for i in range(1,6)], verbose_name='평점')
+    comment    = models.TextField(blank=True, verbose_name='한마디')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('meetup', 'rater')
+        verbose_name = '봉사활동 평가'
+        verbose_name_plural = '봉사활동 평가'
+
+    def __str__(self):
+        return f"{self.meetup.title} - {self.rater.nickname} ({self.score}점)"
 class GroupPost(models.Model):
     group         = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='posts')
     author        = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='group_posts')
