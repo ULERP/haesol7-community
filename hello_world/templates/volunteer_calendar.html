@@ -24,7 +24,9 @@ document.addEventListener('DOMContentLoaded', function() {
   var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
     initialView: 'dayGridMonth',
     locale: 'ko',
-    headerToolbar: {left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek'},
+    headerToolbar: {left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'},
+    buttonText: {today:'오늘', month:'월간', week:'주간', day:'일간', list:'목록'},
+    nowIndicator: true,
     events: events,
     eventColor: '#198754',
     eventClick: function(info) {
