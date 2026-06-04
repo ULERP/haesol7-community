@@ -244,6 +244,15 @@ JAZZMIN_SETTINGS = {
         "core.siteconfig": "fas fa-cog",
         "core.adminactionlog": "fas fa-shield-alt",
     },
+    "groups": {
+        "core": {
+            "👥 회원 관리": ["customuser", "membergrade", "badge", "userbadge", "userfollow", "rating"],
+            "📋 게시판": ["board", "post", "comment", "managementdocument"],
+            "🤝 소모임": ["group", "groupmember", "groupleaderlog", "groupdissolvevote"],
+            "📅 활동/봉사": ["activity", "activityproof", "calendarevent", "event"],
+            "⚙️ 운영": ["survey", "notification", "siteconfig", "adminactionlog"],
+        }
+    },
     "order_with_respect_to": [
         "core.customuser", "core.membergrade", "core.badge",
         "core.userbadge", "core.userfollow", "core.rating",
