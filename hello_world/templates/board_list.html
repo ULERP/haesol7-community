@@ -2,70 +2,89 @@
 {% block title %}게시판 목록 — 해솔7{% endblock %}
 {% block content %}
 
+{% load static %}
+{% now "Y-m-d" as today %}
+
+<style>
+.board-card { background:#fff; border:1px solid #e8e8e8; border-radius:14px; overflow:hidden; transition:border-color .15s, box-shadow .15s; }
+.board-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.1); }
+.post-row:hover { background:#fafafa; }
+.btn-view { display:block; text-align:center; padding:7px; background:#FAFAFA; border:1px solid #e8e8e8; border-radius:8px; font-size:0.78rem; font-weight:700; color:#242424; text-decoration:none; transition:all .15s; }
+.btn-view:hover { background:#242424; color:#FAFAFA; border-color:#242424; }
+.new-badge { display:inline-block; font-size:0.58rem; font-weight:800; padding:1px 5px; border-radius:4px; background:#7A263A; color:#fff; margin-left:5px; vertical-align:middle; letter-spacing:.03em; }
+</style>
+
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
   <h3 style="font-size:1.1rem;font-weight:800;color:#242424;margin:0;">
     <i class="fas fa-clipboard-list me-2" style="color:#D4B26A;"></i>게시판 목록
   </h3>
+  <span style="font-size:0.78rem;color:#9ca3af;">{{ boards_with_posts|length }}개 게시판</span>
 </div>
 
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
 {% for item in boards_with_posts %}
 {% with board=item.board posts=item.recent_posts %}
-<div style="background:#fff;border:1px solid #e8e8e8;border-radius:14px;overflow:hidden;transition:border-color .15s,box-shadow .15s;"
-     onmouseover="this.style.borderColor='#D4B26A';this.style.boxShadow='0 4px 16px rgba(212,178,106,.15)'"
-     onmouseout="this.style.borderColor='#e8e8e8';this.style.boxShadow='none'">
 
-  <!-- 카드 헤더 -->
+{% comment %}게시판별 대표색{% endcomment %}
+{% if "공지" in board.name or "행정" in board.name %}
+  {% with accent="#7A263A" accent_bg="#fdf5f6" accent_border="#f0e0e3" %}
+{% elif "소통" in board.name or "나눔" in board.name or "장터" in board.name %}
+  {% with accent="#D4B26A" accent_bg="#fdf9f0" accent_border="#f0e4c0" %}
+{% elif "생활" in board.name or "정보" in board.name %}
+  {% with accent="#4a7a9b" accent_bg="#f0f6fb" accent_border="#c8dff0" %}
+{% elif "여가" in board.name or "활동" in board.name %}
+  {% with accent="#5a7a4a" accent_bg="#f0f5ee" accent_border="#c0d8b8" %}
+{% else %}
+  {% with accent="#242424" accent_bg="#f5f5f5" accent_border="#e0e0e0" %}
+{% endif %}
+
+<div class="board-card" style="border-top:3px solid {{ accent }};">
   <a href="{% url 'board_detail' board.id %}" style="text-decoration:none;display:block;">
-    <div style="background:linear-gradient(135deg,#242424,#3a3a3a);padding:14px 16px;display:flex;align-items:center;gap:10px;">
-      <div style="width:36px;height:36px;border-radius:10px;background:rgba(212,178,106,.2);border:1px solid rgba(212,178,106,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <i class="{{ board.icon }}" style="color:#D4B26A;font-size:1rem;"></i>
+    <div style="background:linear-gradient(135deg,#242424,#333);padding:14px 16px;display:flex;align-items:center;gap:10px;">
+      <div style="width:40px;height:40px;border-radius:12px;background:{{ accent_bg }};border:1px solid {{ accent_border }};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="{{ board.icon }}" style="color:{{ accent }};font-size:1.1rem;"></i>
       </div>
       <div style="flex:1;min-width:0;">
         <div style="font-size:0.9rem;font-weight:800;color:#FAFAFA;margin-bottom:2px;">{{ board.name }}</div>
-        <div style="font-size:0.7rem;color:rgba(250,250,250,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ board.description }}</div>
+        <div style="font-size:0.7rem;color:rgba(250,250,250,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ board.description }}</div>
       </div>
-      <div style="text-align:right;flex-shrink:0;">
-        <div style="font-size:1rem;font-weight:700;color:#D4B26A;">{{ board.posts.count }}</div>
-        <div style="font-size:0.62rem;color:rgba(250,250,250,.5);">게시글</div>
+      <div style="text-align:center;flex-shrink:0;background:rgba(255,255,255,.08);border-radius:10px;padding:5px 10px;border:1px solid {{ accent }};">
+        <div style="font-size:1.3rem;font-weight:800;color:{{ accent }};line-height:1;">{{ board.posts.count }}</div>
+        <div style="font-size:0.58rem;color:rgba(250,250,250,.5);margin-top:1px;">게시글</div>
       </div>
     </div>
   </a>
 
-  <!-- 태그 -->
   {% if board.allowed_tags %}
   <div style="padding:8px 14px;border-bottom:1px solid #f5f5f5;display:flex;flex-wrap:wrap;gap:4px;">
     {% for tag in board.get_tags_list %}
-    <span style="font-size:0.65rem;padding:2px 7px;border-radius:10px;background:#fdf5f6;color:#7A263A;border:1px solid #f0e0e3;font-weight:600;">{{ tag }}</span>
+    <span style="font-size:0.65rem;padding:2px 8px;border-radius:10px;background:{{ accent_bg }};color:{{ accent }};border:1px solid {{ accent_border }};font-weight:600;">{{ tag }}</span>
     {% endfor %}
   </div>
   {% endif %}
 
-  <!-- 최근 게시글 -->
   <div style="padding:8px 0;">
     {% if posts %}
       {% for post in posts %}
-      <a href="/posts/{{ post.id }}/" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:7px 14px;transition:background .1s;"
-         onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='transparent'">
-        <div style="width:5px;height:5px;border-radius:50%;background:#D4B26A;flex-shrink:0;"></div>
-        <div style="flex:1;font-size:0.8rem;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ post.title }}</div>
+      <a href="/posts/{{ post.id }}/" class="post-row" style="text-decoration:none;display:flex;align-items:center;gap:8px;padding:7px 14px;">
+        <div style="width:5px;height:5px;border-radius:50%;background:{{ accent }};flex-shrink:0;"></div>
+        <div style="flex:1;font-size:0.8rem;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+          {{ post.title }}
+          {% if post.created_at|date:"Y-m-d" == today %}<span class="new-badge">NEW</span>{% endif %}
+        </div>
         <div style="font-size:0.68rem;color:#bbb;flex-shrink:0;">{{ post.created_at|date:"m.d" }}</div>
       </a>
       {% endfor %}
     {% else %}
-      <div style="padding:12px 14px;font-size:0.78rem;color:#bbb;text-align:center;">아직 게시글이 없어요</div>
+      <div style="padding:14px;font-size:0.78rem;color:#bbb;text-align:center;">아직 게시글이 없어요</div>
     {% endif %}
   </div>
 
-  <!-- 하단 버튼 -->
   <div style="padding:8px 14px 12px;border-top:1px solid #f5f5f5;">
-    <a href="{% url 'board_detail' board.id %}" style="display:block;text-align:center;padding:7px;background:#FAFAFA;border:1px solid #e8e8e8;border-radius:8px;font-size:0.78rem;font-weight:700;color:#242424;text-decoration:none;transition:all .15s;"
-       onmouseover="this.style.background='#242424';this.style.color='#FAFAFA';this.style.borderColor='#242424'"
-       onmouseout="this.style.background='#FAFAFA';this.style.color='#242424';this.style.borderColor='#e8e8e8'">
-      게시판 보기 →
-    </a>
+    <a href="{% url 'board_detail' board.id %}" class="btn-view">게시판 보기 →</a>
   </div>
 </div>
+{% endwith %}
 {% endwith %}
 {% empty %}
 <div style="grid-column:1/-1;text-align:center;padding:40px;color:#9ca3af;">
