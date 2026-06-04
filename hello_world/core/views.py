@@ -3323,6 +3323,23 @@ def volunteer_confirm(request, pk):
         ]
         Notification.objects.bulk_create(notifications, ignore_conflicts=True)
         messages.success(request, f'"{meetup.title}" 승인 완료! {len(notifications)}명에게 알림을 보냈어요.')
+
+        # 전체채팅에 공지 메시지 발송
+        from .models import PublicChat
+        PublicChat.objects.create(
+            author=request.user,
+            message=(
+                f"📢 [봉사활동 모집 공고]\n"
+                f"\n"
+                f"🤝 {meetup.title}\n"
+                f"📅 {meetup.scheduled_at.strftime('%m월 %d일 %H:%M') if meetup.scheduled_at else '일정 미정'}\n"
+                f"📍 {meetup.location or '장소 미정'}\n"
+                f"👥 최대 {meetup.max_participants or '제한없음'}명 모집\n"
+                f"\n"
+                f"👉 자세히 보기: /volunteer/{meetup.pk}/"
+            ),
+            is_pinned=True,
+        )
     return redirect('volunteer_detail', pk=pk)
 
 
