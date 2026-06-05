@@ -620,6 +620,7 @@ class GroupLeaderLog(models.Model):
         ('delegate', '방장 위임'),
         ('dissolve', '해체 신청'),
         ('edit',     '소모임 수정'),
+        ('admin_change', '관리자 변경'),
     ]
     group      = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='leader_logs')
     actor      = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='leader_actions')

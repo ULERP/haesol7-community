@@ -288,6 +288,87 @@ class GroupAdmin(admin.ModelAdmin):
         )
         self.message_user(request, f"✅ {count}개 소모임 승인 완료")
 
+    def get_urls(self):
+        from django.urls import path
+        urls = super().get_urls()
+        custom = [
+            path('<int:group_id>/change-leader/', self.admin_site.admin_view(self.change_leader_view), name='group_change_leader'),
+            path('<int:group_id>/change-leader/confirm/', self.admin_site.admin_view(self.change_leader_confirm), name='group_change_leader_confirm'),
+        ]
+        return custom + urls
+
+    def change_leader_view(self, request, group_id):
+        from django.shortcuts import render, get_object_or_404
+        from .models import Group, GroupMember
+        group = get_object_or_404(Group, pk=group_id)
+        members = GroupMember.objects.filter(group=group, join_status='approved').select_related('user')
+        current_leader = members.filter(role='leader').first()
+        return render(request, 'admin/group_change_leader.html', {
+            'group': group,
+            'members': members,
+            'current_leader': current_leader,
+            'opts': self.model._meta,
+        })
+
+    def change_leader_confirm(self, request, group_id):
+        from django.shortcuts import redirect, get_object_or_404
+        from django.contrib import messages
+        from .models import Group, GroupMember, GroupLeaderLog
+        if request.method != 'POST':
+            return redirect(f'/admin/core/group/{group_id}/change-leader/')
+        group = get_object_or_404(Group, pk=group_id)
+        new_leader_id = request.POST.get('new_leader_id')
+        confirmed = request.POST.get('confirmed')
+        members = GroupMember.objects.filter(group=group, join_status='approved').select_related('user')
+        current_leader = members.filter(role='leader').first()
+
+        # 1단계: 확인 메시지 페이지
+        if not confirmed:
+            from django.shortcuts import render
+            try:
+                new_leader_member = members.get(user_id=new_leader_id)
+            except GroupMember.DoesNotExist:
+                messages.error(request, '❌ 선택한 회원을 찾을 수 없어요.')
+                return redirect(f'/admin/core/group/{group_id}/change-leader/')
+            return render(request, 'admin/group_change_leader.html', {
+                'group': group,
+                'members': members,
+                'current_leader': current_leader,
+                'new_leader': new_leader_member,
+                'confirm_step': True,
+                'opts': self.model._meta,
+            })
+
+        # 2단계: 실제 변경
+        try:
+            new_leader_member = members.get(user_id=new_leader_id)
+        except GroupMember.DoesNotExist:
+            messages.error(request, '❌ 선택한 회원을 찾을 수 없어요.')
+            return redirect(f'/admin/core/group/{group_id}/change-leader/')
+
+        old_leader = current_leader
+        # 기존 리더 → 일반 멤버로
+        if old_leader:
+            old_leader.role = 'member'
+            old_leader.save()
+        # 새 리더 지정
+        new_leader_member.role = 'leader'
+        new_leader_member.save()
+        # 로그 기록
+        GroupLeaderLog.objects.create(
+            group=group, actor=request.user,
+            action='admin_change',
+            target=new_leader_member.user,
+            detail=f'관리자({request.user})가 소모임장을 {old_leader.user if old_leader else "없음"} → {new_leader_member.user}로 변경'
+        )
+        messages.success(request, f'✅ 소모임장이 {new_leader_member.user}로 변경되었어요.')
+        return redirect(f'/admin/core/group/{group_id}/change/')
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['change_leader_url'] = f'/admin/core/group/{object_id}/change-leader/'
+        return super().change_view(request, object_id, form_url, extra_context)
+
 
 @admin.register(GroupMember)
 class GroupMemberAdmin(admin.ModelAdmin):
@@ -297,6 +378,27 @@ class GroupMemberAdmin(admin.ModelAdmin):
     raw_id_fields = ('user', 'group')
     list_editable = ('join_status',)
     list_per_page = 30
+    actions       = ['remove_leader_role']
+
+    @admin.action(description='👑 선택 회원의 방장 권한 제거 (일반 멤버로)')
+    def remove_leader_role(self, request, queryset):
+        from .models import GroupLeaderLog
+        leaders = queryset.filter(role='leader')
+        count = 0
+        for m in leaders:
+            GroupLeaderLog.objects.create(
+                group=m.group, actor=request.user,
+                action='admin_change',
+                target=m.user,
+                detail=f'관리자({request.user})가 {m.user}의 방장 권한 제거'
+            )
+            m.role = 'member'
+            m.save()
+            count += 1
+        if count:
+            self.message_user(request, f'✅ {count}명의 방장 권한을 제거했어요.')
+        else:
+            self.message_user(request, '⚠️ 선택한 회원 중 방장이 없어요.', level='warning')
 
 
 @admin.register(GroupLeaderLog)
