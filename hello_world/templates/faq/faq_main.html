@@ -280,18 +280,44 @@
 <!-- ⑥ FAQ 목록 (아코디언) -->
 <div>
   <div class="sec-hd">
-    <span style="font-size:1.1rem;">📋</span>
+    <span style="font-size:1.1rem;">
+      {% if stage == 1 %}🔥
+      {% elif stage == 2 %}⭐
+      {% elif stage == 3 %}📋
+      {% else %}🔍{% endif %}
+    </span>
     <span class="sec-hd-title">
       {% if q %}🔍 "{{ q }}" 검색 결과
-      {% elif minor %}{{ minor }}
-      {% elif major %}{{ major }} 전체
-      {% else %}전체 FAQ{% endif %}
+      {% elif stage == 3 %}{{ minor }} 전체
+      {% elif stage == 2 %}{{ major }} 인기 질문
+      {% else %}자주 찾는 질문 TOP 10{% endif %}
     </span>
-    <span class="sec-hd-sub">{{ total }}개</span>
+    <span class="sec-hd-sub">
+      {% if stage == 1 %}조회수 기준 · 전체 {{ total_all }}개
+      {% elif stage == 2 %}인기순 · {{ major }} {{ total }}개 중 10개 표시
+      {% elif stage == 3 %}{{ total }}개
+      {% else %}{{ total }}개{% endif %}
+    </span>
+    {% if stage == 2 %}
+    <a href="?major={{ major }}&show=all" class="sec-hd-more">전체보기 →</a>
+    {% endif %}
     {% if request.user.is_staff %}
-    <a href="{% url 'faq_upload_csv' %}" class="sec-hd-more"><i class="fas fa-upload me-1"></i>CSV 업로드</a>
+    <a href="{% url 'faq_upload_csv' %}" class="sec-hd-more"><i class="fas fa-upload me-1"></i>CSV</a>
     {% endif %}
   </div>
+
+  <!-- 단계 안내 바 -->
+  {% if stage == 1 %}
+  <div style="background:#f8f6f2;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#9ca3af;">
+    <span>💡</span>
+    <span>조회수 기준 인기 질문 TOP 10을 보여드려요. <strong style="color:#7A263A;">대분류를 선택</strong>하면 해당 분야의 질문을 볼 수 있어요.</span>
+  </div>
+  {% elif stage == 2 %}
+  <div style="background:#f8f6f2;border-radius:10px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;gap:8px;font-size:0.78rem;color:#9ca3af;">
+    <span>💡</span>
+    <span>{{ major }} 분야 인기 질문 10개예요. <strong style="color:#7A263A;">소분류를 선택</strong>하면 더 많은 질문을 볼 수 있어요.</span>
+  </div>
+  {% endif %}
 
   {% if posts %}
   {% regroup posts by tag as posts_by_tag %}

@@ -3616,19 +3616,45 @@ def faq_view(request):
     if faq_board and hasattr(request, 'user') and request.user.is_staff:
         pending_posts = total_posts.filter(content__contains='조만간 답변 예정').order_by('tag')
 
+    # 3단계 점진적 로딩
+    # 1단계: 기본 - 인기 TOP 10만 표시
+    # 2단계: 대분류 선택 - 해당 대분류 인기 10개
+    # 3단계: 소분류 선택 - 해당 소분류 전체
+
+    stage = 1
+    display_posts = Post.objects.none()
+
+    if q:
+        # 검색: 전체 검색 결과
+        stage = 0
+        display_posts = all_posts
+    elif minor:
+        # 3단계: 소분류 전체
+        stage = 3
+        display_posts = all_posts
+    elif major:
+        # 2단계: 대분류 인기 10개
+        stage = 2
+        display_posts = all_posts.order_by('-view_count', '-created_at')[:10]
+    else:
+        # 1단계: 전체 인기 TOP 10
+        stage = 1
+        display_posts = total_posts.order_by('-view_count', '-created_at')[:10]
+
     return render(request, 'faq/faq_main.html', {
-        'faq_board':    faq_board,
-        'posts':        all_posts,
-        'popular':      popular,
-        'cat_tree':     cat_tree,
-        'cat_counts':   dict(cat_counts),
-        'q':            q,
-        'major':        major,
-        'minor':        minor,
-        'show_all':     show_all,
-        'total':        all_posts.count(),
+        'faq_board':     faq_board,
+        'posts':         display_posts,
+        'popular':       popular,
+        'cat_tree':      cat_tree,
+        'cat_counts':    dict(cat_counts),
+        'q':             q,
+        'major':         major,
+        'minor':         minor,
+        'show_all':      show_all,
+        'stage':         stage,
+        'total':         all_posts.count(),
         'pending_posts': pending_posts,
-        'total_all':    total_posts.count(),
+        'total_all':     total_posts.count(),
     })
 
 
