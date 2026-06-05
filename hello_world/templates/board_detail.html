@@ -6,6 +6,25 @@
 <style>
   :root { --charc: #242424; --gold: #D4B26A; --wine: #7A263A; --bg: #FAFAFA; }
 
+  /* ── 모바일 게시물 카드 ── */
+  @media (max-width: 768px) {
+    .post-grid-2col { grid-template-columns: 1fr !important; }
+    .post-card-mobile { display: flex; flex-direction: column; border-radius: 14px; border: 1px solid #ece8e0; background: #fff; overflow: hidden; text-decoration: none; color: inherit; transition: box-shadow .15s; margin-bottom: 2px; }
+    .post-card-mobile:active { box-shadow: 0 2px 12px rgba(36,36,36,.1); }
+    .post-card-mobile-header { padding: 12px 14px 6px; }
+    .post-card-mobile-title { font-size: 1rem; font-weight: 700; color: #1a1a1a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 5px; }
+    .post-card-mobile-desc { font-size: 0.84rem; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.55; margin-bottom: 8px; }
+    .post-card-mobile-imgs-1 { width: 100%; height: 200px; object-fit: cover; display: block; }
+    .post-card-mobile-imgs-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; height: 160px; }
+    .post-card-mobile-imgs-2 img { width: 100%; height: 100%; object-fit: cover; }
+    .post-card-mobile-imgs-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 2px; height: 160px; }
+    .post-card-mobile-imgs-3 .img-main { width: 100%; height: 100%; object-fit: cover; }
+    .post-card-mobile-imgs-3 .img-more { position: relative; }
+    .post-card-mobile-imgs-3 .img-more img { width: 100%; height: 100%; object-fit: cover; filter: blur(1px) brightness(0.6); }
+    .post-card-mobile-imgs-3 .img-more-count { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; color: #fff; }
+    .post-card-mobile-meta { padding: 8px 14px 12px; display: flex; align-items: center; gap: 8px; border-top: 1px solid #f5f5f5; }
+  }
+
   /* ── 공통 ── */
   .board-header { background: linear-gradient(135deg,#242424,#3a3a3a); border-radius: 14px; padding: 20px 24px; margin-bottom: 20px; border-left: 4px solid #D4B26A; }
   .tag-filter .btn { border-radius: 20px !important; font-size: 0.78rem !important; padding: 4px 14px !important; }
@@ -135,20 +154,30 @@
 
   {# ── 리스트형 ── #}
   {% if board.layout_type == 'list' or not board.layout_type %}
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
+  <!-- 데스크탑: 2열 그리드 / 모바일: 1열 -->
+  <div class="post-grid-2col" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">
     {% for post in posts %}
-    <a href="{% url 'post_detail' post.pk %}" style="display:flex;gap:0;border-radius:14px;border:1px solid #ece8e0;background:#fff;text-decoration:none;color:inherit;overflow:hidden;transition:box-shadow .15s,border-color .15s;" onmouseover="this.style.boxShadow='0 4px 20px rgba(36,36,36,.1)';this.style.borderColor='#D4B26A'" onmouseout="this.style.boxShadow='none';this.style.borderColor='#ece8e0'">
-      <!-- 썸네일 -->
-      <div style="width:130px;min-width:130px;height:130px;overflow:hidden;background:linear-gradient(135deg,#f5f0e8,#ede3d0);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        {% if post.images.first %}
-        <img src="{{ post.images.first.image.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+    {% with imgs=post.images.all %}
+    {% with img_count=post.images.count %}
+    <a href="{% url 'post_detail' post.pk %}"
+       class="post-card-mobile"
+       style="display:flex;gap:0;border-radius:14px;border:1px solid #ece8e0;background:#fff;text-decoration:none;color:inherit;overflow:hidden;transition:box-shadow .15s,border-color .15s;"
+       onmouseover="this.style.boxShadow='0 4px 20px rgba(36,36,36,.1)';this.style.borderColor='#D4B26A'"
+       onmouseout="this.style.boxShadow='none';this.style.borderColor='#ece8e0'">
+
+      <!-- 데스크탑: 좌측 썸네일 -->
+      <div class="d-none d-md-flex" style="width:130px;min-width:130px;height:130px;overflow:hidden;background:linear-gradient(135deg,#f5f0e8,#ede3d0);align-items:center;justify-content:center;flex-shrink:0;">
+        {% if imgs.first %}
+        <img src="{{ imgs.first.image.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
         {% else %}
         <i class="{{ board.icon|default:'fas fa-file-alt' }}" style="font-size:2rem;color:#D4B26A;opacity:.45;"></i>
         {% endif %}
       </div>
-      <!-- 내용 -->
-      <div style="flex:1;min-width:0;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;">
-        <div>
+
+      <!-- 공통 내용 영역 -->
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;">
+        <!-- 제목+태그 -->
+        <div style="padding:12px 14px 6px;">
           <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
             {% if post.is_pinned %}<i class="fas fa-thumbtack" style="color:#7A263A;font-size:0.68rem;"></i>{% endif %}
             {% if post.tag %}<span style="font-size:0.65rem;padding:1px 7px;border-radius:8px;background:#7A263A;color:#fff;font-weight:700;white-space:nowrap;">{{ post.tag }}</span>{% endif %}
@@ -157,7 +186,29 @@
           <div style="font-size:0.9rem;font-weight:700;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:5px;">{{ post.title }}</div>
           <div style="font-size:0.78rem;color:#6b7280;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.6;">{{ post.content|striptags|truncatechars:100 }}</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;">
+
+        <!-- 모바일 이미지 (768px 이하에서만) -->
+        {% if img_count == 1 %}
+        <div class="d-block d-md-none">
+          <img src="{{ imgs.first.image.url }}" alt="" class="post-card-mobile-imgs-1">
+        </div>
+        {% elif img_count == 2 %}
+        <div class="post-card-mobile-imgs-2 d-block d-md-none">
+          <img src="{{ imgs.0.image.url }}" alt="">
+          <img src="{{ imgs.1.image.url }}" alt="">
+        </div>
+        {% elif img_count >= 3 %}
+        <div class="post-card-mobile-imgs-3 d-block d-md-none">
+          <img src="{{ imgs.0.image.url }}" alt="" class="img-main">
+          <div class="img-more">
+            <img src="{{ imgs.1.image.url }}" alt="">
+            <div class="img-more-count">+{{ img_count|add:"-1" }}</div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- 메타 -->
+        <div style="padding:8px 14px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto;">
           <span style="font-size:0.68rem;color:#9ca3af;">{{ post.author.nickname|default:post.author.username|default:"익명" }}</span>
           <span style="font-size:0.68rem;color:#c9c9c9;">·</span>
           <span style="font-size:0.68rem;color:#9ca3af;">{{ post.created_at|date:"m/d" }}</span>
@@ -169,6 +220,8 @@
         </div>
       </div>
     </a>
+    {% endwith %}
+    {% endwith %}
     {% endfor %}
   </div>
 
