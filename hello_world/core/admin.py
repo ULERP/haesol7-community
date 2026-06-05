@@ -306,21 +306,33 @@ class GroupAdmin(admin.ModelAdmin):
 
     def change_leader_view(self, request, group_id):
         from django.shortcuts import render, get_object_or_404
-        from .models import Group, GroupMember
+        from django.db.models import Q
+        from .models import Group, GroupMember, CustomUser
         group = get_object_or_404(Group, pk=group_id)
         members = GroupMember.objects.filter(group=group, join_status='approved').select_related('user')
         current_leader = members.filter(role='leader').first()
+        q = request.GET.get('q', '')
+        all_users = CustomUser.objects.filter(is_active=True).order_by('dong', 'unit_number')
+        if q:
+            all_users = all_users.filter(
+                Q(username__icontains=q) |
+                Q(nickname__icontains=q) |
+                Q(dong__icontains=q) |
+                Q(unit_number__icontains=q)
+            )
         return render(request, 'admin/group_change_leader.html', {
             'group': group,
             'members': members,
             'current_leader': current_leader,
+            'all_users': all_users,
+            'q': q,
             'opts': self.model._meta,
         })
 
     def change_leader_confirm(self, request, group_id):
         from django.shortcuts import redirect, get_object_or_404
         from django.contrib import messages
-        from .models import Group, GroupMember, GroupLeaderLog
+        from .models import Group, GroupMember, GroupLeaderLog, CustomUser
         if request.method != 'POST':
             return redirect(f'/admin/core/group/{group_id}/change-leader/')
         group = get_object_or_404(Group, pk=group_id)
@@ -333,42 +345,46 @@ class GroupAdmin(admin.ModelAdmin):
         if not confirmed:
             from django.shortcuts import render
             try:
-                new_leader_member = members.get(user_id=new_leader_id)
-            except GroupMember.DoesNotExist:
+                new_leader_user = CustomUser.objects.get(id=new_leader_id)
+            except CustomUser.DoesNotExist:
                 messages.error(request, '❌ 선택한 회원을 찾을 수 없어요.')
                 return redirect(f'/admin/core/group/{group_id}/change-leader/')
             return render(request, 'admin/group_change_leader.html', {
                 'group': group,
                 'members': members,
                 'current_leader': current_leader,
-                'new_leader': new_leader_member,
+                'new_leader': new_leader_user,
                 'confirm_step': True,
                 'opts': self.model._meta,
             })
 
         # 2단계: 실제 변경
         try:
-            new_leader_member = members.get(user_id=new_leader_id)
-        except GroupMember.DoesNotExist:
+            new_leader_user = CustomUser.objects.get(id=new_leader_id)
+        except CustomUser.DoesNotExist:
             messages.error(request, '❌ 선택한 회원을 찾을 수 없어요.')
             return redirect(f'/admin/core/group/{group_id}/change-leader/')
-
         old_leader = current_leader
         # 기존 리더 → 일반 멤버로
         if old_leader:
             old_leader.role = 'member'
             old_leader.save()
-        # 새 리더 지정
+        # 새 리더: 멤버가 아니면 자동 추가
+        new_leader_member, _ = GroupMember.objects.get_or_create(
+            group=group, user=new_leader_user,
+            defaults={'role': 'leader', 'join_status': 'approved'}
+        )
         new_leader_member.role = 'leader'
+        new_leader_member.join_status = 'approved'
         new_leader_member.save()
         # 로그 기록
         GroupLeaderLog.objects.create(
             group=group, actor=request.user,
             action='admin_change',
-            target=new_leader_member.user,
-            detail=f'관리자({request.user})가 소모임장을 {old_leader.user if old_leader else "없음"} → {new_leader_member.user}로 변경'
+            target=new_leader_user,
+            detail=f'관리자({request.user})가 소모임장을 {old_leader.user if old_leader else "없음"} → {new_leader_user}로 변경'
         )
-        messages.success(request, f'✅ 소모임장이 {new_leader_member.user}로 변경되었어요.')
+        messages.success(request, f'✅ 소모임장이 {new_leader_user}로 변경되었어요.')
         return redirect(f'/admin/core/group/{group_id}/change/')
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
