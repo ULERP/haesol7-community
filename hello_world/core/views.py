@@ -3555,16 +3555,18 @@ def hub_news(request):
 
 # ── FAQ 지식베이스 ──────────────────────────────────────────
 def faq_view(request):
-    """노션 스타일 FAQ 지식베이스"""
+    """노션 스타일 FAQ 지식베이스 - 2단계 대분류/소분류"""
     from .models import Board, Post
     from django.db.models import Q
+    from collections import defaultdict, OrderedDict
 
-    # FAQ 게시판 찾기 (board_type=qna 또는 id=13)
     faq_board = Board.objects.filter(board_type='qna', is_active=True).first() or \
                 Board.objects.filter(id=13, is_active=True).first()
 
-    q = request.GET.get('q', '').strip()
-    category = request.GET.get('cat', '').strip()
+    q        = request.GET.get('q', '').strip()
+    major    = request.GET.get('major', '').strip()   # 대분류
+    minor    = request.GET.get('minor', '').strip()   # 소분류
+    show_all = request.GET.get('show', '') == 'all'
 
     all_posts = Post.objects.filter(
         board=faq_board, is_active=True
@@ -3575,29 +3577,58 @@ def faq_view(request):
         all_posts = all_posts.filter(
             Q(title__icontains=q) | Q(content__icontains=q) | Q(tag__icontains=q)
         )
+    # 소분류 필터
+    if minor:
+        all_posts = all_posts.filter(tag=minor)
+    # 대분류 필터 (소분류 없을 때)
+    elif major:
+        all_posts = all_posts.filter(tag__startswith=major + '>')
 
-    # 카테고리 필터
-    if category:
-        all_posts = all_posts.filter(tag=category)
-
-    # 카테고리 목록
-    categories = []
+    # 2단계 카테고리 구조 파싱
+    # allowed_tags 형식: "대분류>소분류,대분류>소분류2,..."
+    cat_tree = OrderedDict()  # {대분류: [소분류, ...]}
     if faq_board:
-        categories = faq_board.get_tags_list()
+        for tag in faq_board.get_tags_list():
+            if '>' in tag:
+                maj, min_ = tag.split('>', 1)
+                if maj not in cat_tree:
+                    cat_tree[maj] = []
+                cat_tree[maj].append(min_.strip())
+            else:
+                if tag not in cat_tree:
+                    cat_tree[tag] = []
 
-    # 인기 질문 (조회수 TOP 5)
-    popular = Post.objects.filter(
-        board=faq_board, is_active=True
-    ).order_by('-view_count')[:5] if faq_board else []
+    # 대분류별 게시물 수
+    cat_counts = defaultdict(int)
+    total_posts = Post.objects.filter(board=faq_board, is_active=True) if faq_board else Post.objects.none()
+    for post in total_posts:
+        if post.tag and '>' in post.tag:
+            maj = post.tag.split('>')[0]
+            cat_counts[maj] += 1
+        elif post.tag:
+            cat_counts[post.tag] += 1
+
+    # 인기 질문 TOP 5
+    popular = list(total_posts.order_by('-view_count')[:5]) if faq_board else []
+
+    # 답변 미등록 (PENDING) 목록 - 관리자용
+    pending_posts = []
+    if faq_board and hasattr(request, 'user') and request.user.is_staff:
+        pending_posts = total_posts.filter(content__contains='조만간 답변 예정').order_by('tag')
 
     return render(request, 'faq/faq_main.html', {
-        'faq_board': faq_board,
-        'posts': all_posts,
-        'popular': popular,
-        'categories': categories,
-        'q': q,
-        'selected_cat': category,
-        'total': all_posts.count(),
+        'faq_board':    faq_board,
+        'posts':        all_posts,
+        'popular':      popular,
+        'cat_tree':     cat_tree,
+        'cat_counts':   dict(cat_counts),
+        'q':            q,
+        'major':        major,
+        'minor':        minor,
+        'show_all':     show_all,
+        'total':        all_posts.count(),
+        'pending_posts': pending_posts,
+        'total_all':    total_posts.count(),
     })
 
 
