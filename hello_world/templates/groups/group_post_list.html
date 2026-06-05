@@ -1,51 +1,110 @@
 {% extends 'base_2panel.html' %}
 {% block menu_groups %}active{% endblock %}
 {% block title %}{{ group.name }} 게시판{% endblock %}
-{% block content %}
-  <div class="d-flex align-items-center gap-3 mb-4">
-    <a href="/groups/{{ group.pk }}/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i></a>
-    <div>
-      <h5 class="fw-bold mb-0">{{ group.name }} 게시판</h5>
-      <div class="text-muted small">소모임 멤버들의 이야기</div>
-    </div>
-    {% if is_member %}
-    <a href="/groups/{{ group.pk }}/posts/create/" class="btn btn-wine btn-sm ms-auto">
-      <i class="fas fa-pen me-1"></i>글쓰기
-    </a>
-    {% endif %}
-  </div>
 
-  {% if posts %}
-  <div class="list-group list-group-flush">
-    {% for post in posts %}
-    <a href="/groups/{{ group.pk }}/posts/{{ post.pk }}/" class="list-group-item list-group-item-action py-3 border-bottom">
-      <div class="d-flex justify-content-between align-items-start">
-        <div style="flex:1;min-width:0;">
-          <div class="fw-semibold mb-1">{{ post.title }}</div>
-          <div class="text-muted small">
-            {{ post.author.nickname|default:post.author.username }}
-            {% if post.author.unit_number %}({{ post.author.unit_number }}){% endif %}
-            · {{ post.created_at|date:"m.d H:i" }}
-            {% if post.comment_count %} · 💬 {{ post.comment_count }}{% endif %}
-          </div>
-          <div class="text-muted small mt-1" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-            {{ post.content|truncatechars:60 }}
-          </div>
-        </div>
-        {% if post.image %}
-        <img src="{{ post.image.url }}" style="width:56px;height:56px;object-fit:cover;border-radius:8px;margin-left:12px;flex-shrink:0;">
+{% block extra_head %}
+<style>
+.gpost-card{display:flex;gap:0;border-radius:14px;border:1px solid #ece8e0;background:#fff;text-decoration:none;color:inherit;overflow:hidden;transition:box-shadow .15s,border-color .15s;margin-bottom:8px;}
+.gpost-card:hover{box-shadow:0 4px 20px rgba(36,36,36,.1);border-color:#D4B26A;}
+.gpost-thumb{width:110px;min-width:110px;height:110px;overflow:hidden;background:linear-gradient(135deg,#f5f0e8,#ede3d0);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.gpost-thumb img{width:100%;height:100%;object-fit:cover;}
+.gpost-body{flex:1;min-width:0;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;}
+.gpost-title{font-size:0.92rem;font-weight:700;color:#1a1a1a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:5px;}
+.gpost-desc{font-size:0.78rem;color:#6b7280;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.55;}
+.gpost-meta{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.gpost-meta span{font-size:0.68rem;color:#9ca3af;}
+.gpost-header{background:linear-gradient(135deg,#242424,#333);border-radius:16px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;}
+.gpost-search{display:flex;gap:8px;margin-bottom:16px;}
+.gpost-search input{flex:1;padding:9px 14px;border-radius:10px;border:1px solid #e0e0e0;font-size:0.88rem;outline:none;}
+.gpost-search input:focus{border-color:#D4B26A;}
+/* 모바일 */
+@media(max-width:768px){
+  .gpost-thumb{width:80px;min-width:80px;height:80px;}
+  .gpost-title{font-size:0.85rem;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- 헤더 -->
+<div class="gpost-header">
+  <a href="/groups/{{ group.pk }}/" style="color:#D4B26A;text-decoration:none;font-size:0.82rem;padding:5px 10px;border-radius:8px;border:1px solid rgba(212,178,106,.3);background:rgba(212,178,106,.1);flex-shrink:0;">
+    <i class="fas fa-arrow-left"></i>
+  </a>
+  <div style="flex:1;min-width:0;">
+    <div style="color:#D4B26A;font-size:0.7rem;font-weight:700;letter-spacing:.06em;margin-bottom:3px;">소모임 게시판</div>
+    <div style="color:#fff;font-weight:800;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ group.name }}</div>
+    <div style="color:rgba(255,255,255,.5);font-size:0.72rem;">{{ posts|length }}개의 게시글</div>
+  </div>
+  {% if is_member %}
+  <a href="/groups/{{ group.pk }}/posts/create/" style="background:#D4B26A;color:#242424;padding:8px 16px;border-radius:10px;font-weight:700;font-size:0.82rem;text-decoration:none;flex-shrink:0;">
+    <i class="fas fa-pen me-1"></i>글쓰기
+  </a>
+  {% endif %}
+</div>
+
+<!-- 검색 -->
+<div class="gpost-search">
+  <input type="text" id="gpost-search-input" placeholder="게시글 검색..." oninput="filterPosts(this.value)">
+  <span style="font-size:0.78rem;color:#9ca3af;display:flex;align-items:center;padding:0 8px;">
+    총 <strong style="color:#242424;margin:0 4px;">{{ posts|length }}</strong>개
+  </span>
+</div>
+
+<!-- 게시글 목록 -->
+<div id="gpost-list">
+{% if posts %}
+  {% for post in posts %}
+  <a href="/groups/{{ group.pk }}/posts/{{ post.pk }}/" class="gpost-card">
+    <div class="gpost-thumb">
+      {% if post.image %}
+      <img src="{{ post.image.url }}" alt="">
+      {% else %}
+      <i class="fas fa-file-alt" style="font-size:1.6rem;color:#D4B26A;opacity:.4;"></i>
+      {% endif %}
+    </div>
+    <div class="gpost-body">
+      <div>
+        <div class="gpost-title">{{ post.title }}</div>
+        <div class="gpost-desc">{{ post.content|striptags|truncatechars:100 }}</div>
+      </div>
+      <div class="gpost-meta">
+        <span>{{ post.author.nickname|default:post.author.username }}</span>
+        <span>·</span>
+        <span>{{ post.created_at|date:"m/d H:i" }}</span>
+        {% if post.comment_count %}
+        <span style="margin-left:auto;color:#7a9bbf;"><i class="fas fa-comment" style="font-size:0.62rem;"></i> {{ post.comment_count }}</span>
         {% endif %}
       </div>
-    </a>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="text-center py-5" style="background:#f8f9fa;border-radius:12px;">
-    <div style="font-size:3rem;margin-bottom:12px;">📝</div>
-    <h5 class="fw-bold text-muted">아직 게시글이 없어요</h5>
+    </div>
+  </a>
+  {% endfor %}
+{% else %}
+  <div style="text-align:center;padding:60px 20px;background:#fafafa;border-radius:14px;">
+    <div style="font-size:3rem;margin-bottom:14px;opacity:.3;">📝</div>
+    <div style="font-weight:700;color:#666;margin-bottom:8px;">아직 게시글이 없어요</div>
     {% if is_member %}
-    <a href="/groups/{{ group.pk }}/posts/create/" class="btn btn-wine mt-2">첫 글 작성하기</a>
+    <a href="/groups/{{ group.pk }}/posts/create/" style="display:inline-block;margin-top:8px;background:#7A263A;color:#fff;padding:10px 24px;border-radius:20px;text-decoration:none;font-size:0.85rem;font-weight:700;">
+      첫 글 작성하기
+    </a>
     {% endif %}
   </div>
-  {% endif %}
+{% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function filterPosts(q) {
+  const cards = document.querySelectorAll('.gpost-card');
+  q = q.toLowerCase();
+  cards.forEach(card => {
+    const title = card.querySelector('.gpost-title').textContent.toLowerCase();
+    const desc = card.querySelector('.gpost-desc').textContent.toLowerCase();
+    card.style.display = (!q || title.includes(q) || desc.includes(q)) ? '' : 'none';
+  });
+}
+</script>
 {% endblock %}

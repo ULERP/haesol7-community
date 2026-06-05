@@ -1,82 +1,116 @@
 {% extends 'base_2panel.html' %}
 {% block menu_groups %}active{% endblock %}
 {% block title %}{{ post.title }} — {{ group.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+.gpost-action-bar{position:sticky;bottom:0;z-index:200;background:#fff;border-top:2px solid #f0ece4;padding:10px 16px;display:flex;align-items:center;gap:8px;box-shadow:0 -4px 16px rgba(0,0,0,.06);border-radius:0 0 16px 16px;}
+.gpost-nav-back{display:flex;align-items:center;gap:6px;color:#7A263A;font-size:0.82rem;font-weight:700;text-decoration:none;padding:6px 14px;border-radius:8px;border:1px solid #f0d0d6;background:#fdf5f6;transition:all .15s;white-space:nowrap;}
+.gpost-nav-back:hover{background:#7A263A;color:#fff;}
+.comment-av{width:36px;height:36px;border-radius:50%;background:#7A263A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;flex-shrink:0;}
+</style>
+{% endblock %}
+
 {% block content %}
-  <nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="/groups/">소모임</a></li>
-      <li class="breadcrumb-item"><a href="/groups/{{ group.pk }}/">{{ group.name }}</a></li>
-      <li class="breadcrumb-item"><a href="/groups/{{ group.pk }}/posts/">게시판</a></li>
-      <li class="breadcrumb-item active">{{ post.title|truncatechars:20 }}</li>
-    </ol>
-  </nav>
 
-  <!-- 게시글 -->
-  <div class="card border-0 shadow-sm mb-4">
-    <div class="card-header bg-white py-3">
-      <h5 class="fw-bold mb-1">{{ post.title }}</h5>
-      <div class="text-muted small d-flex gap-3">
-        <span><i class="fas fa-user me-1"></i>{{ post.author.nickname|default:post.author.username }}{% if post.author.unit_number %} ({{ post.author.unit_number }}){% endif %}</span>
-        <span><i class="fas fa-clock me-1"></i>{{ post.created_at|date:"Y.m.d H:i" }}</span>
-        <span><i class="fas fa-comment me-1"></i>{{ comments|length }}개</span>
+<!-- 브레드크럼 -->
+<nav style="margin-bottom:14px;font-size:0.78rem;">
+  <a href="/groups/" style="color:#9ca3af;text-decoration:none;">소모임</a>
+  <span style="color:#ddd;margin:0 6px;">›</span>
+  <a href="/groups/{{ group.pk }}/" style="color:#9ca3af;text-decoration:none;">{{ group.name }}</a>
+  <span style="color:#ddd;margin:0 6px;">›</span>
+  <a href="/groups/{{ group.pk }}/posts/" style="color:#9ca3af;text-decoration:none;">게시판</a>
+  <span style="color:#ddd;margin:0 6px;">›</span>
+  <span style="color:#242424;font-weight:600;">{{ post.title|truncatechars:20 }}</span>
+</nav>
+
+<!-- 게시글 카드 -->
+<div style="background:#fff;border-radius:16px;border:1px solid #ece8e0;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+  <!-- 헤더 -->
+  <div style="padding:20px 22px 16px;border-bottom:1px solid #f5f5f5;">
+    <h4 style="font-weight:800;color:#1a1a1a;margin-bottom:12px;line-height:1.4;">{{ post.title }}</h4>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:#242424;color:#D4B26A;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.88rem;flex-shrink:0;">
+        {{ post.author.nickname|default:post.author.username|first|upper }}
       </div>
-    </div>
-    <div class="card-body py-4">
-      <p style="white-space:pre-wrap;line-height:1.8;">{{ post.content }}</p>
-      {% if post.image %}
-      <img src="{{ post.image.url }}" class="img-fluid rounded mt-3" style="max-height:400px;">
-      {% endif %}
-    </div>
-    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
-      <a href="/groups/{{ group.pk }}/posts/" class="btn btn-sm btn-outline-secondary">← 목록</a>
+      <div>
+        <div style="font-weight:700;font-size:0.85rem;color:#242424;">{{ post.author.nickname|default:post.author.username }}</div>
+        <div style="font-size:0.7rem;color:#9ca3af;">{{ post.created_at|date:"Y.m.d H:i" }} · 댓글 {{ comments|length }}개</div>
+      </div>
       {% if request.user == post.author %}
-      <form method="post" action="/groups/{{ group.pk }}/posts/{{ post.pk }}/delete/" class="d-inline">
-        {% csrf_token %}
-        <button class="btn btn-sm btn-outline-danger" onclick="return confirm('삭제할까요?')">
-          <i class="fas fa-trash me-1"></i>삭제
-        </button>
-      </form>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <a href="/groups/{{ group.pk }}/posts/{{ post.pk }}/edit/" style="font-size:0.75rem;color:#666;text-decoration:none;padding:4px 10px;border-radius:6px;border:1px solid #e0e0e0;background:#f5f5f5;">
+          <i class="fas fa-edit"></i> 수정
+        </a>
+        <form method="post" action="/groups/{{ group.pk }}/posts/{{ post.pk }}/delete/" style="display:inline;">
+          {% csrf_token %}
+          <button style="font-size:0.75rem;color:#e07070;background:none;border:1px solid #fcd4d4;border-radius:6px;padding:4px 10px;cursor:pointer;" onclick="return confirm('삭제할까요?')">
+            <i class="fas fa-trash"></i> 삭제
+          </button>
+        </form>
+      </div>
       {% endif %}
     </div>
   </div>
-
-  <!-- 댓글 -->
-  <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white fw-bold py-3">
-      <i class="fas fa-comments me-2 text-wine"></i>댓글 {{ comments|length }}개
-    </div>
-    <div class="card-body p-3">
-      {% for c in comments %}
-      <div class="d-flex gap-3 py-3 border-bottom">
-        <a href="/users/{{ c.author.pk }}/" style="text-decoration:none;flex-shrink:0;">
-          <div style="width:36px;height:36px;border-radius:50%;background:#7A263A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;">
-            {{ c.author.nickname|default:c.author.username|first|upper }}
-          </div>
-        </a>
-        <div style="flex:1;">
-          <div class="fw-semibold small mb-1">
-            {{ c.author.nickname|default:c.author.username }}
-            {% if c.author.unit_number %}<span class="text-muted fw-normal">({{ c.author.unit_number }})</span>{% endif %}
-            <span class="text-muted fw-normal ms-2">{{ c.created_at|date:"m.d H:i" }}</span>
-          </div>
-          <p class="mb-0 small" style="white-space:pre-wrap;">{{ c.content }}</p>
-        </div>
-      </div>
-      {% empty %}
-      <div class="text-center py-4 text-muted small">첫 댓글을 남겨보세요!</div>
-      {% endfor %}
-    </div>
-    {% if request.user.is_authenticated %}
-    <div class="card-footer bg-white py-3">
-      <form method="post">
-        {% csrf_token %}
-        <div class="input-group">
-          <textarea name="content" class="form-control form-control-sm" rows="2"
-            placeholder="댓글을 입력하세요..." required></textarea>
-          <button class="btn btn-wine" type="submit">등록</button>
-        </div>
-      </form>
-    </div>
-    {% endif %}
+  <!-- 본문 -->
+  <div style="padding:22px;font-size:0.92rem;color:#374151;line-height:1.85;white-space:pre-wrap;">{{ post.content }}</div>
+  {% if post.image %}
+  <div style="padding:0 22px 22px;">
+    <img src="{{ post.image.url }}" style="width:100%;max-height:480px;object-fit:contain;border-radius:10px;background:#f8f9fa;">
   </div>
+  {% endif %}
+  <!-- sticky 하단 버튼 -->
+  <div class="gpost-action-bar">
+    <a href="/groups/{{ group.pk }}/posts/" class="gpost-nav-back">
+      <i class="fas fa-arrow-left"></i> 목록
+    </a>
+    <span style="font-size:0.78rem;color:#9ca3af;margin-left:auto;">{{ post.created_at|date:"Y.m.d" }}</span>
+  </div>
+</div>
+
+<!-- 댓글 -->
+<div style="background:#fff;border-radius:16px;border:1px solid #ece8e0;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+  <div style="padding:14px 20px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:8px;">
+    <i class="fas fa-comments" style="color:#D4B26A;"></i>
+    <span style="font-weight:800;font-size:0.92rem;">댓글 {{ comments|length }}개</span>
+  </div>
+  <div style="padding:8px 0;">
+    {% for c in comments %}
+    <div style="display:flex;gap:12px;padding:14px 20px;border-bottom:1px solid #f8f8f8;">
+      <div class="comment-av">{{ c.author.nickname|default:c.author.username|first|upper }}</div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <span style="font-weight:700;font-size:0.85rem;color:#242424;">{{ c.author.nickname|default:c.author.username }}</span>
+          <span style="font-size:0.7rem;color:#bbb;">{{ c.created_at|date:"m.d H:i" }}</span>
+        </div>
+        <p style="margin:0;font-size:0.85rem;color:#374151;line-height:1.7;white-space:pre-wrap;">{{ c.content }}</p>
+      </div>
+    </div>
+    {% empty %}
+    <div style="text-align:center;padding:30px;color:#bbb;font-size:0.85rem;">첫 댓글을 남겨보세요!</div>
+    {% endfor %}
+  </div>
+  <!-- 댓글 입력 -->
+  {% if request.user.is_authenticated %}
+  <div style="padding:14px 20px;border-top:2px solid #f0ece4;background:#fafafa;">
+    <form method="post">
+      {% csrf_token %}
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <div class="comment-av" style="background:#242424;">
+          {{ request.user.nickname|default:request.user.username|first|upper }}
+        </div>
+        <div style="flex:1;">
+          <textarea name="content" rows="2" required
+            style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid #e0e0e0;font-size:0.85rem;resize:none;outline:none;line-height:1.6;"
+            placeholder="댓글을 입력하세요..."></textarea>
+        </div>
+        <button type="submit" style="background:#7A263A;color:#fff;border:none;padding:10px 18px;border-radius:10px;font-weight:700;font-size:0.85rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+          등록
+        </button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
 {% endblock %}
