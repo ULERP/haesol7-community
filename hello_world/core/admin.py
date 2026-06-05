@@ -268,7 +268,7 @@ class ManagementDocumentAdmin(admin.ModelAdmin):
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
     list_display  = ('name', 'group_type', 'join_type', 'status',
-                      'member_count_display', 'emblem_level', 'is_active', 'created_at')
+                      'member_count_display', 'emblem_level', 'is_active', 'created_at', 'change_leader_link')
     list_filter   = ('group_type', 'join_type', 'status', 'is_active')
     search_fields = ('name', 'description', 'creator__nickname')
     raw_id_fields = ('creator',)
@@ -279,6 +279,13 @@ class GroupAdmin(admin.ModelAdmin):
     def member_count_display(self, obj):
         return format_html('<b>{}</b>명', obj.member_count())
     member_count_display.short_description = '회원수'
+
+    def change_leader_link(self, obj):
+        return format_html(
+            '<a href="/admin/core/group/{}/change-leader/" style="background:#D4B26A;color:#242424;padding:3px 10px;border-radius:6px;font-size:0.78rem;font-weight:700;text-decoration:none;white-space:nowrap;">👑 소모임장 변경</a>',
+            obj.pk
+        )
+    change_leader_link.short_description = '소모임장 변경'
 
     @admin.action(description='✅ 선택 소모임 승인 (10인 이상 대기중)')
     def approve_groups(self, request, queryset):
