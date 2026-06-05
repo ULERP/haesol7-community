@@ -3503,22 +3503,22 @@ def hub_together(request):
     ).order_by('scheduled_at')[:3]
     surveys = Survey.objects.order_by('-created_at')[:3]
     activity_proofs = ActivityProof.objects.filter(status='approved').order_by('-approved_at')[:3]
-
-    # 나눔/장터 게시판 게시글
+    # 나눔/장터 게시판 게시글 (board_type=trade 또는 id=14)
+    trade_board = None
     trade_posts = []
     try:
-        trade_board = Board.objects.filter(name__icontains='나눔').first()
+        trade_board = Board.objects.filter(board_type='trade', is_active=True).first() or \
+                      Board.objects.filter(id=14, is_active=True).first()
         if trade_board:
             trade_posts = Post.objects.filter(board=trade_board, is_active=True).order_by('-created_at')[:4]
     except: pass
-
     return render(request, 'hub_together.html', {
         'groups': groups,
         'meetups': meetups,
         'surveys': surveys,
         'activity_proofs': activity_proofs,
         'trade_posts': trade_posts,
-        'trade_board': trade_board if 'trade_board' in dir() else None,
+        'trade_board': trade_board,
     })
 
 def hub_news(request):
