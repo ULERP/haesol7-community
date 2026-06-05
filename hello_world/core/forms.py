@@ -25,11 +25,26 @@ class PostForm(forms.ModelForm):
 class TradeForm(forms.ModelForm):
     class Meta:
         model = Trade
-        fields = ['price', 'status', 'currency']
+        fields = ['trade_type', 'category', 'price', 'is_negotiable', 'condition', 'delivery', 'trade_location', 'status']
         widgets = {
-            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '가격'}),
-            'status': forms.Select(attrs={'class': 'form-select'}),
-            'currency': forms.TextInput(attrs={'class': 'form-control'}),
+            'trade_type':     forms.Select(attrs={'class': 'form-select'}),
+            'category':       forms.Select(attrs={'class': 'form-select'}),
+            'price':          forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0 (나눔이면 0 입력)'}),
+            'is_negotiable':  forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'condition':      forms.Select(attrs={'class': 'form-select'}),
+            'delivery':       forms.Select(attrs={'class': 'form-select'}),
+            'trade_location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '예: 단지 내 경비실 앞'}),
+            'status':         forms.Select(attrs={'class': 'form-select'}),
+        }
+        labels = {
+            'trade_type':     '거래 유형',
+            'category':       '카테고리',
+            'price':          '가격 (원)',
+            'is_negotiable':  '가격 협의 가능',
+            'condition':      '상품 상태',
+            'delivery':       '거래 방법',
+            'trade_location': '거래 희망 장소',
+            'status':         '거래 상태',
         }
 
 class EventForm(forms.ModelForm):

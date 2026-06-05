@@ -293,19 +293,71 @@ class PostLike(models.Model):
         verbose_name        = '게시글 좋아요'
         verbose_name_plural = '게시글 좋아요'
         unique_together = [['post', 'user']]
-
-
 class Trade(models.Model):
     STATUS_CHOICES = [
         ('available', '판매중/나눔중'),
         ('reserved',  '예약중'),
-        ('sold',      '판매완료'),
+        ('sold',      '거래완료'),
     ]
-    post       = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='trade')
-    price      = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
-    currency   = models.CharField(max_length=10, default='KRW')
-    created_at = models.DateTimeField(auto_now_add=True)
+    TRADE_TYPE_CHOICES = [
+        ('sell',     '판매'),
+        ('share',    '나눔'),
+        ('exchange', '교환'),
+    ]
+    CATEGORY_CHOICES = [
+        ('electronics',  '가전/디지털'),
+        ('furniture',    '가구/인테리어'),
+        ('clothing',     '의류/패션'),
+        ('food',         '식품/음료'),
+        ('living',       '생활용품'),
+        ('books',        '도서/문구'),
+        ('sports',       '스포츠/레저'),
+        ('kids',         '유아/아동'),
+        ('plants',       '식물/원예'),
+        ('etc',          '기타'),
+    ]
+    CONDITION_CHOICES = [
+        ('new',       '새상품'),
+        ('like_new',  '거의 새것'),
+        ('good',      '상태 좋음'),
+        ('normal',    '보통'),
+        ('bad',       '나쁨'),
+    ]
+    DELIVERY_CHOICES = [
+        ('direct',   '직거래'),
+        ('delivery', '택배'),
+        ('both',     '직거래+택배'),
+    ]
+    post          = models.OneToOneField(Post, on_delete=models.CASCADE, related_name='trade')
+    trade_type    = models.CharField('거래유형', max_length=20, choices=TRADE_TYPE_CHOICES, default='sell')
+    price         = models.DecimalField('가격', max_digits=12, decimal_places=0, default=0)
+    status        = models.CharField('거래상태', max_length=20, choices=STATUS_CHOICES, default='available')
+    category      = models.CharField('카테고리', max_length=30, choices=CATEGORY_CHOICES, default='etc')
+    condition     = models.CharField('상품상태', max_length=20, choices=CONDITION_CHOICES, default='good')
+    delivery      = models.CharField('거래방법', max_length=20, choices=DELIVERY_CHOICES, default='direct')
+    trade_location = models.CharField('거래장소', max_length=100, blank=True, default='단지 내')
+    is_negotiable = models.BooleanField('가격협의', default=True)
+    currency      = models.CharField(max_length=10, default='KRW')
+    created_at    = models.DateTimeField(auto_now_add=True)
+    updated_at    = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = '거래 정보'
+        verbose_name_plural = '거래 정보'
+
+    def __str__(self):
+        return f"{self.post.title} - {self.get_trade_type_display()} {self.price}원"
+
+    def price_display(self):
+        if self.trade_type == 'share':
+            return '무료나눔'
+        if self.price == 0:
+            return '가격협의'
+        price_str = f"{int(self.price):,}원"
+        if self.is_negotiable:
+            price_str += " (협의가능)"
+        return price_str
+
 
     def __str__(self):
         return f"{self.post.title} - {self.price}"

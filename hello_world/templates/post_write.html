@@ -75,18 +75,99 @@
 
       <!-- 나눔/장터 추가 폼 -->
       {% if extra_form and board.board_type == 'trade' %}
-      <hr>
-      <h6 class="fw-bold text-success mb-3"><i class="fas fa-tag me-2"></i>나눔/장터 정보</h6>
+      <hr style="border-color:#e8e0d0;">
+      <div style="background:linear-gradient(135deg,#242424,#333);border-radius:12px;padding:16px 20px;margin-bottom:20px;">
+        <h6 style="color:#D4B26A;font-weight:800;margin:0;"><i class="fas fa-store me-2"></i>나눔/장터 상세 정보</h6>
+        <div style="color:rgba(255,255,255,.5);font-size:0.75rem;margin-top:3px;">정확한 정보를 입력하면 거래 성사율이 높아요</div>
+      </div>
+
       <div class="row g-3">
-        <div class="col-md-6">
-          <label class="form-label">가격</label>
-          {{ extra_form.price }}
+        <!-- 거래 유형 -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">거래 유형 <span class="text-danger">*</span></label>
+          {{ extra_form.trade_type }}
         </div>
+        <!-- 카테고리 -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">카테고리 <span class="text-danger">*</span></label>
+          {{ extra_form.category }}
+        </div>
+        <!-- 상품 상태 -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">상품 상태 <span class="text-danger">*</span></label>
+          {{ extra_form.condition }}
+        </div>
+        <!-- 가격 -->
         <div class="col-md-6">
-          <label class="form-label">상태</label>
+          <label class="form-label fw-semibold">가격 (원)</label>
+          <div class="input-group">
+            <span class="input-group-text">₩</span>
+            {{ extra_form.price }}
+          </div>
+          <div class="form-text">나눔이면 0 입력</div>
+        </div>
+        <!-- 가격 협의 -->
+        <div class="col-md-6 d-flex align-items-center">
+          <div class="form-check mt-3">
+            {{ extra_form.is_negotiable }}
+            <label class="form-check-label fw-semibold">가격 협의 가능</label>
+          </div>
+        </div>
+        <!-- 거래 방법 -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">거래 방법 <span class="text-danger">*</span></label>
+          {{ extra_form.delivery }}
+        </div>
+        <!-- 거래 희망 장소 -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">거래 희망 장소</label>
+          {{ extra_form.trade_location }}
+        </div>
+        <!-- 거래 상태 (수정 시에만 표시) -->
+        {% if post %}
+        <div class="col-md-12">
+          <label class="form-label fw-semibold">거래 상태</label>
           {{ extra_form.status }}
         </div>
+        {% endif %}
       </div>
+
+      <!-- 가격 미리보기 -->
+      <div id="price-preview" style="margin-top:16px;padding:12px 16px;background:#f8f9fa;border-radius:10px;border-left:3px solid #D4B26A;display:none;">
+        <span style="font-size:0.82rem;color:#666;">표시 가격: </span>
+        <span id="price-text" style="font-size:1rem;font-weight:800;color:#7A263A;"></span>
+      </div>
+
+      <script>
+      (function(){
+        const typeEl = document.querySelector('[name="trade_type"]');
+        const priceEl = document.querySelector('[name="price"]');
+        const negotiableEl = document.querySelector('[name="is_negotiable"]');
+        const preview = document.getElementById('price-preview');
+        const previewText = document.getElementById('price-text');
+
+        function updatePreview() {
+          if (!typeEl || !priceEl) return;
+          const type = typeEl.value;
+          const price = parseInt(priceEl.value) || 0;
+          const negotiable = negotiableEl ? negotiableEl.checked : false;
+          preview.style.display = 'block';
+          if (type === 'share') {
+            previewText.textContent = '🎁 무료나눔';
+          } else if (price === 0) {
+            previewText.textContent = '가격협의';
+          } else {
+            let txt = price.toLocaleString() + '원';
+            if (negotiable) txt += ' (협의가능)';
+            previewText.textContent = txt;
+          }
+        }
+        if (typeEl) typeEl.addEventListener('change', updatePreview);
+        if (priceEl) priceEl.addEventListener('input', updatePreview);
+        if (negotiableEl) negotiableEl.addEventListener('change', updatePreview);
+        updatePreview();
+      })();
+      </script>
       {% endif %}
 
       <!-- 익명 -->

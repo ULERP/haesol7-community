@@ -271,27 +271,65 @@
   {% elif board.layout_type == 'market' %}
   <div class="layout-market">
     {% for post in posts %}
-    <a href="{% url 'post_detail' post.pk %}" class="market-item">
-      <div class="market-img">
+    <a href="{% url 'post_detail' post.pk %}" class="market-item" style="position:relative;">
+      <!-- 거래완료 오버레이 -->
+      {% if post.trade and post.trade.status == 'sold' %}
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,.45);z-index:2;display:flex;align-items:center;justify-content:center;border-radius:14px;">
+        <span style="background:#242424;color:#fff;font-size:0.9rem;font-weight:800;padding:8px 20px;border-radius:20px;border:2px solid #D4B26A;">거래완료</span>
+      </div>
+      {% endif %}
+      <!-- 이미지 -->
+      <div class="market-img" style="position:relative;">
         {% if post.images.first %}
         <img src="{{ post.images.first.image.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
         {% else %}
         <i class="fas fa-box-open"></i>
         {% endif %}
+        <!-- 카테고리 배지 -->
+        {% if post.trade %}
+        <span style="position:absolute;top:8px;left:8px;background:rgba(36,36,36,.75);color:#D4B26A;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:8px;backdrop-filter:blur(4px);">
+          {{ post.trade.get_category_display }}
+        </span>
+        <!-- 거래유형 배지 -->
+        <span style="position:absolute;top:8px;right:8px;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:8px;
+          {% if post.trade.trade_type == 'share' %}background:#D4B26A;color:#242424;
+          {% elif post.trade.trade_type == 'exchange' %}background:#7A263A;color:#fff;
+          {% else %}background:#242424;color:#fff;{% endif %}">
+          {{ post.trade.get_trade_type_display }}
+        </span>
+        {% endif %}
       </div>
+      <!-- 내용 -->
       <div class="market-body">
         {% if post.trade %}
-        <div class="d-flex align-items-center justify-content-between mb-1">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
           <span class="market-price">
-            {% if post.trade.price == 0 %}무료나눔{% else %}{{ post.trade.price|floatformat:0 }}원{% endif %}
+            {% if post.trade.trade_type == 'share' %}
+            <span style="color:#D4B26A;">🎁 무료나눔</span>
+            {% elif post.trade.price == 0 %}
+            가격협의
+            {% else %}
+            {{ post.trade.price|floatformat:0 }}원
+            {% if post.trade.is_negotiable %}<span style="font-size:0.65rem;color:#9ca3af;font-weight:400;"> 협의가능</span>{% endif %}
+            {% endif %}
           </span>
           <span class="market-status market-status-{{ post.trade.status }}">
             {{ post.trade.get_status_display }}
           </span>
         </div>
+        <!-- 상품상태/거래방법 -->
+        <div style="display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap;">
+          <span style="font-size:0.62rem;padding:1px 6px;border-radius:6px;background:#f5f0e8;color:#92400e;border:1px solid #e8d5b0;">{{ post.trade.get_condition_display }}</span>
+          <span style="font-size:0.62rem;padding:1px 6px;border-radius:6px;background:#f0f4ff;color:#3b5fc0;border:1px solid #c7d4f5;">{{ post.trade.get_delivery_display }}</span>
+        </div>
         {% endif %}
         <div class="market-title">{{ post.title }}</div>
-        <div class="market-meta">{{ post.author.nickname|default:post.author.username|default:"익명" }} · {{ post.created_at|date:"m/d" }}</div>
+        <div class="market-meta">
+          {{ post.author.nickname|default:post.author.username|default:"익명" }} · {{ post.created_at|date:"m/d" }}
+          {% if post.trade and post.trade.trade_location %}
+          · <i class="fas fa-map-marker-alt" style="font-size:0.6rem;"></i> {{ post.trade.trade_location }}
+          {% endif %}
+        </div>
       </div>
     </a>
     {% endfor %}
