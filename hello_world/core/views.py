@@ -1164,9 +1164,13 @@ def group_detail(request, pk):
 
     # 가입 대기중인지
     pending = False
+    invited = False
     if request.user.is_authenticated and not is_member:
         pending = GroupMember.objects.filter(
             group=group, user=request.user, join_status='pending'
+        ).exists()
+        invited = GroupMember.objects.filter(
+            group=group, user=request.user, join_status='invited'
         ).exists()
 
     members = GroupMember.objects.filter(
@@ -1198,6 +1202,7 @@ def group_detail(request, pk):
         'member_count':    members.count(),
         'is_leader':       my_role == 'leader',
         'is_mod':          my_role in ('leader', 'moderator'),
+        'invited':         invited,
     })
 
 
@@ -1323,6 +1328,60 @@ def group_member_action(request, pk):
 
     return redirect('group_detail', pk=pk)
 
+
+@login_required
+def group_invite_respond(request, pk):
+    """소모임 초대 수락/거절"""
+    from django.shortcuts import redirect, get_object_or_404
+    from django.contrib import messages
+    from .models import Group, GroupMember, Notification
+    from django.utils import timezone
+    group = get_object_or_404(Group, pk=pk)
+    membership = GroupMember.objects.filter(group=group, user=request.user, join_status='invited').first()
+    if not membership:
+        messages.error(request, '초대 정보를 찾을 수 없어요.')
+        return redirect('group_list')
+    action = request.POST.get('action')
+    if action == 'accept':
+        membership.join_status = 'approved'
+        membership.is_active = True
+        membership.approved_at = timezone.now()
+        membership.save()
+        messages.success(request, f'✅ "{group.name}" 소모임에 참여했어요!')
+        return redirect('group_detail', pk=pk)
+    elif action == 'decline':
+        membership.join_status = 'rejected'
+        membership.is_active = False
+        membership.save()
+        messages.info(request, f'초대를 거절했어요.')
+        return redirect('group_list')
+    return redirect('group_list')
+
+@login_required
+def group_leave(request, pk):
+    """소모임 탈퇴"""
+    from django.shortcuts import redirect, get_object_or_404
+    from django.contrib import messages
+    from .models import Group, GroupMember, GroupLeaderLog
+    group = get_object_or_404(Group, pk=pk)
+    membership = GroupMember.objects.filter(group=group, user=request.user, is_active=True).first()
+    if not membership:
+        messages.error(request, '소모임 멤버가 아니에요.')
+        return redirect('group_list')
+    if membership.role == 'leader':
+        messages.error(request, '방장은 탈퇴할 수 없어요. 방장을 위임한 후 탈퇴해주세요.')
+        return redirect('group_detail', pk=pk)
+    if request.method == 'POST':
+        membership.is_active = False
+        membership.join_status = 'rejected'
+        membership.save()
+        GroupLeaderLog.objects.create(
+            group=group, actor=request.user, target=request.user,
+            action='edit', detail=f'{request.user.nickname or request.user.username}님이 소모임 탈퇴'
+        )
+        messages.success(request, f'"{group.name}" 소모임에서 탈퇴했어요.')
+        return redirect('group_list')
+    return redirect('group_detail', pk=pk)
 
 @login_required
 def group_dissolve(request, pk):
@@ -3166,9 +3225,8 @@ def group_invite(request, pk):
         else:
             GroupMember.objects.update_or_create(
                 group=group, user=target,
-                defaults={'join_status': 'approved', 'is_active': True,
-                          'role': 'member', 'approved_at': timezone.now(),
-                          'approved_by': request.user}
+                defaults={'join_status': 'invited', 'is_active': False,
+                          'role': 'member'}
             )
             GroupLeaderLog.objects.create(
                 group=group, actor=request.user, target=target, action='invite'
@@ -3176,7 +3234,7 @@ def group_invite(request, pk):
             Notification.objects.create(
                 recipient=target,
                 title=f'[{group.name}] 소모임 초대',
-                message=f'{request.user.nickname or request.user.username}님이 "{group.name}" 소모임에 초대했어요!',
+                message=f'{request.user.nickname or request.user.username}님이 "{group.name}" 소모임에 초대했어요! 수락하려면 소모임 페이지를 확인하세요.',
                 notification_type='community',
             )
             messages.success(request, f'{target.nickname or target.username}님을 초대했어요!')

@@ -493,6 +493,7 @@ class GroupMember(models.Model):
     ]
     JOIN_STATUS = [
         ('pending',  '가입대기'),
+        ('invited',  '초대됨'),
         ('approved', '승인됨'),
         ('rejected', '거절됨'),
         ('banned',   '강제퇴장'),
