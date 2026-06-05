@@ -88,19 +88,28 @@
   {% if my_groups %}
   <div class="section-label">✨ 내 소모임</div>
   {% for group in my_groups %}
-  <a href="{% url 'group_detail' group.pk %}" class="group-card">
-    <div class="group-avatar">{{ group.name|first|upper }}</div>
-    <div class="group-body">
-      <div class="group-name">{{ group.name }}</div>
-      <div class="group-desc">{{ group.description|default:"소모임 설명이 없어요"|truncatechars:50 }}</div>
-      <div class="group-tags">
-        <span class="tag tag-type">{{ group.get_group_type_display }}</span>
-        <span class="tag tag-members"><i class="fas fa-users me-1"></i>{{ group.members.count }}명</span>
-        {% if group.location %}<span class="tag tag-location"><i class="fas fa-map-marker-alt me-1"></i>{{ group.location }}</span>{% endif %}
+  <div class="group-card" style="cursor:default;">
+    <a href="{% url 'group_detail' group.pk %}" style="display:contents;">
+      <div class="group-avatar">{{ group.name|first|upper }}</div>
+      <div class="group-body">
+        <div class="group-name">{{ group.name }}</div>
+        <div class="group-desc">{{ group.description|default:"소모임 설명이 없어요"|truncatechars:50 }}</div>
+        <div class="group-tags">
+          <span class="tag tag-type">{{ group.get_group_type_display }}</span>
+          <span class="tag tag-members"><i class="fas fa-users me-1"></i>{{ group.members.count }}명</span>
+          {% if group.location %}<span class="tag tag-location"><i class="fas fa-map-marker-alt me-1"></i>{{ group.location }}</span>{% endif %}
+        </div>
       </div>
+    </a>
+    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;align-items:flex-end;">
+      <span class="my-badge">참여중</span>
+      <a href="/chat/group/{{ group.pk }}/"
+         onclick="event.stopPropagation();"
+         style="background:#7A263A;color:#fff;padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;text-decoration:none;white-space:nowrap;">
+        <i class="fas fa-comments me-1"></i>채팅
+      </a>
     </div>
-    <span class="my-badge">참여중</span>
-  </a>
+  </div>
   {% endfor %}
   {% endif %}
 
