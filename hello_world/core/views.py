@@ -3223,6 +3223,11 @@ def group_invite(request, pk):
         if existing and existing.is_active:
             messages.warning(request, f'{target.nickname or target.username}님은 이미 멤버예요.')
         else:
+            # 이미 활성 멤버면 초대 불필요
+            existing = GroupMember.objects.filter(group=group, user=target).first()
+            if existing and existing.is_active and existing.join_status == 'approved':
+                messages.warning(request, f'{target.nickname or target.username}님은 이미 멤버예요.')
+                return redirect('group_invite', pk=pk)
             GroupMember.objects.update_or_create(
                 group=group, user=target,
                 defaults={'join_status': 'invited', 'is_active': False,
@@ -3237,8 +3242,8 @@ def group_invite(request, pk):
                 message=f'{request.user.nickname or request.user.username}님이 "{group.name}" 소모임에 초대했어요! 수락하려면 소모임 페이지를 확인하세요.',
                 notification_type='community',
             )
-            messages.success(request, f'{target.nickname or target.username}님을 초대했어요!')
-            return redirect('group_detail', pk=pk)
+            messages.success(request, f'✅ {target.nickname or target.username}님께 초대장을 보냈어요! 상대방이 수락하면 멤버가 돼요.')
+            return redirect('group_invite', pk=pk)
 
     return render(request, 'group_invite.html', {
         'group': group,
