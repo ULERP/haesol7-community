@@ -1,5 +1,5 @@
 {% extends 'chat_base.html' %}
-{% block title %}{{ partner.username }}님과 대화 — 해솔7{% endblock %}
+{% block title %}{{ partner.nickname|default:"partner" }}님과 대화 — 해솔7{% endblock %}
 {% block nav_dm %}active{% endblock %}
 {% block tab_chat %}active{% endblock %}
 {% block left_title %}입주민{% endblock %}
@@ -8,10 +8,10 @@
 <div class="sec-label">대화 상대</div>
 {% for u in all_users %}
 <a href="/chat/dm/{{ u.id }}/" class="side-item {% if u.id == partner.id %}active{% endif %}">
-  <div class="av av-sm">{{ u.username|first|upper }}</div>
+  <div class="av av-sm">{{ u.nickname|default:u.username|first|upper }}</div>
   <div style="flex:1;min-width:0;">
-    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.username }}</div>
-    <div style="font-size:0.7rem;color:#999;">{{ u.unit_number|default:"입주민" }}</div>
+    <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.nickname|default:"u" }}</div>
+    <div style="font-size:0.7rem;color:#999;">{{% if u.is_verified %}}<span style="color:#D4B26A;">✓ 인증</span>{{% else %}}입주민{{% endif %}}</div>
   </div>
 </a>
 {% endfor %}
@@ -22,7 +22,7 @@
   <div class="tab-dd">
     <button class="tab-dd-btn" id="tabDdBtn" style="background:#4285f4;">
       <i class="fas fa-envelope" id="tabDdIcon"></i>
-      <span id="tabDdLabel">{{ partner.username }}님</span>
+      <span id="tabDdLabel">{{ partner.nickname|default:partner.username }}님</span>
       <i class="fas fa-chevron-down" style="font-size:0.65rem;"></i>
     </button>
     <div class="tab-dd-menu" id="tabDdMenu">
@@ -32,7 +32,7 @@
       </button>
       <button class="tab-opt active" id="tabOpt-dm">
         <div class="tab-opt-icon" style="background:#e8f0fe;color:#4285f4;"><i class="fas fa-envelope"></i></div>
-        <div><div style="font-weight:600;">1:1 쪽지</div><div style="font-size:0.72rem;color:#999;">{{ partner.username }}님과 대화 중</div></div>
+        <div><div style="font-weight:600;">1:1 쪽지</div><div style="font-size:0.72rem;color:#999;">{{ partner.nickname|default:partner.username }}님과 대화 중</div></div>
       </button>
       <button class="tab-opt" id="tabOpt-group">
         <div class="tab-opt-icon" style="background:#fff3e0;color:#f57c00;"><i class="fas fa-users"></i></div>
@@ -40,7 +40,7 @@
       </button>
     </div>
   </div>
-  <span class="tab-desc">{{ partner.username }} · {{ partner.unit_number|default:"입주민" }}</span>
+  <span class="tab-desc">{{ partner.nickname|default:partner.username }} · {% if partner.is_verified %}<span style="color:#D4B26A;">✓ 인증</span>{% else %}입주민{% endif %}</span>{{% else %}}입주민{{% endif %}}</span>
   <button class="chat-hd-back" style="display:block;margin-left:auto;" onclick="location.href='/chat/dm/list/'"><i class="fas fa-arrow-left"></i></button>
 </div>
 <div class="msg-area" id="chat-box">
@@ -48,7 +48,7 @@
 </div>
 <div class="chat-input">
   <div class="input-row">
-    <textarea class="msg-textarea" id="msg-input" placeholder="{{ partner.username }}님에게 메시지..." rows="1"
+    <textarea class="msg-textarea" id="msg-input" placeholder="{{ partner.nickname|default:partner.username }}님에게 메시지..." rows="1"
       oninput="autoResize(this)"
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
     <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane" style="font-size:0.82rem;"></i></button>
@@ -60,9 +60,9 @@
 <div class="info-sec">
   <div class="info-sec-title">👤 상대방 정보</div>
   <div class="info-card" style="cursor:default;text-align:center;">
-    <div class="av av-md" style="margin:0 auto 8px;">{{ partner.username|first|upper }}</div>
-    <div style="font-weight:700;font-size:0.85rem;">{{ partner.username }}</div>
-    <div style="font-size:0.73rem;color:#999;">{{ partner.unit_number|default:"입주민" }}</div>
+    <div class="av av-md" style="margin:0 auto 8px;">{{ partner.nickname|default:partner.username|first|upper }}</div>
+    <div style="font-weight:700;font-size:0.85rem;">{{ partner.nickname|default:"partner" }}</div>
+    <div style="font-size:0.73rem;color:#999;">{{% if partner.is_verified %}}<span style="color:#D4B26A;">✓ 인증</span>{{% else %}}입주민{{% endif %}}</div>
     <div style="margin-top:8px;font-size:0.73rem;display:flex;justify-content:center;gap:12px;">
       <span>🏅 {{ partner.mileage_points|default:0 }}P</span>
       <span>❤️ {{ partner.manners_score|default:50|floatformat:0 }}</span>
@@ -75,8 +75,8 @@
   {% if u.id != partner.id %}
   <a href="/chat/dm/{{ u.id }}/" class="info-card">
     <div style="display:flex;align-items:center;gap:8px;">
-      <div class="av av-sm" style="width:24px;height:24px;font-size:0.68rem;">{{ u.username|first|upper }}</div>
-      <span style="font-size:0.78rem;font-weight:600;">{{ u.username }}</span>
+      <div class="av av-sm" style="width:24px;height:24px;font-size:0.68rem;">{{ u.nickname|default:u.username|first|upper }}</div>
+      <span style="font-size:0.78rem;font-weight:600;">{{ u.nickname|default:"u" }}</span>
     </div>
   </a>
   {% endif %}
@@ -99,7 +99,7 @@ async function fetchMsgs() {
       d.messages.forEach(m => { renderMsg(box, m); lastId = Math.max(lastId, m.id); });
       if (atBot) box.scrollTop = box.scrollHeight;
     } else if (lastId === 0) {
-      box.innerHTML = '<div class="empty"><div class="empty-icon">💌</div><div class="empty-title">첫 메시지를 보내보세요</div><div class="empty-desc">{{ partner.username }}님과의 대화를 시작해보세요!</div></div>';
+      box.innerHTML = '<div class="empty"><div class="empty-icon">💌</div><div class="empty-title">첫 메시지를 보내보세요</div><div class="empty-desc">{{ partner.nickname|default:partner.username }}님과의 대화를 시작해보세요!</div></div>';
     }
   } catch(e) {}
 }
