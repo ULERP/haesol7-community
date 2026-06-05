@@ -3,9 +3,9 @@
 {% block title %}봉사활동 달력{% endblock %}
 {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="fas fa-calendar-alt text-success me-2"></i>봉사활동 일정</h4>
+    <h4 class="fw-bold mb-0"><i class="fas fa-calendar-alt text-wine me-2"></i>봉사활동 일정</h4>
     {% if user.is_staff %}
-    <a href="/volunteer/create/" class="btn btn-success btn-sm">
+    <a href="/volunteer/create/" class="btn btn-wine btn-sm">
       <i class="fas fa-plus me-1"></i>일정 추가
     </a>
     {% endif %}
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     buttonText: {today:'오늘', month:'월간', week:'주간', day:'일간', list:'목록'},
     nowIndicator: true,
     events: events,
-    eventColor: '#198754',
+    eventColor: '#7A263A',
     eventClick: function(info) {
       if(info.event.url){ window.location.href = info.event.url; info.jsEvent.preventDefault(); }
     },

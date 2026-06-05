@@ -8,10 +8,10 @@
   </a>
 </div>
 <div class="d-flex gap-2 mb-3">
-  <a href="?status=" class="btn btn-sm {% if not status %}btn-success{% else %}btn-outline-secondary{% endif %}">전체</a>
+  <a href="?status=" class="btn btn-sm {% if not status %}btn-wine{% else %}btn-outline-secondary{% endif %}">전체</a>
   <a href="?status=received" class="btn btn-sm {% if status == 'received' %}btn-warning{% else %}btn-outline-secondary{% endif %}">접수됨</a>
   <a href="?status=reviewing" class="btn btn-sm {% if status == 'reviewing' %}btn-info{% else %}btn-outline-secondary{% endif %}">검토중</a>
-  <a href="?status=done" class="btn btn-sm {% if status == 'done' %}btn-success{% else %}btn-outline-secondary{% endif %}">처리완료</a>
+  <a href="?status=done" class="btn btn-sm {% if status == 'done' %}btn-wine{% else %}btn-outline-secondary{% endif %}">처리완료</a>
 </div>
 <div class="list-group shadow-sm">
 {% for c in complaints %}
@@ -40,7 +40,7 @@
         <option value="done" {% if c.status == 'done' %}selected{% endif %}>처리완료</option>
         <option value="rejected" {% if c.status == 'rejected' %}selected{% endif %}>반려</option>
       </select>
-      <button type="submit" class="btn btn-success btn-sm">저장</button>
+      <button type="submit" class="btn btn-wine btn-sm">저장</button>
     </div>
   </form>
 </div>

@@ -60,7 +60,7 @@
     .av { border-radius: 50%; background: #1F2937; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
     .av-sm { width: 28px; height: 28px; font-size: 0.72rem; }
     .av-md { width: 34px; height: 34px; font-size: 0.82rem; }
-    .online-dot { width: 8px; height: 8px; border-radius: 50%; background: #28a745; flex-shrink: 0; }
+    .online-dot { width: 8px; height: 8px; border-radius: 50%; background: #7A263A; flex-shrink: 0; }
 
     /* ── 채팅 탭 드롭다운 ── */
     .chat-tab-bar { padding: 8px 10px; background: #fafbfc; border-bottom: 1px solid #f0f2f4; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -344,7 +344,7 @@
         const msgArea = document.querySelector('.msg-area');
         if (msgArea && msgArea.parentNode) msgArea.parentNode.insertBefore(bar, msgArea);
       }
-      bar.innerHTML = '<i class="fas fa-thumbtack" style="color:#1a7a4a;margin-right:6px;"></i>' +
+      bar.innerHTML = '<i class="fas fa-thumbtack" style="color:#7A263A;margin-right:6px;"></i>' +
         pinned.map(m => '<span>' + esc(m.author) + ': ' + esc(m.message.slice(0,30)) + '</span>').join(' · ');
     }
 
@@ -427,7 +427,7 @@
           </div>`;
       } else {
         d.innerHTML = `
-          <div class="av av-sm" style="${m.is_me ? 'background:#a8d5b8;color:#1a7a4a;' : ''}">${esc(m.author.charAt(0).toUpperCase())}</div>
+          <div class="av av-sm" style="${m.is_me ? 'background:#a8d5b8;color:#7A263A;' : ''}">${esc(m.author.charAt(0).toUpperCase())}</div>
           <div class="msg-inner">
             <div class="msg-name">${esc(m.author)}${m.unit ? ' · ' + esc(m.unit) : ''}</div>
             ${imgHtml}${msgHtml}
@@ -442,7 +442,7 @@
   <div class="modal-dialog modal-sm">
     <div class="modal-content border-0 shadow">
       <div class="modal-header border-0 pb-0">
-        <h6 class="modal-title fw-bold"><i class="fas fa-poll me-2 text-success"></i>채팅 투표 만들기</h6>
+        <h6 class="modal-title fw-bold"><i class="fas fa-poll me-2 text-wine"></i>채팅 투표 만들기</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -456,13 +456,13 @@
             <input type="text" class="form-control form-control-sm mb-1 poll-opt" placeholder="선택지 1">
             <input type="text" class="form-control form-control-sm mb-1 poll-opt" placeholder="선택지 2">
           </div>
-          <button type="button" class="btn btn-outline-success btn-sm w-100 mt-1" onclick="addPollOption()">
+          <button type="button" class="btn btn-outline-wine btn-sm w-100 mt-1" onclick="addPollOption()">
             <i class="fas fa-plus me-1"></i>선택지 추가
           </button>
         </div>
       </div>
       <div class="modal-footer border-0 pt-0">
-        <button class="btn btn-success w-100" onclick="submitPoll()">
+        <button class="btn btn-wine w-100" onclick="submitPoll()">
           <i class="fas fa-paper-plane me-1"></i>투표 시작
         </button>
       </div>
@@ -548,9 +548,9 @@ function renderPolls(polls) {
             <span class="small text-muted">${r.count}표 (${r.percent}%)</span>
           </div>
           <div style="height:6px;background:#e4e6ea;border-radius:3px;overflow:hidden;">
-            <div style="width:${r.percent}%;height:100%;background:#1a7a4a;border-radius:3px;transition:width .5s;"></div>
+            <div style="width:${r.percent}%;height:100%;background:#7A263A;border-radius:3px;transition:width .5s;"></div>
           </div>
-          ${p.is_active && !p.my_vote ? `<button class="btn btn-outline-success btn-sm w-100 mt-1" style="font-size:0.72rem;padding:2px;" onclick="votePoll(${p.id},'${esc(r.option)}')">선택</button>` : ''}
+          ${p.is_active && !p.my_vote ? `<button class="btn btn-outline-wine btn-sm w-100 mt-1" style="font-size:0.72rem;padding:2px;" onclick="votePoll(${p.id},'${esc(r.option)}')">선택</button>` : ''}
         </div>
       `).join('')}
       <div class="text-muted mt-1" style="font-size:0.7rem;">총 ${p.total}표 · ${p.creator} · ${p.created_at}</div>
@@ -566,7 +566,7 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
   <div class="modal-dialog modal-sm">
     <div class="modal-content border-0 shadow">
       <div class="modal-header border-0 pb-0">
-        <h6 class="modal-title fw-bold"><i class="fas fa-poll me-2 text-success"></i>채팅 투표 만들기</h6>
+        <h6 class="modal-title fw-bold"><i class="fas fa-poll me-2 text-wine"></i>채팅 투표 만들기</h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -580,13 +580,13 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
             <input type="text" class="form-control form-control-sm mb-1 poll-opt" placeholder="선택지 1">
             <input type="text" class="form-control form-control-sm mb-1 poll-opt" placeholder="선택지 2">
           </div>
-          <button type="button" class="btn btn-outline-success btn-sm w-100 mt-1" onclick="addPollOption()">
+          <button type="button" class="btn btn-outline-wine btn-sm w-100 mt-1" onclick="addPollOption()">
             <i class="fas fa-plus me-1"></i>선택지 추가
           </button>
         </div>
       </div>
       <div class="modal-footer border-0 pt-0">
-        <button class="btn btn-success w-100" onclick="submitPoll()">
+        <button class="btn btn-wine w-100" onclick="submitPoll()">
           <i class="fas fa-paper-plane me-1"></i>투표 시작
         </button>
       </div>

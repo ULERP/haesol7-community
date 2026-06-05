@@ -2,7 +2,7 @@
 {% block title %}소모임 — 해솔7 지킴이{% endblock %}
 {% block extra_head %}
 <style>
-:root{--g:#1a7a4a;--gl:#e8f5ee;--gb:#a8d5b8;}
+:root{--g:#7A263A;--gl:#e8f5ee;--gb:#a8d5b8;}
 .wrap{max-width:860px;margin:0 auto;padding:16px;}
 .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .page-header h2{font-size:1.1rem;font-weight:700;margin:0;color:#111;}
@@ -35,7 +35,7 @@
   border-radius:8px;font-weight:700;flex-shrink:0;align-self:flex-start;}
 .empty-state{text-align:center;padding:48px 20px;color:#9ca3af;}
 .empty-state i{font-size:3rem;display:block;margin-bottom:12px;opacity:.3;}
-.cta-banner{background:linear-gradient(135deg,var(--g),#1e9158);border-radius:14px;
+.cta-banner{background:linear-gradient(135deg,var(--g),#7A263A);border-radius:14px;
   padding:20px;text-align:center;margin-bottom:16px;}
 .cta-banner h5{color:#fff;font-weight:700;margin-bottom:6px;font-size:0.95rem;}
 .cta-banner p{color:rgba(255,255,255,.85);font-size:0.8rem;margin-bottom:14px;}
@@ -52,7 +52,7 @@
   <div class="page-header">
     <h2><i class="fas fa-users me-2" style="color:var(--g);"></i>소모임</h2>
     {% if user.is_authenticated %}
-    <a href="{% url 'group_create' %}" class="btn btn-success btn-sm">
+    <a href="{% url 'group_create' %}" class="btn btn-wine btn-sm">
       <i class="fas fa-plus me-1"></i>소모임 만들기
     </a>
     {% endif %}
@@ -80,7 +80,7 @@
       <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm"
         placeholder="소모임 검색..." style="border-radius:20px;">
       {% if gtype %}<input type="hidden" name="type" value="{{ gtype }}">{% endif %}
-      <button type="submit" class="btn btn-success btn-sm" style="border-radius:20px;padding:4px 14px;">검색</button>
+      <button type="submit" class="btn btn-wine btn-sm" style="border-radius:20px;padding:4px 14px;">검색</button>
     </div>
   </form>
 
@@ -122,7 +122,7 @@
   {% for group in all_groups %}
   <a href="{% url 'group_detail' group.pk %}" class="group-card">
     <div class="group-avatar" style="background:
-      {% cycle '#1a7a4a' '#2563eb' '#7c3aed' '#dc2626' '#ea580c' '#0891b2' %};">
+      {% cycle '#7A263A' '#2563eb' '#7c3aed' '#dc2626' '#ea580c' '#0891b2' %};">
       {{ group.name|first|upper }}
     </div>
     <div class="group-body">
@@ -147,7 +147,7 @@
     <i class="fas fa-users"></i>
     <p>{% if q or gtype %}검색 결과가 없어요{% else %}아직 소모임이 없어요{% endif %}</p>
     {% if user.is_authenticated %}
-    <a href="{% url 'group_create' %}" class="btn btn-success btn-sm mt-2">
+    <a href="{% url 'group_create' %}" class="btn btn-wine btn-sm mt-2">
       첫 소모임 만들기
     </a>
     {% endif %}

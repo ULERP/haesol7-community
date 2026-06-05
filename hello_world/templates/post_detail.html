@@ -72,12 +72,12 @@
       {% if post.linked_survey %}
       <div class="mt-4 p-4 rounded" style="background:#f0fdf6;border:1.5px solid #a8d5b8;">
         <div class="d-flex align-items-center gap-2 mb-3">
-          <i class="fas fa-poll text-success fa-lg"></i>
+          <i class="fas fa-poll text-wine fa-lg"></i>
           <div>
             <div class="fw-bold">📊 {{ post.linked_survey.title }}</div>
             <div class="text-muted small">이 게시글과 연결된 설문 · {{ post.linked_survey.total_responses }}명 응답</div>
           </div>
-          <span class="ms-auto badge {% if post.linked_survey.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+          <span class="ms-auto badge {% if post.linked_survey.status == 'active' %}bg-wine{% else %}bg-secondary{% endif %}">
             {{ post.linked_survey.get_status_display }}
           </span>
         </div>
@@ -102,11 +102,11 @@
         {% endwith %}
         <div class="d-flex gap-2">
           {% if post.linked_survey.status == 'active' %}
-          <a href="/surveys/{{ post.linked_survey.pk }}/" class="btn btn-success btn-sm flex-grow-1">
+          <a href="/surveys/{{ post.linked_survey.pk }}/" class="btn btn-wine btn-sm flex-grow-1">
             <i class="fas fa-poll me-1"></i>설문 참여하기
           </a>
           {% endif %}
-          <a href="/surveys/{{ post.linked_survey.pk }}/result/" class="btn btn-outline-success btn-sm">
+          <a href="/surveys/{{ post.linked_survey.pk }}/result/" class="btn btn-outline-wine btn-sm">
             📊 결과 보기
           </a>
         </div>
@@ -136,13 +136,13 @@
   </div>
   <div class="card shadow-sm border-0">
     <div class="card-header bg-white fw-bold py-3">
-      <i class="fas fa-comments text-success me-2"></i>댓글 {{ post.comments.count }}개
+      <i class="fas fa-comments text-wine me-2"></i>댓글 {{ post.comments.count }}개
     </div>
     <div class="card-body">
       {% for comment in comments %}
       <div class="d-flex mb-3">
         <div class="flex-shrink-0 me-3">
-          <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px">
+          <div class="bg-wine text-white rounded-circle d-flex align-items-center justify-content-center" style="width:36px;height:36px">
             <i class="fas fa-user"></i>
           </div>
         </div>
@@ -176,7 +176,7 @@
         {% csrf_token %}
         <div class="input-group">
           <textarea name="content" class="form-control" rows="2" placeholder="댓글을 입력하세요..." required></textarea>
-          <button class="btn btn-success" type="submit">등록</button>
+          <button class="btn btn-wine" type="submit">등록</button>
         </div>
       </form>
       {% else %}
@@ -192,10 +192,10 @@
   <div class="card-body py-3 px-4">
     <div class="d-flex flex-wrap gap-2 align-items-center">
       <span class="text-muted small me-2"><i class="fas fa-share-alt me-1"></i>이 글을 공유하거나 함께 이야기해요</span>
-      <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#shareChatModal">
+      <button class="btn btn-sm btn-wine" data-bs-toggle="modal" data-bs-target="#shareChatModal">
         <i class="fas fa-comments me-1"></i>💬 채팅방에서 토론하기
       </button>
-      <a href="/surveys/create/?from_post={{ post.pk }}" class="btn btn-sm btn-outline-success">
+      <a href="/surveys/create/?from_post={{ post.pk }}" class="btn btn-sm btn-outline-wine">
         <i class="fas fa-poll me-1"></i>이 글에 설문 만들기
       </a>
       {% if user.is_authenticated %}
@@ -209,21 +209,21 @@
 
 <!-- ── 연결된 설문 ── -->
 {% if linked_surveys %}
-<div class="card border-0 shadow-sm mb-4" style="border-left:4px solid #1a7a4a !important;">
+<div class="card border-0 shadow-sm mb-4" style="border-left:4px solid #7A263A !important;">
   <div class="card-body py-3 px-4">
-    <div class="fw-bold small mb-2"><i class="fas fa-poll me-2 text-success"></i>이 게시글과 연결된 설문</div>
+    <div class="fw-bold small mb-2"><i class="fas fa-poll me-2 text-wine"></i>이 게시글과 연결된 설문</div>
     {% for s in linked_surveys %}
     <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
       <div>
-        <span class="badge {% if s.status == 'active' %}bg-success{% else %}bg-secondary{% endif %} me-2">{{ s.get_status_display }}</span>
+        <span class="badge {% if s.status == 'active' %}bg-wine{% else %}bg-secondary{% endif %} me-2">{{ s.get_status_display }}</span>
         <span class="fw-semibold small">{{ s.title }}</span>
         <span class="text-muted small ms-2">{{ s.total_responses }}명 응답</span>
       </div>
       <div class="d-flex gap-1">
         {% if s.status == 'active' %}
-        <a href="/surveys/{{ s.pk }}/" class="btn btn-sm btn-success">참여</a>
+        <a href="/surveys/{{ s.pk }}/" class="btn btn-sm btn-wine">참여</a>
         {% endif %}
-        <a href="/surveys/{{ s.pk }}/result/" class="btn btn-sm btn-outline-success">결과</a>
+        <a href="/surveys/{{ s.pk }}/result/" class="btn btn-sm btn-outline-wine">결과</a>
       </div>
     </div>
     {% endfor %}
@@ -269,7 +269,7 @@
   <div class="card-body py-3 px-4">
     <div class="d-flex align-items-center gap-3">
       <a href="/users/{{ post.author.pk }}/" style="text-decoration:none;">
-        <div style="width:44px;height:44px;border-radius:50%;background:#1a7a4a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;flex-shrink:0;">
+        <div style="width:44px;height:44px;border-radius:50%;background:#7A263A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:700;flex-shrink:0;">
           {% if post.is_anonymous %}?{% else %}{{ post.author.nickname|default:post.author.username|first|upper }}{% endif %}
         </div>
       </a>
@@ -289,7 +289,7 @@
         <a href="/letters/write/{{ post.author.pk }}/" class="btn btn-sm btn-outline-primary">
           <i class="bi bi-envelope me-1"></i>쪽지
         </a>
-        <a href="/chat/dm/{{ post.author.pk }}/" class="btn btn-sm btn-success">
+        <a href="/chat/dm/{{ post.author.pk }}/" class="btn btn-sm btn-wine">
           <i class="fas fa-envelope me-1"></i>쪽지
         </a>
         {% endif %}
@@ -350,7 +350,7 @@ async function searchPosts(q) {
       <span class="badge bg-light text-muted border small">${p.board}</span>
       <span class="small flex-grow-1">${p.title}</span>
       <span class="text-muted small">${p.date}</span>
-      <button class="btn btn-sm btn-success" onclick="linkPost(${p.id}, '${p.title}')">연결</button>
+      <button class="btn btn-sm btn-wine" onclick="linkPost(${p.id}, '${p.title}')">연결</button>
     </div>`).join('');
 }
 
@@ -382,7 +382,7 @@ function copyPostLink() {
     <div class="modal-content border-0 shadow">
       <div class="modal-header border-0 pb-1">
         <div>
-          <h6 class="modal-title fw-bold mb-0"><i class="fas fa-comments me-2 text-success"></i>채팅방에서 토론하기</h6>
+          <h6 class="modal-title fw-bold mb-0"><i class="fas fa-comments me-2 text-wine"></i>채팅방에서 토론하기</h6>
           <p class="text-muted small mb-0 mt-1">게시글 링크가 선택한 채팅방에 공유돼요</p>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -395,7 +395,7 @@ function copyPostLink() {
         </div>
         <div class="mb-3">
           <div class="small fw-bold text-muted mb-2">🌐 전체 채팅</div>
-          <button class="btn btn-success w-100 text-start mb-1" onclick="sendToChat('/chat/public/')">
+          <button class="btn btn-wine w-100 text-start mb-1" onclick="sendToChat('/chat/public/')">
             <i class="fas fa-globe me-2"></i>단지 전체채팅
             <span class="float-end opacity-75 small">전체 입주민</span>
           </button>
@@ -425,7 +425,7 @@ function copyPostLink() {
             <button class="btn btn-outline-secondary" onclick="copyPostLink()"><i class="fas fa-copy me-1"></i>복사</button>
           </div>
         </div>
-        <a href="/groups/create/" class="btn btn-outline-success btn-sm w-100">
+        <a href="/groups/create/" class="btn btn-outline-wine btn-sm w-100">
           <i class="fas fa-plus me-1"></i>새 소모임 만들고 토론하기
         </a>
       </div>

@@ -4,7 +4,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
-:root { --g:#1a7a4a; --gl:#e8f5ee; }
+:root { --g:#7A263A; --gl:#e8f5ee; }
 .q-card { background:#fff; border:1px solid #e4e6ea; border-radius:12px; padding:20px; margin-bottom:14px; }
 .q-num { width:26px;height:26px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0; }
 .rating-group { display:flex; gap:12px; flex-wrap:wrap; }
@@ -38,7 +38,7 @@
   <div class="card border-0 shadow-sm mb-4" style="border-top:4px solid var(--g) !important;">
     <div class="card-body p-4">
       <div class="d-flex justify-content-between align-items-start mb-2">
-        <span class="badge {% if survey.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">{{ survey.get_status_display }}</span>
+        <span class="badge {% if survey.status == 'active' %}bg-wine{% else %}bg-secondary{% endif %}">{{ survey.get_status_display }}</span>
         <div class="d-flex gap-2">
           {% if survey.is_anonymous %}<span class="badge bg-light text-muted border"><i class="fas fa-user-secret me-1"></i>익명</span>{% endif %}
           <span class="badge bg-light text-muted border"><i class="fas fa-users me-1"></i>{{ total }}명 응답</span>
@@ -75,7 +75,7 @@
     {% for q in questions %}
       {% if q.question_type == 'section' %}
       <div class="section-divider">
-        <h6 class="fw-bold text-success mb-0">{{ q.text|default:"—" }}</h6>
+        <h6 class="fw-bold text-wine mb-0">{{ q.text|default:"—" }}</h6>
       </div>
       {% else %}
       <div class="q-card">
@@ -123,7 +123,7 @@
               oninput="document.getElementById('sv_{{ q.id }}').textContent=this.value">
             <span class="small text-muted" style="min-width:60px;text-align:right;">{{ q.scale_max_label|default:q.scale_max }}</span>
           </div>
-          <div class="text-center mt-1"><span class="badge bg-success" id="sv_{{ q.id }}">{{ q.scale_min }}</span></div>
+          <div class="text-center mt-1"><span class="badge bg-wine" id="sv_{{ q.id }}">{{ q.scale_min }}</span></div>
         </div>
 
         {% elif q.question_type == 'date' %}
@@ -181,7 +181,7 @@
       {% endif %}
     {% endfor %}
 
-    <button type="submit" class="btn btn-success w-100 py-3 fw-bold" style="font-size:1rem;" onclick="prepareSubmit()">
+    <button type="submit" class="btn btn-wine w-100 py-3 fw-bold" style="font-size:1rem;" onclick="prepareSubmit()">
       <i class="fas fa-paper-plane me-2"></i>응답 제출하기
     </button>
   </form>

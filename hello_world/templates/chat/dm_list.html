@@ -17,15 +17,15 @@
   <!-- 온라인 유저 -->
   {% if online_users %}
   <div class="mb-3">
-    <div class="small fw-bold text-success mb-2">
-      <span class="d-inline-block rounded-circle bg-success me-1" style="width:8px;height:8px;"></span>
+    <div class="small fw-bold text-wine mb-2">
+      <span class="d-inline-block rounded-circle bg-wine me-1" style="width:8px;height:8px;"></span>
       접속중인 이웃 ({{ online_users|length }}명)
     </div>
     <div class="d-flex flex-wrap gap-2">
       {% for u in online_users %}
       <a href="{% url 'direct_message' u.pk %}" class="text-decoration-none">
         <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-pill border border-success bg-white" style="font-size:0.82rem;">
-          <span class="d-inline-block rounded-circle bg-success" style="width:8px;height:8px;flex-shrink:0;"></span>
+          <span class="d-inline-block rounded-circle bg-wine" style="width:8px;height:8px;flex-shrink:0;"></span>
           <span class="fw-semibold">{{ u.nickname|default:u.username }}</span>
           {% if u.is_verified %}<span class="text-muted small">{{ u.dong }}동</span>{% endif %}
         </div>
@@ -55,7 +55,7 @@
           </div>
         </div>
         {% if p in online_users %}
-        <span class="badge bg-success rounded-pill" style="font-size:0.65rem;">온라인</span>
+        <span class="badge bg-wine rounded-pill" style="font-size:0.65rem;">온라인</span>
         {% endif %}
       </a>
       {% endfor %}
@@ -86,7 +86,7 @@
           </div>
         </div>
         {% if u in online_users %}
-        <span class="d-inline-block rounded-circle bg-success" style="width:8px;height:8px;" title="온라인"></span>
+        <span class="d-inline-block rounded-circle bg-wine" style="width:8px;height:8px;" title="온라인"></span>
         {% endif %}
         <i class="fas fa-comment-dots text-primary"></i>
       </a>

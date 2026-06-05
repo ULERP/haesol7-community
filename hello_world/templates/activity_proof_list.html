@@ -3,8 +3,8 @@
 {% block title %}내 활동 인증 목록{% endblock %}
 {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold mb-0"><i class="fas fa-list-check text-success me-2"></i>내 활동 인증 목록</h4>
-    <a href="{% url 'activity_proof_submit' %}" class="btn btn-success">
+    <h4 class="fw-bold mb-0"><i class="fas fa-list-check text-wine me-2"></i>내 활동 인증 목록</h4>
+    <a href="{% url 'activity_proof_submit' %}" class="btn btn-wine">
       <i class="fas fa-plus me-1"></i>활동 인증 제출
     </a>
   </div>
@@ -20,7 +20,7 @@
             {% if proof.status == 'pending' %}
             <span class="badge bg-warning text-dark">대기중</span>
             {% elif proof.status == 'approved' %}
-            <span class="badge bg-success">승인됨</span>
+            <span class="badge bg-wine">승인됨</span>
             {% else %}
             <span class="badge bg-danger">반려됨</span>
             {% endif %}
@@ -34,7 +34,7 @@
           <img src="{{ proof.proof_image.url }}" class="img-fluid rounded mt-2" style="max-height:150px;object-fit:cover;width:100%">
           {% endif %}
           {% if proof.status == 'approved' %}
-          <div class="mt-2 text-success small fw-bold">
+          <div class="mt-2 text-wine small fw-bold">
             <i class="fas fa-star me-1"></i>획득 포인트: {{ proof.points_earned }}p
           </div>
           {% endif %}
@@ -50,7 +50,7 @@
   <div class="text-center py-5">
     <i class="fas fa-clipboard fa-3x text-muted mb-3 d-block"></i>
     <p class="text-muted">아직 제출한 활동 인증이 없어요.</p>
-    <a href="{% url 'activity_proof_submit' %}" class="btn btn-success mt-2">
+    <a href="{% url 'activity_proof_submit' %}" class="btn btn-wine mt-2">
       <i class="fas fa-plus me-1"></i>첫 활동 인증 제출하기
     </a>
   </div>

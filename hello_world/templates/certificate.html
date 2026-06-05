@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h4 class="mb-0">🏅 봉사활동 인증서 발급</h4>
   {% if total_count > 0 %}
-  <a href="{% url 'certificate_pdf' user.pk %}" class="btn btn-success">
+  <a href="{% url 'certificate_pdf' user.pk %}" class="btn btn-wine">
     <i class="bi bi-file-earmark-pdf me-1"></i>PDF 다운로드
   </a>
   {% endif %}
@@ -15,7 +15,7 @@
   <div class="col-4">
     <div class="card text-center border-success">
       <div class="card-body py-3">
-        <div class="fs-2 fw-bold text-success">{{ total_count }}</div>
+        <div class="fs-2 fw-bold text-wine">{{ total_count }}</div>
         <div class="text-muted small">총 활동 횟수</div>
       </div>
     </div>
@@ -42,7 +42,7 @@
 <!-- 인증서 미리보기 -->
 <div class="card border-success mb-4" style="background:linear-gradient(135deg,#f0f8f4,#e8f5e9);">
   <div class="card-body text-center py-4">
-    <div class="fs-4 fw-bold text-success mb-1">🌿 봉사활동 인증서</div>
+    <div class="fs-4 fw-bold text-wine mb-1">🌿 봉사활동 인증서</div>
     <div class="text-muted small mb-3">VOLUNTEER CERTIFICATE</div>
     <hr class="border-success">
     <div class="fs-5 fw-bold my-2">{{ user.nickname|default:user.username }} 님</div>
@@ -55,7 +55,7 @@
     </p>
     <hr class="border-success">
     <div class="text-muted small">발급일: {% now "Y년 m월 d일" %}</div>
-    <div class="fw-bold text-success">해솔마을 7단지 지킴이 커뮤니티</div>
+    <div class="fw-bold text-wine">해솔마을 7단지 지킴이 커뮤니티</div>
   </div>
 </div>
 
@@ -73,7 +73,7 @@
         <td>{{ a.submitted_at|date:"Y.m.d" }}</td>
         <td>{{ a.hours_spent|default:0 }}h</td>
         <td><span class="badge bg-warning text-dark">{{ a.points_earned }}P</span></td>
-        <td><span class="badge bg-success">승인</span></td>
+        <td><span class="badge bg-wine">승인</span></td>
       </tr>
       {% endfor %}
     </tbody>
@@ -81,7 +81,7 @@
 </div>
 
 <div class="text-center mt-3">
-  <a href="{% url 'certificate_pdf' user.pk %}" class="btn btn-success btn-lg">
+  <a href="{% url 'certificate_pdf' user.pk %}" class="btn btn-wine btn-lg">
     <i class="bi bi-file-earmark-pdf me-2"></i>PDF 인증서 다운로드
   </a>
 </div>
@@ -90,7 +90,7 @@
 <div class="text-center text-muted py-5">
   <i class="bi bi-clipboard-x fs-1 d-block mb-3"></i>
   <p>아직 승인된 봉사활동이 없어요.</p>
-  <a href="{% url 'volunteer_calendar' %}" class="btn btn-outline-success">봉사활동 신청하기</a>
+  <a href="{% url 'volunteer_calendar' %}" class="btn btn-outline-wine">봉사활동 신청하기</a>
 </div>
 {% endif %}
 {% endblock %}

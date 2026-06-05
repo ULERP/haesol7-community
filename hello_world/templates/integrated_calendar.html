@@ -21,16 +21,16 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0">📅 통합 캘린더</h4>
   <div class="d-flex gap-2 align-items-center">
-    <span class="badge bg-success">총 {{ total_events }}개 일정</span>
+    <span class="badge bg-wine">총 {{ total_events }}개 일정</span>
     {% if user.is_authenticated %}
-    <button class="btn btn-success btn-sm" onclick="openCreateModal()">
+    <button class="btn btn-wine btn-sm" onclick="openCreateModal()">
       <i class="fas fa-plus me-1"></i>일정 등록
     </button>
     {% endif %}
   </div>
 </div>
 <div class="d-flex gap-3 mb-3 flex-wrap">
-  <span><span class="legend-dot" style="background:#1a7a4a;"></span> <small>봉사활동</small></span>
+  <span><span class="legend-dot" style="background:#7A263A;"></span> <small>봉사활동</small></span>
   <span><span class="legend-dot" style="background:#e74c3c;"></span> <small>단지행사</small></span>
   <span><span class="legend-dot" style="background:#f39c12;"></span> <small>소모임</small></span>
   {% if user.is_authenticated %}
@@ -38,8 +38,8 @@
   {% endif %}
 </div>
 <div class="btn-group mb-3 btn-group-sm" role="group">
-  <button class="btn btn-outline-success active" onclick="filterEvents('all', this)">전체</button>
-  <button class="btn btn-outline-success" onclick="filterEvents('봉사', this)">🤝 봉사</button>
+  <button class="btn btn-outline-wine active" onclick="filterEvents('all', this)">전체</button>
+  <button class="btn btn-outline-wine" onclick="filterEvents('봉사', this)">🤝 봉사</button>
   <button class="btn btn-outline-danger" onclick="filterEvents('행사', this)">📅 행사</button>
   <button class="btn btn-outline-warning" onclick="filterEvents('소모임', this)">👥 소모임</button>
 </div>
@@ -54,7 +54,7 @@
         <small>{{ e.title }} — {{ e.creator__username }}</small>
         <small class="text-muted ms-1">{{ e.start_time|date:"m/d H:i" }}</small>
       </div>
-      <button class="btn btn-success btn-sm py-0 px-2" onclick="approveEvent({{ e.id }})">승인</button>
+      <button class="btn btn-wine btn-sm py-0 px-2" onclick="approveEvent({{ e.id }})">승인</button>
     </div>
     {% endfor %}
   </div>
@@ -71,7 +71,7 @@
       </div>
       <div class="modal-body py-2" id="eventModalBody"></div>
       <div class="modal-footer py-2">
-        <a href="#" id="eventModalLink" class="btn btn-success btn-sm">자세히 보기</a>
+        <a href="#" id="eventModalLink" class="btn btn-wine btn-sm">자세히 보기</a>
         <button type="button" id="eventModalDelete" class="btn btn-danger btn-sm d-none" onclick="deleteEvent()">삭제</button>
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
       </div>
@@ -82,7 +82,7 @@
 <div class="modal fade" id="createModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header py-2 bg-success text-white">
+      <div class="modal-header py-2 bg-wine text-white">
         <h6 class="modal-title">📅 일정 등록</h6>
         <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal"></button>
       </div>
@@ -129,7 +129,7 @@
         <div id="createNote" class="alert alert-info py-1 small mb-0 d-none"></div>
       </div>
       <div class="modal-footer py-2">
-        <button class="btn btn-success btn-sm" onclick="submitCreate()">등록하기</button>
+        <button class="btn btn-wine btn-sm" onclick="submitCreate()">등록하기</button>
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">취소</button>
       </div>
     </div>
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="mb-1"><span class="badge bg-secondary">${p.type||''}</span>${pendingBadge}</div>
         ${p.location ? `<div class="small"><i class="fas fa-map-marker-alt text-danger me-1"></i>${p.location}</div>` : ''}
         ${p.description ? `<div class="small mt-1 text-muted">${p.description}</div>` : ''}
-        ${p.participants !== undefined ? `<div class="small mt-1"><i class="fas fa-users text-success me-1"></i>${p.participants}명 참여중</div>` : ''}
+        ${p.participants !== undefined ? `<div class="small mt-1"><i class="fas fa-users text-wine me-1"></i>${p.participants}명 참여중</div>` : ''}
         ${p.group ? `<div class="small mt-1"><i class="fas fa-users text-warning me-1"></i>${p.group}</div>` : ''}
         ${p.status ? `<div class="small mt-1 text-muted">상태: ${p.status}</div>` : ''}
       `;

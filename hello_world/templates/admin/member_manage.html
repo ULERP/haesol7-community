@@ -3,7 +3,7 @@
 {% block extra_head %}
 <style>
 .stat-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;text-align:center;}
-.stat-n{font-size:1.8rem;font-weight:700;color:#1a7a4a;line-height:1;}
+.stat-n{font-size:1.8rem;font-weight:700;color:#7A263A;line-height:1;}
 .stat-l{font-size:0.72rem;color:#9ca3af;margin-top:4px;}
 .action-bar{display:flex;gap:6px;flex-wrap:wrap;}
 .log-row{font-size:0.78rem;padding:6px 0;border-bottom:1px solid #f0f2f4;}
@@ -25,7 +25,7 @@
     <a href="/admin-tools/logs/" class="btn btn-outline-secondary btn-sm">
       <i class="fas fa-history me-1"></i>행위 로그
     </a>
-    <a href="/admin/" class="btn btn-outline-success btn-sm">Django 관리자</a>
+    <a href="/admin/" class="btn btn-outline-wine btn-sm">Django 관리자</a>
   </div>
 </div>
 
@@ -54,7 +54,7 @@
         <option value="verified" {% if status == "verified" %}selected{% endif %}>인증됨</option>
         <option value="unverified" {% if status == "unverified" %}selected{% endif %}>미인증</option>
       </select>
-      <button class="btn btn-success btn-sm">검색</button>
+      <button class="btn btn-wine btn-sm">검색</button>
       {% if q or status %}<a href="?" class="btn btn-outline-secondary btn-sm">초기화</a>{% endif %}
       <span class="ms-auto" style="font-size:0.78rem;color:#9ca3af;">{{ users|length }}명</span>
     </form>
@@ -84,7 +84,7 @@
             <div style="font-size:0.72rem;color:#9ca3af;">{{ u.username }}
               {% if u.is_superuser %}<span class="badge bg-danger ms-1">최고관리자</span>
               {% elif u.is_staff %}<span class="badge bg-warning text-dark ms-1">관리자</span>{% endif %}
-              {% if u.is_verified %}<span class="badge bg-success ms-1" style="font-size:0.6rem;">인증</span>{% endif %}
+              {% if u.is_verified %}<span class="badge bg-wine ms-1" style="font-size:0.6rem;">인증</span>{% endif %}
             </div>
           </td>
           <td style="font-size:0.8rem;">
@@ -122,7 +122,7 @@
           </td>
           <td>
             {% if u.is_active %}
-              <span class="badge bg-success">활성</span>
+              <span class="badge bg-wine">활성</span>
             {% else %}
               <span class="badge bg-secondary">비활성</span>
             {% endif %}
@@ -165,7 +165,7 @@
                   <i class="fas fa-ban"></i>
                 </button>
                 {% else %}
-                <button class="btn btn-outline-success btn-sm" style="font-size:0.72rem;padding:3px 8px;"
+                <button class="btn btn-outline-wine btn-sm" style="font-size:0.72rem;padding:3px 8px;"
                   title="계정 활성화">
                   <i class="fas fa-check"></i>
                 </button>
@@ -190,7 +190,7 @@
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center" style="padding:10px 16px!important;">
     <span style="font-size:0.82rem;font-weight:700;"><i class="fas fa-history me-1"></i>최근 관리 행위 로그</span>
-    <a href="/admin-tools/logs/" style="font-size:0.75rem;color:#1a7a4a;text-decoration:none;">전체보기 →</a>
+    <a href="/admin-tools/logs/" style="font-size:0.75rem;color:#7A263A;text-decoration:none;">전체보기 →</a>
   </div>
   <div class="card-body" style="padding:12px 16px!important;">
     {% for log in recent_logs %}
@@ -199,7 +199,7 @@
         {% if log.action == 'pw_reset' %}bg-warning text-dark
         {% elif log.action == 'grade_change' %}bg-info text-dark
         {% elif log.action == 'deactivate' %}bg-danger
-        {% elif log.action == 'activate' %}bg-success
+        {% elif log.action == 'activate' %}bg-wine
         {% else %}bg-secondary{% endif %}"
         style="font-size:0.65rem;">{{ log.get_action_display }}</span>
       <span style="font-weight:600;margin:0 4px;">{{ log.admin.nickname|default:log.admin.username }}</span>

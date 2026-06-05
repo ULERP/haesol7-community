@@ -5,7 +5,7 @@
 
   <!-- 헤더 -->
   <div class="card border-0 mb-3" style="border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);">
-    <div class="p-4" style="background:linear-gradient(135deg,#1a7a4a,#1e9158);">
+    <div class="p-4" style="background:linear-gradient(135deg,#7A263A,#7A263A);">
       <div class="d-flex align-items-start justify-content-between">
         <div>
           <div class="d-flex gap-2 mb-2 flex-wrap">
@@ -85,7 +85,7 @@
         {% if is_joined %}
         <button class="btn btn-outline-danger btn-sm px-3">참가 취소</button>
         {% else %}
-        <button class="btn btn-success btn-sm px-3">🙋 참가 신청</button>
+        <button class="btn btn-wine btn-sm px-3">🙋 참가 신청</button>
         {% endif %}
       </form>
       {% endif %}
@@ -114,7 +114,7 @@
 
       <!-- 수정 -->
       {% if meetup.creator == user or user.is_staff %}
-      <a href="{% url 'volunteer_edit' meetup.pk %}" class="btn btn-outline-success btn-sm px-3">✏️ 수정</a>
+      <a href="{% url 'volunteer_edit' meetup.pk %}" class="btn btn-outline-wine btn-sm px-3">✏️ 수정</a>
       {% endif %}
 
     </div>
@@ -125,7 +125,7 @@
       <form method="post" action="{% url 'volunteer_complete' meetup.pk %}">
         {% csrf_token %}
         <textarea name="result_note" class="form-control mb-2" rows="3" placeholder="활동 결과를 간단히 적어주세요"></textarea>
-        <button class="btn btn-success btn-sm">완료 처리</button>
+        <button class="btn btn-wine btn-sm">완료 처리</button>
       </form>
     </div>
     {% endif %}

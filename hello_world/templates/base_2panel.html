@@ -56,16 +56,16 @@
     .card-header{background:#fff!important;border-bottom:1px solid var(--border)!important;padding:14px 18px!important;font-weight:600;font-size:0.88rem;}
     .card-body{padding:18px!important;}
     .btn{border-radius:8px!important;font-weight:600;font-size:0.86rem;}
-    .btn-success,.btn-success:focus{background:var(--g)!important;border-color:var(--g)!important;color:#fff!important;}
-    .btn-success:hover{background:var(--g2)!important;}
-    .btn-outline-success{border-color:var(--g)!important;color:var(--g)!important;}
-    .btn-outline-success:hover{background:var(--gl)!important;color:var(--g)!important;}
+    .btn-wine,.btn-wine:focus{background:var(--g)!important;border-color:var(--g)!important;color:#fff!important;}
+    .btn-wine:hover{background:var(--g2)!important;}
+    .btn-outline-wine{border-color:var(--g)!important;color:var(--g)!important;}
+    .btn-outline-wine:hover{background:var(--gl)!important;color:var(--g)!important;}
     .form-control,.form-select{border:1px solid #d1d5db!important;border-radius:8px!important;font-size:0.88rem!important;}
     .form-control:focus,.form-select:focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px rgba(200,168,107,.15)!important;}
     .form-label{font-size:0.83rem!important;font-weight:600!important;color:#374151!important;}
-    .badge.bg-success{background:var(--g)!important;}
-    .text-success{color:var(--g)!important;}
-    .bg-success{background:var(--g)!important;}
+    .badge.bg-wine{background:var(--g)!important;}
+    .text-wine{color:var(--g)!important;}
+    .bg-wine{background:var(--g)!important;}
     a{color:#7A263A;}
     a:hover{color:#5a1a2a;}
     .table th{font-weight:600;color:#6b7280;background:var(--bg)!important;font-size:0.84rem;}
@@ -112,6 +112,13 @@
     .mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:#9ca3af;font-size:0.6rem;font-weight:600;border:none;background:none;cursor:pointer;padding:0;}
     .mob-tab.active{color:#7A263A;}
     .mob-tab i{font-size:1.2rem;}
+  /* ── 테마 버튼 클래스 ── */
+  .btn-wine{background:#7A263A!important;border-color:#7A263A!important;color:#fff!important;}
+  .btn-wine:hover{background:#5e1d2c!important;border-color:#5e1d2c!important;color:#fff!important;}
+  .btn-outline-wine{background:transparent!important;border-color:#7A263A!important;color:#7A263A!important;}
+  .btn-outline-wine:hover{background:#7A263A!important;color:#fff!important;}
+  .text-wine{color:#7A263A!important;}
+  .bg-wine{background:#7A263A!important;}
   </style>
   {% block extra_head %}{% endblock %}
 </head>
@@ -238,7 +245,7 @@
         {% empty %}
         <div style="text-align:center;color:#ccc;font-size:0.78rem;padding:16px 0;">채팅이 없어요</div>
         {% endfor %}
-        <a href="/chat/public/" class="btn btn-success btn-sm w-100 mt-2" style="font-size:0.76rem;border-radius:8px!important;">채팅 참여 →</a>
+        <a href="/chat/public/" class="btn btn-wine btn-sm w-100 mt-2" style="font-size:0.76rem;border-radius:8px!important;">채팅 참여 →</a>
       </div>
       <!-- 입주민 탭 -->
       <div class="rp-section" id="rp-users">

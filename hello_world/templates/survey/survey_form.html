@@ -4,7 +4,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
-:root { --g: #1a7a4a; --gl: #e8f5ee; }
+:root { --g: #7A263A; --gl: #e8f5ee; }
 .q-block { background:#fff; border:1px solid #e4e6ea; border-radius:12px; padding:18px; margin-bottom:12px; position:relative; transition:box-shadow .15s; }
 .q-block:hover { box-shadow:0 2px 12px rgba(0,0,0,.08); }
 .q-block.section-block { background:#f0f7f3; border-color:#a8d5b8; }
@@ -27,7 +27,7 @@
   <div class="d-flex align-items-center gap-3 mb-4">
     <a href="/surveys/" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i></a>
     <div>
-      <h4 class="fw-bold mb-0"><i class="fas fa-poll me-2 text-success"></i>설문 만들기</h4>
+      <h4 class="fw-bold mb-0"><i class="fas fa-poll me-2 text-wine"></i>설문 만들기</h4>
       <p class="text-muted small mb-0">다양한 유형의 질문으로 입주민 의견을 모아요</p>
     </div>
   </div>
@@ -40,7 +40,7 @@
     <!-- 기본 설정 -->
     <div class="card border-0 shadow-sm mb-4">
       <div class="card-body p-4">
-        <h6 class="fw-bold mb-3 text-success"><i class="fas fa-cog me-1"></i>기본 설정</h6>
+        <h6 class="fw-bold mb-3 text-wine"><i class="fas fa-cog me-1"></i>기본 설정</h6>
         {% if request.GET.from_post %}
         <div class="alert alert-success border-0 mb-3" style="background:#e8f5ee;">
           <i class="fas fa-link me-2"></i>게시글과 연결된 설문을 만들고 있어요. 완성 후 게시글에 링크를 공유해보세요!
@@ -85,15 +85,15 @@
 
     <!-- 질문 추가 버튼 -->
     <div class="add-q-bar">
-      <button type="button" class="add-q-btn" onclick="addQ('single')"><span class="text-success">◉</span> 단일 선택</button>
-      <button type="button" class="add-q-btn" onclick="addQ('multiple')"><span class="text-success">☑</span> 복수 선택</button>
-      <button type="button" class="add-q-btn" onclick="addQ('text')"><span class="text-success">✏</span> 주관식</button>
-      <button type="button" class="add-q-btn" onclick="addQ('rating')"><span class="text-success">⭐</span> 평점</button>
-      <button type="button" class="add-q-btn" onclick="addQ('scale')"><span class="text-success">↔</span> 척도</button>
-      <button type="button" class="add-q-btn" onclick="addQ('date')"><span class="text-success">📅</span> 날짜</button>
-      <button type="button" class="add-q-btn" onclick="addQ('daterange')"><span class="text-success">📆</span> 날짜 범위</button>
-      <button type="button" class="add-q-btn" onclick="addQ('rank')"><span class="text-success">↕</span> 순위</button>
-      <button type="button" class="add-q-btn" onclick="addQ('matrix')"><span class="text-success">⊞</span> 매트릭스</button>
+      <button type="button" class="add-q-btn" onclick="addQ('single')"><span class="text-wine">◉</span> 단일 선택</button>
+      <button type="button" class="add-q-btn" onclick="addQ('multiple')"><span class="text-wine">☑</span> 복수 선택</button>
+      <button type="button" class="add-q-btn" onclick="addQ('text')"><span class="text-wine">✏</span> 주관식</button>
+      <button type="button" class="add-q-btn" onclick="addQ('rating')"><span class="text-wine">⭐</span> 평점</button>
+      <button type="button" class="add-q-btn" onclick="addQ('scale')"><span class="text-wine">↔</span> 척도</button>
+      <button type="button" class="add-q-btn" onclick="addQ('date')"><span class="text-wine">📅</span> 날짜</button>
+      <button type="button" class="add-q-btn" onclick="addQ('daterange')"><span class="text-wine">📆</span> 날짜 범위</button>
+      <button type="button" class="add-q-btn" onclick="addQ('rank')"><span class="text-wine">↕</span> 순위</button>
+      <button type="button" class="add-q-btn" onclick="addQ('matrix')"><span class="text-wine">⊞</span> 매트릭스</button>
       <button type="button" class="add-q-btn" onclick="addQ('section')"><span class="text-muted">—</span> 섹션 구분</button>
     </div>
 
@@ -104,7 +104,7 @@
 
     <div class="d-flex gap-2 justify-content-end">
       <a href="/surveys/" class="btn btn-outline-secondary">취소</a>
-      <button type="submit" class="btn btn-success px-4" onclick="serializeQuestions()">
+      <button type="submit" class="btn btn-wine px-4" onclick="serializeQuestions()">
         <i class="fas fa-check me-1"></i>설문 만들기
       </button>
     </div>

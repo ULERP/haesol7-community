@@ -9,7 +9,7 @@
       <div class="text-muted small">소모임 멤버들의 이야기</div>
     </div>
     {% if is_member %}
-    <a href="/groups/{{ group.pk }}/posts/create/" class="btn btn-success btn-sm ms-auto">
+    <a href="/groups/{{ group.pk }}/posts/create/" class="btn btn-wine btn-sm ms-auto">
       <i class="fas fa-pen me-1"></i>글쓰기
     </a>
     {% endif %}
@@ -44,7 +44,7 @@
     <div style="font-size:3rem;margin-bottom:12px;">📝</div>
     <h5 class="fw-bold text-muted">아직 게시글이 없어요</h5>
     {% if is_member %}
-    <a href="/groups/{{ group.pk }}/posts/create/" class="btn btn-success mt-2">첫 글 작성하기</a>
+    <a href="/groups/{{ group.pk }}/posts/create/" class="btn btn-wine mt-2">첫 글 작성하기</a>
     {% endif %}
   </div>
   {% endif %}

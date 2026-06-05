@@ -10,34 +10,34 @@
 .cat-chip { display:inline-block; padding:5px 12px; border-radius:20px; font-size:0.78rem;
   font-weight:600; text-decoration:none; border:1.5px solid #e5e7eb; color:#6b7280;
   transition:all .15s; }
-.cat-chip:hover, .cat-chip.active { background:#1a7a4a; color:#fff; border-color:#1a7a4a; }
+.cat-chip:hover, .cat-chip.active { background:#7A263A; color:#fff; border-color:#7A263A; }
 .search-input { flex:1; min-width:160px; padding:7px 12px; border:1.5px solid #e5e7eb;
   border-radius:20px; font-size:0.83rem; outline:none; }
-.search-input:focus { border-color:#1a7a4a; }
+.search-input:focus { border-color:#7A263A; }
 .doc-card { background:#fff; border-radius:14px; border:1px solid #e5e7eb;
   padding:16px; margin-bottom:10px; display:flex; gap:14px; align-items:flex-start;
   text-decoration:none; color:inherit; transition:all .15s;
   box-shadow:0 1px 3px rgba(0,0,0,.05); }
-.doc-card:hover { border-color:#1a7a4a; background:#f0fdf7; box-shadow:0 2px 8px rgba(26,122,74,.1); }
+.doc-card:hover { border-color:#7A263A; background:#f0fdf7; box-shadow:0 2px 8px rgba(26,122,74,.1); }
 .doc-icon { width:44px; height:44px; border-radius:12px; background:#e8f5ee;
   display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.doc-icon i { font-size:1.2rem; color:#1a7a4a; }
+.doc-icon i { font-size:1.2rem; color:#7A263A; }
 .doc-body { flex:1; min-width:0; }
 .doc-title { font-size:0.92rem; font-weight:700; color:#111; margin-bottom:4px;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .doc-meta { font-size:0.75rem; color:#9ca3af; display:flex; gap:10px; flex-wrap:wrap; }
 .doc-cat { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.7rem;
-  font-weight:600; background:#e8f5ee; color:#1a7a4a; }
+  font-weight:600; background:#e8f5ee; color:#7A263A; }
 .doc-cat-규정 { background:#fef3c7; color:#92400e; }
 .doc-cat-회의록 { background:#ede9fe; color:#6d28d9; }
 .doc-cat-예산 { background:#fee2e2; color:#991b1b; }
 .doc-cat-계획 { background:#dbeafe; color:#1d4ed8; }
 .doc-cat-기타 { background:#f3f4f6; color:#374151; }
-.lock-banner { background:linear-gradient(135deg,#1a7a4a,#1e9158); border-radius:14px;
+.lock-banner { background:linear-gradient(135deg,#7A263A,#7A263A); border-radius:14px;
   padding:20px; text-align:center; margin-bottom:16px; }
 .lock-banner h5 { color:#fff; font-weight:700; margin-bottom:6px; font-size:0.95rem; }
 .lock-banner p { color:rgba(255,255,255,.85); font-size:0.8rem; margin-bottom:14px; }
-.btn-w { background:#fff; color:#1a7a4a; padding:9px 20px; border-radius:50px;
+.btn-w { background:#fff; color:#7A263A; padding:9px 20px; border-radius:50px;
   font-size:0.85rem; font-weight:700; text-decoration:none; display:inline-block; margin:3px; }
 .btn-g { background:rgba(255,255,255,.2); color:#fff; padding:9px 18px; border-radius:50px;
   font-size:0.85rem; font-weight:600; text-decoration:none; display:inline-block; margin:3px;
@@ -50,9 +50,9 @@
 <div class="doc-wrap">
 
   <div class="doc-header">
-    <h2><i class="fas fa-file-alt me-2" style="color:#1a7a4a;"></i>관리 문서 게시판</h2>
+    <h2><i class="fas fa-file-alt me-2" style="color:#7A263A;"></i>관리 문서 게시판</h2>
     {% if user.is_staff %}
-    <a href="{% url 'community:management_doc_create' %}" class="btn btn-success btn-sm">
+    <a href="{% url 'community:management_doc_create' %}" class="btn btn-wine btn-sm">
       <i class="fas fa-plus me-1"></i>문서 등록
     </a>
     {% endif %}
@@ -87,7 +87,7 @@
     <div style="flex:1;display:flex;gap:6px;min-width:200px;">
       <input type="text" name="q" class="search-input" placeholder="검색..." value="{{ q }}">
       {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
-      <button type="submit" style="background:#1a7a4a;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:0.82rem;cursor:pointer;">검색</button>
+      <button type="submit" style="background:#7A263A;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:0.82rem;cursor:pointer;">검색</button>
     </div>
   </form>
 
@@ -137,7 +137,7 @@
     <i class="fas fa-folder-open"></i>
     <p>{% if q or selected_category %}검색 결과가 없어요{% else %}등록된 문서가 없어요{% endif %}</p>
     {% if user.is_staff %}
-    <a href="{% url 'community:management_doc_create' %}" class="btn btn-success btn-sm mt-2">첫 문서 등록하기</a>
+    <a href="{% url 'community:management_doc_create' %}" class="btn btn-wine btn-sm mt-2">첫 문서 등록하기</a>
     {% endif %}
   </div>
   {% endif %}

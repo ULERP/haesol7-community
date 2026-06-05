@@ -13,7 +13,7 @@
   .insert-btn { border: 1.5px dashed #c6e8d8; border-radius: 10px; padding: 10px 16px; color: #6b7280; font-size: 0.82rem; cursor: pointer; transition: all .15s; background: #fafafa; display: inline-flex; align-items: center; gap: 6px; }
   .insert-btn:hover { border-color: var(--g); color: var(--g); background: var(--gl); }
   .write-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.07); overflow: hidden; }
-  .write-header { background: linear-gradient(135deg, #1a7a4a, #1e9158); padding: 18px 24px; }
+  .write-header { background: linear-gradient(135deg, #7A263A, #7A263A); padding: 18px 24px; }
 </style>
 {% endblock %}
 
@@ -52,7 +52,7 @@
       <!-- 삽입 도구 -->
       <div class="mb-2 d-flex gap-2 flex-wrap">
         <button type="button" class="insert-btn" onclick="insertImage()">
-          <i class="fas fa-image text-success"></i> 이미지
+          <i class="fas fa-image text-wine"></i> 이미지
         </button>
         <button type="button" class="insert-btn" onclick="insertSurveyModal()">
           <i class="fas fa-poll text-primary"></i> 설문 삽입
@@ -179,7 +179,7 @@
       {% endif %}
 
       <div class="d-flex gap-2 mt-4">
-        <button type="submit" class="btn btn-success px-4">
+        <button type="submit" class="btn btn-wine px-4">
           <i class="fas fa-paper-plane me-1"></i>게시하기
         </button>
         <a href="{% url 'board_detail' board.id %}" class="btn btn-outline-secondary px-4">취소</a>

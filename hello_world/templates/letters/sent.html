@@ -4,8 +4,8 @@
 <div class="col-lg-8">
 
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h4 class="fw-bold mb-0"><i class="bi bi-send me-2 text-success"></i>보낸 쪽지함</h4>
-  <a href="{% url 'letter_write' %}" class="btn btn-success btn-sm">
+  <h4 class="fw-bold mb-0"><i class="bi bi-send me-2 text-wine"></i>보낸 쪽지함</h4>
+  <a href="{% url 'letter_write' %}" class="btn btn-wine btn-sm">
     <i class="bi bi-pencil me-1"></i>쪽지 쓰기
   </a>
 </div>
@@ -17,7 +17,7 @@
     </a>
   </li>
   <li class="nav-item">
-    <a class="nav-link active fw-semibold" style="color:#1a7a4a !important;border-bottom:3px solid #1a7a4a;background:#fff;" href="{% url 'letter_sent' %}">
+    <a class="nav-link active fw-semibold" style="color:#7A263A !important;border-bottom:3px solid #7A263A;background:#fff;" href="{% url 'letter_sent' %}">
       <i class="bi bi-send me-1"></i>보낸 쪽지함
     </a>
   </li>
@@ -31,7 +31,7 @@
       <a href="{% url 'letter_detail' letter.pk %}" class="text-decoration-none text-dark flex-grow-1">
         {{ letter.subject }}
         <small class="text-muted ms-2">to {{ letter.receiver.nickname }}</small>
-        {% if letter.replies.exists %}<span class="badge bg-success ms-1">답장옴</span>{% endif %}
+        {% if letter.replies.exists %}<span class="badge bg-wine ms-1">답장옴</span>{% endif %}
       </a>
       <div class="d-flex align-items-center gap-2 ms-2">
         {% if letter.is_read %}

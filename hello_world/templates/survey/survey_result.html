@@ -4,7 +4,7 @@
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-:root { --g:#1a7a4a; --gl:#e8f5ee; }
+:root { --g:#7A263A; --gl:#e8f5ee; }
 .stat-card { background:#fff; border:1px solid #e4e6ea; border-radius:12px; padding:20px; margin-bottom:16px; }
 .stat-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
 .q-label { font-weight:700; font-size:0.92rem; margin-bottom:4px; }
@@ -39,7 +39,7 @@
     <div class="card-body p-4">
       <div class="row align-items-center">
         <div class="col-md-8">
-          <span class="badge {% if survey.status == 'active' %}bg-success{% else %}bg-secondary{% endif %} mb-2">{{ survey.get_status_display }}</span>
+          <span class="badge {% if survey.status == 'active' %}bg-wine{% else %}bg-secondary{% endif %} mb-2">{{ survey.get_status_display }}</span>
           <h4 class="fw-bold mb-1">{{ survey.title }}</h4>
           {% if survey.description %}<p class="text-muted small mb-2">{{ survey.description }}</p>{% endif %}
           <div class="d-flex flex-wrap gap-3 small text-muted">
@@ -53,10 +53,10 @@
           <div class="text-muted small">총 응답 수</div>
           <div class="d-flex gap-2 justify-content-md-end mt-2 flex-wrap">
             {% if survey.creator == user or user.is_staff %}
-            <a href="/surveys/{{ survey.pk }}/export/" class="btn btn-outline-success btn-sm"><i class="fas fa-download me-1"></i>CSV</a>
+            <a href="/surveys/{{ survey.pk }}/export/" class="btn btn-outline-wine btn-sm"><i class="fas fa-download me-1"></i>CSV</a>
             {% endif %}
             {% if survey.status == 'active' %}
-            <a href="/surveys/{{ survey.pk }}/" class="btn btn-success btn-sm"><i class="fas fa-poll me-1"></i>참여</a>
+            <a href="/surveys/{{ survey.pk }}/" class="btn btn-wine btn-sm"><i class="fas fa-poll me-1"></i>참여</a>
             {% endif %}
             {% if survey.creator == user and survey.status == 'active' %}
             <form method="post" action="/surveys/{{ survey.pk }}/close/" class="d-inline">
@@ -73,13 +73,13 @@
   <!-- 공유 링크 -->
   <div class="summary-box mb-4">
     <div class="d-flex align-items-center gap-3">
-      <i class="fas fa-share-alt text-success fa-lg"></i>
+      <i class="fas fa-share-alt text-wine fa-lg"></i>
       <div style="flex:1;">
         <div class="fw-bold small mb-1">설문 링크 공유하기</div>
         <input type="text" class="form-control form-control-sm" id="share-link"
           value="https://{{ request.get_host }}/surveys/{{ survey.pk }}/" readonly>
       </div>
-      <button class="btn btn-success btn-sm" onclick="copyLink()"><i class="fas fa-copy me-1"></i>복사</button>
+      <button class="btn btn-wine btn-sm" onclick="copyLink()"><i class="fas fa-copy me-1"></i>복사</button>
     </div>
   </div>
 
@@ -88,7 +88,7 @@
     <div style="font-size:3rem;margin-bottom:12px;">📭</div>
     <h5 class="fw-bold text-muted">아직 응답이 없어요</h5>
     <p class="text-muted">링크를 공유해서 입주민들의 의견을 모아보세요!</p>
-    <button class="btn btn-success" onclick="copyLink()"><i class="fas fa-share-alt me-1"></i>링크 복사</button>
+    <button class="btn btn-wine" onclick="copyLink()"><i class="fas fa-share-alt me-1"></i>링크 복사</button>
   </div>
   {% else %}
 
@@ -180,7 +180,7 @@
 
     {% elif s.type == 'date' or s.type == 'daterange' %}
     {% for d in s.dates %}
-    <div class="text-response"><i class="fas fa-calendar me-1 text-success"></i>{{ d }}</div>
+    <div class="text-response"><i class="fas fa-calendar me-1 text-wine"></i>{{ d }}</div>
     {% empty %}
     <div class="text-muted small">응답 없음</div>
     {% endfor %}
@@ -210,7 +210,7 @@
   {% if show_respondents and respondents %}
   <div class="card border-0 shadow-sm mt-4">
     <div class="card-header bg-white fw-bold py-3">
-      <i class="fas fa-list me-2 text-success"></i>응답 내역 ({{ respondents|length }}건)
+      <i class="fas fa-list me-2 text-wine"></i>응답 내역 ({{ respondents|length }}건)
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -245,7 +245,7 @@
   {% endif %}
 
   <div class="text-center mt-4 d-flex gap-2 justify-content-center">
-    <a href="/surveys/{{ survey.pk }}/" class="btn btn-success">설문 참여</a>
+    <a href="/surveys/{{ survey.pk }}/" class="btn btn-wine">설문 참여</a>
     <a href="/surveys/" class="btn btn-outline-secondary">목록으로</a>
     {% if survey.creator == user %}
     <form method="post" action="/surveys/{{ survey.pk }}/delete/" class="d-inline">
@@ -259,7 +259,7 @@
 <script>
 const chartData = {{ chart_data|safe }};
 const charts = {};
-const colors = ['#1a7a4a','#a8d5b8','#4285f4','#f57c00','#e91e63','#9c27b0','#00bcd4','#ff5722','#607d8b'];
+const colors = ['#7A263A','#a8d5b8','#4285f4','#f57c00','#e91e63','#9c27b0','#00bcd4','#ff5722','#607d8b'];
 
 Object.entries(chartData).forEach(([qid, d]) => {
   const canvas = document.getElementById('chart-' + qid);

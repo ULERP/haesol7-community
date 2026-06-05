@@ -155,7 +155,7 @@
     <div class="text-muted small text-center py-2">불러오는 중...</div>
   </div>
   {% if user.is_authenticated %}
-  <button class="btn btn-outline-success btn-sm w-100 mt-2"
+  <button class="btn btn-outline-wine btn-sm w-100 mt-2"
     data-bs-toggle="modal" data-bs-target="#pollModal"
     onclick="window.CHAT_TYPE='public';">
     <i class="fas fa-plus me-1"></i>투표 만들기
@@ -239,7 +239,7 @@ async function sendMsg() {
     const d = document.createElement('div');
     d.id = tempId;
     d.className = 'msg-row me';
-    d.innerHTML = `<div class="av av-sm" style="background:#a8d5b8;color:#1a7a4a;"></div>
+    d.innerHTML = `<div class="av av-sm" style="background:#a8d5b8;color:#7A263A;"></div>
       <div class="msg-inner">
         <div class="msg-bbl">${esc(optimisticMsg)}</div>
         <div class="msg-time" style="opacity:.5">전송 중...</div>
@@ -299,10 +299,10 @@ initTabDropdown([
 .chat-lock-panel h5 { font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
 .chat-lock-panel p { font-size: 0.83rem; color: #6b7280; margin-bottom: 20px; }
 .chat-lock-panel .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-.btn-join { background: #1a7a4a; color: #fff; padding: 11px 28px; border-radius: 50px;
+.btn-join { background: #7A263A; color: #fff; padding: 11px 28px; border-radius: 50px;
   font-size: 0.9rem; font-weight: 700; text-decoration: none; }
-.btn-login { background: #fff; color: #1a7a4a; padding: 11px 24px; border-radius: 50px;
-  font-size: 0.9rem; font-weight: 600; text-decoration: none; border: 1.5px solid #1a7a4a; }
+.btn-login { background: #fff; color: #7A263A; padding: 11px 24px; border-radius: 50px;
+  font-size: 0.9rem; font-weight: 600; text-decoration: none; border: 1.5px solid #7A263A; }
 </style>
 <div class="chat-blur-bg"></div>
 <div class="chat-lock-overlay">

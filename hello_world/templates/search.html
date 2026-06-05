@@ -6,21 +6,21 @@
       <form method="get" action="/search/">
         <div class="input-group input-group-lg">
           <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="검색어를 입력하세요...">
-          <button class="btn btn-success" type="submit"><i class="fas fa-search"></i></button>
+          <button class="btn btn-wine" type="submit"><i class="fas fa-search"></i></button>
         </div>
       </form>
     </div>
   </div>
   {% if query %}
   <h5 class="fw-bold mb-3">
-    <i class="fas fa-search text-success me-2"></i>"{{ query }}" 검색 결과 — {{ count }}건
+    <i class="fas fa-search text-wine me-2"></i>"{{ query }}" 검색 결과 — {{ count }}건
   </h5>
   <div class="list-group">
     {% for post in results %}
     <a href="{% url 'post_detail' post.pk %}" class="list-group-item list-group-item-action py-3">
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          {% if post.tag %}<span class="badge bg-success me-2">{{ post.tag }}</span>{% endif %}
+          {% if post.tag %}<span class="badge bg-wine me-2">{{ post.tag }}</span>{% endif %}
           <span class="fw-semibold">{{ post.title }}</span>
           <span class="text-muted small ms-2">{{ post.board.name }}</span>
         </div>

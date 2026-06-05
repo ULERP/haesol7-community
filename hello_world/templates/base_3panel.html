@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block extra_head %}
 <style>
-:root { --g:#1a7a4a; --gl:#e8f5ee; --gb:#a8d5b8; --nav-h:52px; }
+:root { --g:#7A263A; --gl:#e8f5ee; --gb:#a8d5b8; --nav-h:52px; }
 
 /* 3패널 레이아웃 - 홈과 동일한 구조 */
 .layout-3p {
@@ -85,7 +85,14 @@
     height: auto;
   }
 }
-</style>
+  /* ── 테마 버튼 클래스 ── */
+  .btn-wine{background:#7A263A!important;border-color:#7A263A!important;color:#fff!important;}
+  .btn-wine:hover{background:#5e1d2c!important;border-color:#5e1d2c!important;color:#fff!important;}
+  .btn-outline-wine{background:transparent!important;border-color:#7A263A!important;color:#7A263A!important;}
+  .btn-outline-wine:hover{background:#7A263A!important;color:#fff!important;}
+  .text-wine{color:#7A263A!important;}
+  .bg-wine{background:#7A263A!important;}
+  </style>
 {% block panel_extra_head %}{% endblock %}
 {% endblock %}
 

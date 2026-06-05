@@ -7,7 +7,7 @@
     <span class="fw-bold">{{ c.title }}</span>
     {% if c.status == 'received' %}<span class="badge bg-warning text-dark">접수됨</span>
     {% elif c.status == 'reviewing' %}<span class="badge bg-info">검토중</span>
-    {% elif c.status == 'done' %}<span class="badge bg-success">처리완료</span>
+    {% elif c.status == 'done' %}<span class="badge bg-wine">처리완료</span>
     {% else %}<span class="badge bg-danger">반려</span>{% endif %}
   </div>
   <div class="card-body">
@@ -21,8 +21,8 @@
 </div>
 {% if c.admin_reply %}
 <div class="card shadow-sm border-success">
-  <div class="card-header bg-success bg-opacity-10 fw-semibold">
-    <i class="bi bi-reply me-1 text-success"></i>관리자 답변
+  <div class="card-header bg-wine bg-opacity-10 fw-semibold">
+    <i class="bi bi-reply me-1 text-wine"></i>관리자 답변
     <small class="text-muted ms-2">{{ c.replied_at|date:"Y.m.d H:i" }}</small>
   </div>
   <div class="card-body" style="white-space:pre-wrap;">{{ c.admin_reply }}</div>

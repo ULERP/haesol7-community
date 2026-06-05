@@ -2,10 +2,10 @@
 {% block title %}{{ profile_user.nickname|default:profile_user.username }}님 프로필 — 해솔7 지킴이{% endblock %}
 {% block extra_head %}
 <style>
-:root{--g:#1a7a4a;--gl:#e8f5ee;}
+:root{--g:#7A263A;--gl:#e8f5ee;}
 .wrap{max-width:680px;margin:0 auto;padding:16px;}
 /* 프로필 히어로 */
-.profile-hero{background:linear-gradient(135deg,var(--g),#1e9158);border-radius:16px;
+.profile-hero{background:linear-gradient(135deg,var(--g),#7A263A);border-radius:16px;
   padding:24px;color:#fff;margin-bottom:14px;}
 .profile-av{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);
   border:3px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;
@@ -28,7 +28,7 @@
 .warmth-meter{height:14px;background:#f0f2f4;border-radius:7px;overflow:hidden;margin-bottom:6px;}
 .warmth-fill{height:100%;border-radius:7px;transition:width 1.2s ease;
   background:linear-gradient(90deg,#fbbf24,#f59e0b,#ef4444);}
-.warmth-fill.high{background:linear-gradient(90deg,#a8d5b8,#1a7a4a);}
+.warmth-fill.high{background:linear-gradient(90deg,#a8d5b8,#7A263A);}
 .warmth-score-big{font-size:2rem;font-weight:800;color:var(--g);line-height:1;}
 .warmth-label{font-size:0.75rem;color:#9ca3af;}
 /* 온기 평가 */
@@ -42,7 +42,7 @@
 .comment-input{width:100%;padding:9px 12px;border:1.5px solid #fde68a;border-radius:10px;
   font-size:0.83rem;background:#fffdf0;outline:none;box-sizing:border-box;resize:none;}
 .comment-input:focus{border-color:#f59e0b;}
-.btn-rate{background:#1a7a4a;color:#fff;border:none;border-radius:10px;padding:9px 20px;
+.btn-rate{background:#7A263A;color:#fff;border:none;border-radius:10px;padding:9px 20px;
   font-size:0.85rem;font-weight:700;cursor:pointer;width:100%;margin-top:8px;}
 /* 배지 */
 .badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
@@ -149,12 +149,12 @@
     <div class="d-flex gap-2">
       <form method="post" action="/users/{{ profile_user.pk }}/follow/" class="d-inline">
         {% csrf_token %}
-        <button type="submit" class="btn btn-sm {% if is_following %}btn-outline-secondary{% else %}btn-success{% endif %}" style="border-radius:20px;font-size:0.78rem;">
+        <button type="submit" class="btn btn-sm {% if is_following %}btn-outline-secondary{% else %}btn-wine{% endif %}" style="border-radius:20px;font-size:0.78rem;">
           {% if is_following %}언팔로우{% else %}+ 팔로우{% endif %}
         </button>
       </form>
       {% if is_friend %}
-      <a href="/chat/dm/{{ profile_user.pk }}/" class="btn btn-success btn-sm" style="border-radius:20px;font-size:0.78rem;">
+      <a href="/chat/dm/{{ profile_user.pk }}/" class="btn btn-wine btn-sm" style="border-radius:20px;font-size:0.78rem;">
         <i class="fas fa-comment me-1"></i>채팅
       </a>
       {% endif %}
@@ -188,10 +188,10 @@
   {% elif not user.is_authenticated %}
   <div style="background:#f0fdf7;border:1.5px solid #a8d5b8;border-radius:12px;padding:14px;
     text-align:center;margin-bottom:14px;">
-    <div style="font-size:0.85rem;font-weight:600;color:#1a7a4a;margin-bottom:6px;">
+    <div style="font-size:0.85rem;font-weight:600;color:#7A263A;margin-bottom:6px;">
       💝 이웃에게 온기를 보내고 싶으신가요?
     </div>
-    <a href="/accounts/login/" class="btn btn-success btn-sm">로그인하고 온기 보내기</a>
+    <a href="/accounts/login/" class="btn btn-wine btn-sm">로그인하고 온기 보내기</a>
   </div>
   {% endif %}
 
