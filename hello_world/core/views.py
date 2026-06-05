@@ -3552,3 +3552,130 @@ def hub_news(request):
         'docs': docs,
         'faq_posts': faq_posts,
     })
+
+# ── FAQ 지식베이스 ──────────────────────────────────────────
+def faq_view(request):
+    """노션 스타일 FAQ 지식베이스"""
+    from .models import Board, Post
+    from django.db.models import Q
+
+    # FAQ 게시판 찾기 (board_type=qna 또는 id=13)
+    faq_board = Board.objects.filter(board_type='qna', is_active=True).first() or \
+                Board.objects.filter(id=13, is_active=True).first()
+
+    q = request.GET.get('q', '').strip()
+    category = request.GET.get('cat', '').strip()
+
+    all_posts = Post.objects.filter(
+        board=faq_board, is_active=True
+    ).order_by('-is_pinned', '-view_count', '-created_at') if faq_board else Post.objects.none()
+
+    # 검색
+    if q:
+        all_posts = all_posts.filter(
+            Q(title__icontains=q) | Q(content__icontains=q) | Q(tag__icontains=q)
+        )
+
+    # 카테고리 필터
+    if category:
+        all_posts = all_posts.filter(tag=category)
+
+    # 카테고리 목록
+    categories = []
+    if faq_board:
+        categories = faq_board.get_tags_list()
+
+    # 인기 질문 (조회수 TOP 5)
+    popular = Post.objects.filter(
+        board=faq_board, is_active=True
+    ).order_by('-view_count')[:5] if faq_board else []
+
+    return render(request, 'faq/faq_main.html', {
+        'faq_board': faq_board,
+        'posts': all_posts,
+        'popular': popular,
+        'categories': categories,
+        'q': q,
+        'selected_cat': category,
+        'total': all_posts.count(),
+    })
+
+
+def faq_upload_csv(request):
+    """FAQ CSV 일괄 업로드 (관리자 전용)"""
+    from .models import Board, Post
+    import csv, io
+
+    if not request.user.is_staff:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden()
+
+    faq_board = Board.objects.filter(board_type='qna', is_active=True).first() or \
+                Board.objects.filter(id=13, is_active=True).first()
+
+    result = {'success': 0, 'error': 0, 'errors': []}
+
+    if request.method == 'POST':
+        csv_file = request.FILES.get('csv_file')
+        if csv_file:
+            try:
+                decoded = csv_file.read().decode('utf-8-sig')
+                reader = csv.DictReader(io.StringIO(decoded))
+                for i, row in enumerate(reader, 1):
+                    try:
+                        title = row.get('질문', row.get('question', '')).strip()
+                        content = row.get('답변', row.get('answer', '')).strip()
+                        tag = row.get('카테고리', row.get('category', '')).strip()
+                        if not title or not content:
+                            result['errors'].append(f"행 {i}: 질문 또는 답변 없음")
+                            result['error'] += 1
+                            continue
+                        Post.objects.create(
+                            board=faq_board,
+                            author=request.user,
+                            title=title,
+                            content=content,
+                            tag=tag,
+                            is_active=True,
+                        )
+                        result['success'] += 1
+                    except Exception as e:
+                        result['errors'].append(f"행 {i}: {str(e)}")
+                        result['error'] += 1
+            except Exception as e:
+                result['errors'].append(f"파일 오류: {str(e)}")
+
+        from django.contrib import messages
+        if result['success']:
+            messages.success(request, f"✅ {result['success']}개 FAQ 등록 완료!")
+        if result['error']:
+            messages.warning(request, f"⚠️ {result['error']}개 오류 발생")
+        return render(request, 'faq/faq_upload.html', {
+            'result': result, 'faq_board': faq_board
+        })
+
+    return render(request, 'faq/faq_upload.html', {'faq_board': faq_board})
+
+def faq_sample_csv(request):
+    """FAQ 샘플 CSV 다운로드"""
+    import csv
+    from django.http import HttpResponse
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+    response['Content-Disposition'] = 'attachment; filename="faq_sample.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['질문', '답변', '카테고리'])
+    samples = [
+        ('관리비는 언제 납부하나요?', '매월 25일까지 납부해주세요. 앱에서 납부하거나 자동이체 신청도 가능합니다.', '관리비'),
+        ('관리비 자동이체는 어떻게 신청하나요?', '관리사무소에 방문하거나 앱에서 신청 가능합니다. 은행 계좌번호와 신분증이 필요합니다.', '관리비'),
+        ('주차 등록은 어떻게 하나요?', '관리사무소에 차량등록증을 지참하여 방문해주세요. 세대당 1대 기본 등록이 무료입니다.', '주차'),
+        ('방문 차량 주차는 어떻게 하나요?', '경비실에서 방문증을 수령하시면 지정 구역에 주차 가능합니다. 최대 2시간 무료입니다.', '주차'),
+        ('택배 보관은 어떻게 되나요?', '경비실에서 대리 수령 후 3일간 보관합니다. 스마트 택배함도 이용 가능합니다.', '택배/배달'),
+        ('층간소음 발생 시 어떻게 해야 하나요?', '먼저 관리사무소에 신고해주세요. 공동생활 에티켓 안내 후에도 지속될 경우 층간소음 위원회에 조정을 신청할 수 있습니다.', '생활규칙'),
+        ('분리수거는 언제 하나요?', '월/수/금 저녁 6시~9시에 분리수거장에 배출해주세요. 대형폐기물은 스티커 구입 후 별도 배출합니다.', '분리수거'),
+        ('헬스장 이용 시간은 언제인가요?', '오전 6시~오후 10시까지 이용 가능합니다. 앱에서 예약 후 이용하시면 됩니다.', '시설이용'),
+        ('입주민 인증은 어떻게 하나요?', '앱에서 동/호수와 관리비 고지서를 첨부하여 신청하시면 24시간 내에 승인됩니다.', '앱사용법'),
+        ('비밀번호를 잊었어요', '로그인 화면에서 비밀번호 찾기를 클릭하신 후 가입 시 등록한 이메일로 재설정 링크를 받으실 수 있습니다.', '앱사용법'),
+    ]
+    for row in samples:
+        writer.writerow(row)
+    return response
