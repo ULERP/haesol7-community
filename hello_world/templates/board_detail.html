@@ -4,24 +4,29 @@
 
 {% block extra_head %}
 <style>
+  :root { --charc: #242424; --gold: #D4B26A; --wine: #7A263A; --bg: #FAFAFA; }
+
   /* ── 공통 ── */
-  .board-header { background: linear-gradient(135deg,#1a7a4a,#1e9158); border-radius: 14px; padding: 20px 24px; margin-bottom: 20px; }
+  .board-header { background: linear-gradient(135deg,#242424,#3a3a3a); border-radius: 14px; padding: 20px 24px; margin-bottom: 20px; border-left: 4px solid #D4B26A; }
   .tag-filter .btn { border-radius: 20px !important; font-size: 0.78rem !important; padding: 4px 14px !important; }
+  .tag-filter .btn-success { background: #7A263A !important; border-color: #7A263A !important; }
+  .tag-filter .btn-outline-success { color: #7A263A !important; border-color: #7A263A !important; }
+  .tag-filter .btn-outline-success:hover { background: #7A263A !important; color: #fff !important; }
 
   /* ── 리스트형 ── */
   .layout-list .post-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit; transition: background .12s; border-radius: 8px; }
-  .layout-list .post-item:hover { background: #f0fdf7; }
-  .layout-list .post-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: var(--g); color: #fff; flex-shrink: 0; }
+  .layout-list .post-item:hover { background: #fdf5f6; }
+  .layout-list .post-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: #7A263A; color: #fff; flex-shrink: 0; }
   .layout-list .post-title { font-size: 0.9rem; font-weight: 600; color: #111; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .layout-list .post-meta { font-size: 0.72rem; color: #9ca3af; flex-shrink: 0; display: flex; gap: 10px; }
-  .layout-list .post-pinned { color: #ef4444; font-size: 0.78rem; }
+  .layout-list .post-pinned { color: #7A263A; font-size: 0.78rem; }
 
   /* ── 사진설명형 (card) ── */
   .layout-card { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
   .layout-card .post-card { border-radius: 14px; overflow: hidden; border: 1px solid #e5e7eb; background: #fff; text-decoration: none; color: inherit; transition: all .15s; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-  .layout-card .post-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(26,122,74,.12); border-color: var(--gb); }
-  .layout-card .post-card-img { width: 100%; height: 160px; object-fit: cover; background: linear-gradient(135deg,#e0f2e9,#c6e8d8); display: flex; align-items: center; justify-content: center; }
-  .layout-card .post-card-img i { font-size: 2.5rem; color: #a0c4b4; }
+  .layout-card .post-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(122,38,58,.1); border-color: #D4B26A; }
+  .layout-card .post-card-img { width: 100%; height: 160px; object-fit: cover; background: linear-gradient(135deg,#f5f0e8,#ede3d0); display: flex; align-items: center; justify-content: center; }
+  .layout-card .post-card-img i { font-size: 2.5rem; color: #D4B26A; opacity: .5; }
   .layout-card .post-card-body { padding: 14px; }
   .layout-card .post-card-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 6px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .layout-card .post-card-desc { font-size: 0.76rem; color: #6b7280; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
@@ -29,25 +34,25 @@
 
   /* ── 사진형 (gallery) ── */
   .layout-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-  .layout-gallery .post-thumb { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 1; background: linear-gradient(135deg,#e0f2e9,#c6e8d8); text-decoration: none; display: block; }
+  .layout-gallery .post-thumb { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 1; background: linear-gradient(135deg,#f5f0e8,#ede3d0); text-decoration: none; display: block; }
   .layout-gallery .post-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .layout-gallery .post-thumb-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 50%); opacity: 0; transition: opacity .2s; display: flex; align-items: flex-end; padding: 10px; }
+  .layout-gallery .post-thumb-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(36,36,36,.75) 0%, transparent 55%); opacity: 0; transition: opacity .2s; display: flex; align-items: flex-end; padding: 10px; }
   .layout-gallery .post-thumb:hover .post-thumb-overlay { opacity: 1; }
   .layout-gallery .post-thumb-title { color: #fff; font-size: 0.76rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .layout-gallery .post-thumb-noimg { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-  .layout-gallery .post-thumb-noimg i { font-size: 2rem; color: #a0c4b4; }
+  .layout-gallery .post-thumb-noimg i { font-size: 2rem; color: #D4B26A; opacity: .4; }
 
   /* ── 마켓형 ── */
   .layout-market { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
   .layout-market .market-item { border-radius: 14px; overflow: hidden; border: 1px solid #e5e7eb; background: #fff; text-decoration: none; color: inherit; transition: all .15s; }
-  .layout-market .market-item:hover { box-shadow: 0 4px 16px rgba(26,122,74,.1); border-color: var(--gb); }
-  .layout-market .market-img { width: 100%; height: 180px; object-fit: cover; background: linear-gradient(135deg,#f3f4f6,#e5e7eb); display: flex; align-items: center; justify-content: center; }
-  .layout-market .market-img i { font-size: 3rem; color: #d1d5db; }
+  .layout-market .market-item:hover { box-shadow: 0 4px 16px rgba(122,38,58,.1); border-color: #D4B26A; }
+  .layout-market .market-img { width: 100%; height: 180px; object-fit: cover; background: linear-gradient(135deg,#f5f0e8,#ede3d0); display: flex; align-items: center; justify-content: center; }
+  .layout-market .market-img i { font-size: 3rem; color: #D4B26A; opacity: .4; }
   .layout-market .market-body { padding: 12px; }
-  .layout-market .market-price { font-size: 1rem; font-weight: 800; color: var(--g); }
+  .layout-market .market-price { font-size: 1rem; font-weight: 800; color: #7A263A; }
   .layout-market .market-title { font-size: 0.84rem; font-weight: 600; margin: 4px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .layout-market .market-status { font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; display: inline-block; }
-  .market-status-available { background: #d1fae5; color: #065f46; }
+  .market-status-available { background: #fdf5f6; color: #7A263A; border: 1px solid #f0d0d6; }
   .market-status-reserved { background: #fef3c7; color: #92400e; }
   .market-status-sold { background: #f3f4f6; color: #9ca3af; }
   .market-meta { font-size: 0.68rem; color: #9ca3af; margin-top: 6px; }
@@ -70,7 +75,7 @@
       </div>
     </div>
     <div class="d-flex gap-2 align-items-center">
-      <span class="badge bg-white text-success fw-bold" style="font-size:0.75rem;">{{ total_count }}개 게시글</span>
+      <span class="badge fw-bold" style="background:#D4B26A;color:#242424;" style="font-size:0.75rem;">{{ total_count }}개 게시글</span>
       {% if can_write %}
       <a href="{% url 'post_write' board.id %}" class="btn btn-white btn-sm fw-bold"
          style="background:#fff;color:var(--g);border:none;border-radius:20px;padding:6px 16px;font-size:0.82rem;">
@@ -93,13 +98,13 @@
 
 <!-- 티저 배너 -->
 {% if not user.is_authenticated %}
-<div style="background:linear-gradient(135deg,#1a7a4a,#1e9158);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+<div style="background:linear-gradient(135deg,#242424,#3a3a3a);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-left:3px solid #D4B26A;">
   <div style="flex:1;min-width:200px;">
     <div style="font-weight:700;color:#fff;font-size:0.9rem;margin-bottom:2px;">👋 게시글을 보고 싶으신가요?</div>
     <div style="font-size:0.78rem;color:rgba(255,255,255,.85);">로그인 후 입주민 인증을 받으면 모든 게시글을 읽을 수 있어요</div>
   </div>
   <div style="display:flex;gap:8px;">
-    <a href="/accounts/login/" style="background:#fff;color:#1a7a4a;padding:7px 16px;border-radius:20px;font-size:0.82rem;font-weight:700;text-decoration:none;">로그인</a>
+    <a href="/accounts/login/" style="background:#D4B26A;color:#242424;padding:7px 16px;border-radius:20px;font-size:0.82rem;font-weight:700;text-decoration:none;">로그인</a>
     <a href="/accounts/signup/" style="background:rgba(255,255,255,.2);color:#fff;padding:7px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.4);">회원가입</a>
   </div>
 </div>
@@ -119,7 +124,7 @@
     {% if selected_tag %}<input type="hidden" name="tag" value="{{ selected_tag }}">{% endif %}
     <input type="text" name="q" value="{{ q|default:'' }}" placeholder="게시글 검색..."
            class="form-control form-control-sm" style="border-radius:20px;max-width:280px;">
-    <button type="submit" class="btn btn-success btn-sm" style="border-radius:20px;">
+    <button type="submit" class="btn btn-sm fw-bold" style="border-radius:20px;background:#7A263A;border-color:#7A263A;color:#fff;">
       <i class="fas fa-search"></i>
     </button>
   </form>
@@ -134,7 +139,7 @@
     {% for post in posts %}
     <a href="{% url 'post_detail' post.pk %}" class="post-item" style="align-items:flex-start;gap:12px;border-radius:12px;border:1px solid #f0f0f0;background:#fff;padding:12px;">
       <!-- 번호 -->
-      <div style="font-size:0.7rem;font-weight:700;color:#D4B26A;flex-shrink:0;min-width:22px;text-align:center;background:#fdf5f6;border-radius:6px;padding:2px 4px;">
+      <div style="font-size:0.7rem;font-weight:700;color:#D4B26A;flex-shrink:0;min-width:22px;text-align:center;background:#f5f0e8;border-radius:6px;padding:2px 4px;">
         {{ forloop.revcounter }}
       </div>
       <!-- 썸네일 -->
@@ -246,7 +251,7 @@
   <i class="fas fa-inbox fa-3x mb-3 d-block opacity-25"></i>
   <p class="mb-0">아직 게시글이 없어요</p>
   {% if can_write %}
-  <a href="{% url 'post_write' board.id %}" class="btn btn-success btn-sm mt-3">첫 글 작성하기</a>
+  <a href="{% url 'post_write' board.id %}" class="btn btn-sm mt-3 fw-bold" style="background:#7A263A;border-color:#7A263A;color:#fff;">첫 글 작성하기</a>
   {% endif %}
 </div>
 {% endif %}
@@ -255,17 +260,17 @@
 {% if is_paginated %}
 <div class="board-pagination">
   {% if page_obj.has_previous %}
-  <a href="?page={{ page_obj.previous_page_number }}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm btn-outline-success">‹</a>
+  <a href="?page={{ page_obj.previous_page_number }}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm" style="border-color:#D4B26A;color:#7A263A;">‹</a>
   {% endif %}
   {% for num in page_obj.paginator.page_range %}
   {% if page_obj.number == num %}
-  <a href="?page={{ num }}" class="btn btn-sm btn-success">{{ num }}</a>
+  <a href="?page={{ num }}" class="btn btn-sm fw-bold" style="background:#7A263A;border-color:#7A263A;color:#fff;">{{ num }}</a>
   {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-  <a href="?page={{ num }}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm btn-outline-success">{{ num }}</a>
+  <a href="?page={{ num }}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm" style="border-color:#D4B26A;color:#7A263A;">{{ num }}</a>
   {% endif %}
   {% endfor %}
   {% if page_obj.has_next %}
-  <a href="?page={{ page_obj.next_page_number }}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm btn-outline-success">›</a>
+  <a href="?page={{ page_obj.next_page_number }}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}{% if q %}&q={{ q }}{% endif %}" class="btn btn-sm" style="border-color:#D4B26A;color:#7A263A;">›</a>
   {% endif %}
 </div>
 {% endif %}
