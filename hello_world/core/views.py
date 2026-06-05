@@ -3144,18 +3144,18 @@ def group_invite(request, pk):
         messages.error(request, '방장/운영진만 초대할 수 있어요.')
         return redirect('group_detail', pk=pk)
 
-    search_results = []
     q = request.GET.get('q', '').strip()
+    current_member_ids = set(GroupMember.objects.filter(
+        group=group, is_active=True
+    ).values_list('user_id', flat=True))
+    all_users = CustomUser.objects.filter(
+        is_verified=True, is_active=True
+    ).exclude(pk=request.user.pk).order_by('dong', 'nickname')
     if q:
-        search_results = CustomUser.objects.filter(
-            is_verified=True
-        ).filter(
-            models.Q(nickname__icontains=q) | models.Q(username__icontains=q)
-        ).exclude(pk=request.user.pk).exclude(
-            pk__in=GroupMember.objects.filter(
-                group=group, is_active=True
-            ).values_list('user_id', flat=True)
-        )[:10]
+        all_users = all_users.filter(
+            models.Q(nickname__icontains=q) | models.Q(dong__icontains=q)
+        )
+    search_results = all_users[:50]
 
     if request.method == 'POST':
         target_id = request.POST.get('user_id')
@@ -3185,6 +3185,7 @@ def group_invite(request, pk):
     return render(request, 'group_invite.html', {
         'group': group,
         'search_results': search_results,
+        'current_member_ids': current_member_ids,
         'q': q,
     })
 

@@ -1,63 +1,88 @@
 {% extends 'base_2panel.html' %}
 {% block title %}소모임 초대 — {{ group.name }}{% endblock %}
 {% block content %}
-<div class="card border-0" style="border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);max-width:600px;margin:0 auto;">
-  <div class="p-4" style="background:linear-gradient(135deg,#1a7a4a,#1e9158);">
-    <a href="{% url 'group_detail' group.pk %}" class="text-white text-decoration-none" style="font-size:0.78rem;opacity:.8;">
+<div style="max-width:600px;margin:0 auto;">
+
+  <!-- 헤더 -->
+  <div style="background:linear-gradient(135deg,#242424,#3a3a3a);border-radius:16px;padding:20px 24px;margin-bottom:20px;">
+    <a href="{% url 'group_detail' group.pk %}" style="color:rgba(255,255,255,.7);text-decoration:none;font-size:0.78rem;">
       ← {{ group.name }}
     </a>
-    <h5 class="text-white fw-bold mb-0 mt-1"><i class="fas fa-user-plus me-2"></i>멤버 초대</h5>
+    <h5 style="color:#D4B26A;font-weight:700;margin:6px 0 0;"><i class="fas fa-user-plus me-2"></i>멤버 초대</h5>
+    <div style="color:rgba(255,255,255,.5);font-size:0.75rem;margin-top:4px;">닉네임 또는 동으로 검색할 수 있어요</div>
   </div>
-  <div class="p-4">
-    <!-- 검색 -->
-    <form method="get" class="mb-4">
-      <label class="form-label fw-semibold">닉네임 또는 아이디로 검색</label>
-      <div class="d-flex gap-2">
-        <input type="text" name="q" value="{{ q }}" placeholder="이웃 닉네임 검색..."
-               class="form-control" style="border-radius:10px;" autofocus>
-        <button type="submit" class="btn btn-success px-3" style="border-radius:10px;">
-          <i class="fas fa-search"></i>
+
+  {% if messages %}
+  {% for msg in messages %}
+  <div style="padding:10px 16px;border-radius:10px;margin-bottom:12px;font-size:0.85rem;
+    background:{% if msg.tags == 'success' %}#f0fdf4;color:#166534{% elif msg.tags == 'warning' %}#fffbeb;color:#92400e{% else %}#fef2f2;color:#991b1b{% endif %};">
+    {{ msg }}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  <!-- 검색 -->
+  <form method="get" style="margin-bottom:16px;display:flex;gap:8px;">
+    <input type="text" name="q" value="{{ q }}" placeholder="닉네임, 동 검색..."
+           style="flex:1;padding:10px 16px;border:1px solid #e4e6ea;border-radius:10px;font-size:0.88rem;outline:none;">
+    <button type="submit" style="background:#242424;color:#D4B26A;border:none;padding:10px 18px;border-radius:10px;font-weight:700;cursor:pointer;">
+      <i class="fas fa-search"></i>
+    </button>
+  </form>
+
+  <!-- 회원 목록 -->
+  <div style="background:#fff;border:1px solid #e4e6ea;border-radius:14px;overflow:hidden;">
+    <div style="padding:10px 16px;background:#fafbfc;border-bottom:1px solid #f0f2f4;font-size:0.78rem;color:#999;font-weight:600;">
+      인증 입주민 {{ search_results|length }}명
+      {% if q %} · "{{ q }}" 검색 결과{% endif %}
+    </div>
+
+    {% for u in search_results %}
+    {% with is_member=u.pk|stringformat:"s" %}
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #f8f9fa;">
+      <!-- 아바타 -->
+      <div style="width:40px;height:40px;border-radius:50%;background:#242424;color:#D4B26A;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">
+        {{ u.nickname|default:u.username|first|upper }}
+      </div>
+      <!-- 정보 (닉네임 + 동만 표시 - 개인정보 보호) -->
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:0.88rem;color:#222;">
+          {{ u.nickname|default:"닉네임 없음" }}
+          {% if u.pk in current_member_ids %}
+          <span style="background:#f3f4f6;color:#6b7280;font-size:0.7rem;padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:600;">멤버</span>
+          {% endif %}
+        </div>
+        <div style="font-size:0.73rem;color:#9ca3af;margin-top:1px;">
+          {% if u.dong %}{{ u.dong }}동 입주민{% else %}입주민{% endif %}
+          {% if u.is_verified %} · <span style="color:#16a34a;">✓ 인증</span>{% endif %}
+        </div>
+      </div>
+      <!-- 초대 버튼 -->
+      {% if u.pk in current_member_ids %}
+      <span style="color:#9ca3af;font-size:0.78rem;white-space:nowrap;">이미 멤버</span>
+      {% else %}
+      <form method="post" style="flex-shrink:0;">
+        {% csrf_token %}
+        <input type="hidden" name="user_id" value="{{ u.pk }}">
+        <button type="submit" style="background:#7A263A;color:#fff;border:none;padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">
+          <i class="fas fa-plus me-1"></i>초대
         </button>
-      </div>
-    </form>
-
-    <!-- 실시간 검색 결과 -->
-    <div id="searchResults">
-      {% if q and not search_results %}
-      <div class="text-center py-3 text-muted">
-        <i class="fas fa-user-slash fa-2x mb-2 d-block opacity-25"></i>
-        검색 결과가 없어요
-      </div>
+      </form>
       {% endif %}
-      {% for u in search_results %}
-      <div class="d-flex align-items-center gap-3 py-3 border-bottom">
-        <div style="width:42px;height:42px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">
-          {{ u.nickname|default:u.username|first|upper }}
-        </div>
-        <div class="flex-1">
-          <div class="fw-bold" style="font-size:0.88rem;">{{ u.nickname|default:u.username }}</div>
-          <div style="font-size:0.72rem;color:#9ca3af;">
-            {% if u.dong %}{{ u.dong }}동{% endif %}
-            {% if u.is_verified %} · 인증 입주민 ✓{% endif %}
-          </div>
-        </div>
-        <form method="post">
-          {% csrf_token %}
-          <input type="hidden" name="user_id" value="{{ u.pk }}">
-          <button type="submit" class="btn btn-success btn-sm" style="border-radius:20px;">
-            <i class="fas fa-plus me-1"></i>초대
-          </button>
-        </form>
-      </div>
-      {% endfor %}
     </div>
+    {% endwith %}
+    {% empty %}
+    <div style="text-align:center;padding:40px 20px;color:#aaa;">
+      <i class="fas fa-user-slash" style="font-size:2rem;margin-bottom:12px;display:block;opacity:.3;"></i>
+      {% if q %}검색 결과가 없어요{% else %}인증된 입주민이 없어요{% endif %}
+    </div>
+    {% endfor %}
+  </div>
 
-    <!-- 현재 멤버 수 안내 -->
-    <div class="mt-4 p-3" style="background:#f9fafb;border-radius:10px;font-size:0.78rem;color:#6b7280;">
-      <i class="fas fa-info-circle me-1 text-success"></i>
-      인증된 입주민만 초대할 수 있어요.
-      초대받은 분은 즉시 멤버로 추가되고 알림을 받아요.
-    </div>
+  <!-- 안내 -->
+  <div style="margin-top:12px;padding:12px 16px;background:#f8f9fa;border-radius:10px;font-size:0.78rem;color:#6b7280;">
+    <i class="fas fa-shield-alt me-1" style="color:#7A263A;"></i>
+    개인정보 보호를 위해 닉네임과 동 정보만 표시돼요. 초대받은 분은 즉시 멤버로 추가되고 알림을 받아요.
   </div>
 </div>
 {% endblock %}
