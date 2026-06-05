@@ -991,15 +991,13 @@ def dm_messages(request, user_id):
 
 
 def group_chat_redirect(request):
-    """소모임 채팅 탭 → 내 첫 번째 소모임 채팅으로 이동, 없으면 소모임 목록"""
-    from django.shortcuts import redirect
+    """소모임 채팅 목록 페이지"""
+    from django.shortcuts import render, redirect
     if not request.user.is_authenticated:
-        return redirect('/groups/')
+        return redirect('/login/')
     from hello_world.core.models import GroupMember
-    membership = GroupMember.objects.filter(user=request.user).select_related('group').order_by('joined_at').first()
-    if membership:
-        return redirect(f'/chat/group/{membership.group.id}/')
-    return redirect('/groups/')
+    memberships = GroupMember.objects.filter(user=request.user).select_related('group').order_by('-joined_at')
+    return render(request, 'chat/group_chat_list.html', {'memberships': memberships})
 
 def group_chat(request, group_id):
     if not request.user.is_authenticated:

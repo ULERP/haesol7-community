@@ -1,0 +1,43 @@
+{% extends 'base_2panel.html' %}
+{% block title %}소모임 채팅 — 해솔7{% endblock %}
+{% block tab_chat %}active{% endblock %}
+
+{% block content %}
+<div style="max-width:600px;margin:0 auto;padding:16px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+    <i class="fas fa-users" style="font-size:1.4rem;color:#7A263A;"></i>
+    <h4 style="margin:0;font-weight:700;">소모임 채팅</h4>
+  </div>
+
+  {% if memberships %}
+    {% for m in memberships %}
+    <a href="/chat/group/{{ m.group.id }}/" style="text-decoration:none;">
+      <div style="background:#fff;border:1px solid #e4e6ea;border-radius:14px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.08)'" onmouseout="this.style.boxShadow='none'">
+        <div style="width:48px;height:48px;border-radius:14px;background:#242424;color:#D4B26A;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;flex-shrink:0;">
+          {{ m.group.name|first|upper }}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:0.95rem;color:#222;">{{ m.group.name }}</div>
+          <div style="font-size:0.78rem;color:#999;margin-top:2px;">
+            {% if m.role == 'leader' %}<span style="color:#D4B26A;font-weight:600;">리더 · </span>{% endif %}
+            멤버 {{ m.group.member_count|default:0 }}명
+          </div>
+        </div>
+        <div style="color:#7A263A;font-size:0.82rem;font-weight:600;white-space:nowrap;">
+          채팅 입장 <i class="fas fa-chevron-right" style="font-size:0.7rem;"></i>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  {% else %}
+    <div style="text-align:center;padding:60px 20px;color:#aaa;">
+      <i class="fas fa-users" style="font-size:3rem;margin-bottom:16px;display:block;opacity:.3;"></i>
+      <div style="font-size:0.95rem;font-weight:600;margin-bottom:8px;color:#666;">참여 중인 소모임이 없어요</div>
+      <div style="font-size:0.82rem;margin-bottom:20px;">소모임에 가입하면 채팅을 이용할 수 있어요</div>
+      <a href="/groups/" style="background:#7A263A;color:#fff;padding:10px 24px;border-radius:20px;text-decoration:none;font-size:0.85rem;font-weight:600;">
+        소모임 둘러보기
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
