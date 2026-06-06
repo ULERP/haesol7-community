@@ -477,8 +477,23 @@ class ActivityProofAdmin(admin.ModelAdmin):
 
     @admin.action(description='✅ 선택 활동 인증 승인')
     def approve_selected(self, request, queryset):
-        queryset.filter(status='pending').update(status='approved')
-        self.message_user(request, f"✅ 승인 완료")
+        from django.utils import timezone
+        from hello_world.core.views import _auto_award_badges
+        count = 0
+        for proof in queryset.filter(status='pending'):
+            proof.status = 'approved'
+            proof.approved_at = timezone.now()
+            proof.approved_by = request.user
+            # 포인트 적립
+            points = int(proof.activity.base_points + proof.activity.points_per_hour * proof.duration_hours)
+            proof.points_earned = points
+            proof.save()
+            proof.user.mileage_points += points
+            proof.user.save(update_fields=['mileage_points'])
+            # 배지 자동 발급
+            _auto_award_badges(proof.user)
+            count += 1
+        self.message_user(request, f"✅ {count}건 승인 + 포인트/배지 처리 완료")
 
     @admin.action(description='❌ 선택 활동 인증 반려')
     def reject_selected(self, request, queryset):
