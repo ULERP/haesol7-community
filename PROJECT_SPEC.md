@@ -175,3 +175,33 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 - PA venv: /home/ULERP/haesol7-community/.venv (python3.12)
 - PA reload: touch /var/www/ulerp_pythonanywhere_com_wsgi.py
 - 관리자: admin / haesol7777
+
+
+## 9. 업데이트 이력 (2026.06.06 - 4차)
+
+### 완료된 작업
+- index.html 빈화면 버그 수정 (닫히지 않은 style 태그)
+- 사이드바 아코디언 전체 정상화 (메인+다른 페이지)
+  - base.html, base_2panel.html toggleSection 통일
+  - 클릭시 하나만 열리고 나머지 닫힘
+  - 초기 모두 닫힌 상태
+- 사이드바 메뉴 navbar와 완전 일치
+  - 기록하기: trade/qna/gallery/faq/complaint 제외
+  - 함께하기: 함께하기전체, 소모임, 봉사활동, 캘린더, 설문조사, 활동인증, 나눔/장터
+  - 단지소식: 전체보기, 공지사항, 민원/오류, 단지통계, 관리문서, FAQ
+- 소모임 글 수정 뷰/URL 추가 (group_post_edit)
+- PA settings DATA_UPLOAD_MAX_MEMORY_SIZE 20MB 확인
+
+### 파일 변경 내역
+- hello_world/core/views.py: active_boards FAQ/나눔장터 제외
+- hello_world/core/context_processors.py: sb_boards 필터링 강화
+- hello_world/templates/base.html: toggleSection 통일
+- hello_world/templates/base_2panel.html: 사이드바 메뉴 + toggleSection 통일
+- hello_world/templates/index.html: 사이드바 메뉴 navbar 일치
+
+### 잔여 이슈
+- calendar_event_create 중복 함수 (views.py) 정리 필요
+- 모바일 탭바 알림 UI 확인 필요
+- favicon.ico 404 오류
+- CalendarEvent naive datetime 경고
+- board.icon 필드 PA DB 확인 필요
