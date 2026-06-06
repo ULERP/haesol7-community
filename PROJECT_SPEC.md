@@ -227,3 +227,34 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 4. CalendarEvent naive datetime 경고 수정
 5. board.icon 필드 PA DB 확인 필요
 6. rate_user Notification 오류 PA 확인
+
+
+## 10. 업데이트 이력 (2026-06-08 - 1차)
+
+### 완료된 작업
+- fix: calendar_event_create 중복 함수 제거 (views.py 2699~2786번 삭제)
+  - 1개 함수(2615번)만 유지
+- feat: 캘린더 개인일정 + 반복일정 기능 추가
+  - CalendarEvent 모델 필드 추가: is_recurring, recur_type, recur_interval, recur_end_date, recur_parent
+  - TYPE_CHOICES에 personal(개인일정) 추가
+  - migration 0038 적용
+  - calendar_event_create 뷰 개선:
+    - personal → visibility='private' (본인만)
+    - 관리자 → visibility='public' (즉시 전체공개)
+    - 소모임장+소모임일정 → visibility='group'
+    - 일반유저 → visibility='pending' (승인대기)
+    - 반복일정: recur_end_date까지 최대 365개 일괄 생성 (daily/weekly/monthly)
+  - integrated_calendar.html UI 개선:
+    - 종류 선택에 🙋 개인일정 추가
+    - 🔁 반복 일정 토글 + 주기/간격/종료일 설정 UI
+    - 안내 문구 권한별 색상 구분
+
+### 마이그레이션
+- 0038: CalendarEvent 반복일정 필드 5개 추가
+
+### 잔여 이슈 (다음 작업)
+1. 모바일 탭바 알림 UI 확인
+2. favicon.ico 404 오류 수정
+3. CalendarEvent naive datetime 경고 수정
+4. board.icon 필드 PA DB 확인 필요
+5. rate_user Notification 오류 PA 확인
