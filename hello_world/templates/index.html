@@ -274,11 +274,9 @@
       </div>
       <div class="sb-section" id="sec-record">
         <a href="/boards/" class="sb-item"><i class="fas fa-th-large" style="color:#7A263A;"></i><span class="sb-text">전체 게시판</span></a>
-        <a href="/board/8/" class="sb-item"><i class="fas fa-bullhorn" style="color:#7A263A;"></i><span class="sb-text">공지 및 행정</span></a>
-        <a href="/board/9/" class="sb-item"><i class="fas fa-comments" style="color:#D4B26A;"></i><span class="sb-text">우리 동네 소통</span></a>
-        <a href="/board/10/" class="sb-item"><i class="fas fa-lightbulb" style="color:#D4B26A;"></i><span class="sb-text">생활 정보 공유</span></a>
-        <a href="/board/11/" class="sb-item"><i class="fas fa-hiking"></i><span class="sb-text">여가와 활동</span></a>
-        <a href="/board/12/" class="sb-item"><i class="fas fa-archive"></i><span class="sb-text">지킴이 아카이브</span></a>
+        {% for board in active_boards %}
+        <a href="/board/{{ board.id }}/" class="sb-item"><i class="{{ board.icon }}"></i><span class="sb-text">{{ board.name }}</span></a>
+        {% endfor %}
       </div>
       <div class="sb-divider"></div>
 
