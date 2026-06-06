@@ -142,36 +142,35 @@
 </script>
 <script>
 function toggleSection(id) {
-  const sec = document.getElementById(id);
-  const label = sec ? sec.previousElementSibling : null;
-  if (!sec) return;
-  if (sec.classList.contains('folded')) {
-    sec.classList.remove('folded');
-    sec.style.maxHeight = sec.scrollHeight + 'px';
-    if (label) label.classList.remove('folded');
-    try { localStorage.setItem('sb_fold_' + id, '0'); } catch(e) {}
-  } else {
-    sec.style.maxHeight = sec.scrollHeight + 'px';
-    requestAnimationFrame(() => { sec.style.maxHeight = '0'; });
-    sec.classList.add('folded');
-    if (label) label.classList.add('folded');
-    try { localStorage.setItem('sb_fold_' + id, '1'); } catch(e) {}
-  }
-}
-(function() {
-  const secs = ['sec-chat','sec-record','sec-together','sec-news','sec-myact','sec-admin'];
-  secs.forEach(id => {
-    const sec = document.getElementById(id);
-    const label = sec ? sec.previousElementSibling : null;
-    const saved = localStorage.getItem('sb_fold_' + id);
-    if (saved === '0') {
-      if (sec) sec.style.maxHeight = sec.scrollHeight + 'px';
-    } else {
-      if (sec) { sec.classList.add('folded'); sec.style.maxHeight = '0'; }
-      if (label) label.classList.add('folded');
-    }
+  const allSecs = document.querySelectorAll('.sb-section');
+  const allLabels = document.querySelectorAll('.sb-label');
+  const target = document.getElementById(id);
+  if (!target) return;
+  const isOpen = !target.classList.contains('folded');
+  // 모두 닫기
+  allSecs.forEach(s => {
+    s.classList.add('folded');
+    s.style.maxHeight = '0';
   });
-})();
+  allLabels.forEach(l => l.classList.add('folded'));
+  // 클릭한 것만 토글
+  if (isOpen) {
+    // 이미 열려있었으면 그냥 닫힌 상태 유지
+    return;
+  }
+  target.classList.remove('folded');
+  target.style.maxHeight = target.scrollHeight + 'px';
+  const label = target.previousElementSibling;
+  if (label) label.classList.remove('folded');
+}
+// 초기화: 모두 닫기
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.sb-section').forEach(s => {
+    s.classList.add('folded');
+    s.style.maxHeight = '0';
+  });
+  document.querySelectorAll('.sb-label').forEach(l => l.classList.add('folded'));
+});
 </script>
 {% block extra_scripts %}{% endblock %}
 </body>
