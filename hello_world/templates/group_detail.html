@@ -341,6 +341,36 @@ function submitPoll() {
           <label class="form-label fw-semibold">설명</label>
           <textarea id="eventDesc" class="form-control" rows="3" placeholder="설명 (선택)"></textarea>
         </div>
+        <!-- 반복 설정 -->
+        <div class="mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="grpRecurToggle" onchange="toggleGrpRecur()">
+            <label class="form-check-label fw-semibold" for="grpRecurToggle">🔁 반복 일정</label>
+          </div>
+        </div>
+        <div id="grpRecurWrap" class="d-none mb-3 p-2 bg-light rounded">
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label fw-semibold small">반복 주기</label>
+              <select id="grpRecurType" class="form-select form-select-sm" onchange="updateGrpRecurLabel()">
+                <option value="daily">매일</option>
+                <option value="weekly" selected>매주</option>
+                <option value="monthly">매월</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold small">간격</label>
+              <div class="input-group input-group-sm">
+                <input type="number" id="grpRecurInterval" class="form-control" value="1" min="1" max="30">
+                <span class="input-group-text small" id="grpRecurLabel">주</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="form-label fw-semibold small">반복 종료일 *</label>
+            <input type="date" id="grpRecurEndDate" class="form-control form-control-sm">
+          </div>
+        </div>
         <div id="eventMsg" class="text-danger small"></div>
       </div>
       <div class="modal-footer">
@@ -352,6 +382,14 @@ function submitPoll() {
 </div>
 
 <script>
+function toggleGrpRecur() {
+  const on = document.getElementById('grpRecurToggle').checked;
+  document.getElementById('grpRecurWrap').classList.toggle('d-none', !on);
+}
+function updateGrpRecurLabel() {
+  const t = document.getElementById('grpRecurType').value;
+  document.getElementById('grpRecurLabel').textContent = t === 'daily' ? '일' : t === 'weekly' ? '주' : '월';
+}
 function submitEvent() {
   const title = document.getElementById('eventTitle').value.trim();
   const start = document.getElementById('eventStart').value;
@@ -359,23 +397,37 @@ function submitEvent() {
     document.getElementById('eventMsg').textContent = '제목과 시작 시간은 필수입니다.';
     return;
   }
+  const isRecur  = document.getElementById('grpRecurToggle').checked;
+  const recurEnd = document.getElementById('grpRecurEndDate').value;
+  if (isRecur && !recurEnd) {
+    document.getElementById('eventMsg').textContent = '반복 종료일을 입력해주세요.';
+    return;
+  }
+  const endVal = document.getElementById('eventEnd').value;
   fetch('/calendar/create/', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
     body: JSON.stringify({
-      title: title,
-      start_time: new Date(start).toISOString(),
-      end_time: document.getElementById('eventEnd').value ? new Date(document.getElementById('eventEnd').value).toISOString() : null,
-      location: document.getElementById('eventLocation').value.trim(),
-      description: document.getElementById('eventDesc').value.trim(),
-      event_type: 'group',
-      group_id: {{ group.pk }},
+      title:          title,
+      start_time:     new Date(start).toISOString(),
+      end_time:       endVal ? new Date(endVal).toISOString() : null,
+      location:       document.getElementById('eventLocation').value.trim(),
+      description:    document.getElementById('eventDesc').value.trim(),
+      event_type:     'group',
+      group_id:       {{ group.pk }},
+      is_recurring:   isRecur,
+      recur_type:     document.getElementById('grpRecurType').value,
+      recur_interval: parseInt(document.getElementById('grpRecurInterval').value) || 1,
+      recur_end_date: recurEnd || null,
     })
   })
   .then(r => r.json())
   .then(data => {
     if (data.success) {
       bootstrap.Modal.getInstance(document.getElementById('addEventModal')).hide();
+      let msg = '일정이 추가되었습니다.';
+      if (data.recur_count > 0) msg += ` (반복 ${data.recur_count}개 생성)`;
+      alert(msg);
       location.reload();
     } else {
       document.getElementById('eventMsg').textContent = data.error || '오류가 발생했습니다.';
