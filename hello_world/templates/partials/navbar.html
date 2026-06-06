@@ -8,7 +8,7 @@
     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" style="color:#D4B26A;font-size:1.2rem;padding:4px 8px;">
       <i class="fas fa-bars"></i>
     </button>
-    <div class="collapse navbar-collapse" id="mainNav">
+    <div class="collapse navbar-collapse" id="mainNav" style="background:#242424;z-index:1029;">
       <ul class="navbar-nav me-auto align-items-lg-center" style="gap:2px;">
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown" style="font-size:0.82rem;color:rgba(250,250,250,.8);"><i class="fas fa-comments"></i>대화하기</a>
@@ -71,24 +71,29 @@
       </ul>
       <ul class="navbar-nav align-items-lg-center" style="gap:4px;">
         {% if user.is_authenticated %}
-          {% if not user_is_verified %}
+          <!-- 인증/알림/설정 한 줄 -->
           <li class="nav-item">
-            <a href="/verify/" class="nav-link d-flex align-items-center gap-1" style="font-size:0.75rem;color:#D4B26A;background:rgba(212,178,106,.12);border-radius:8px;padding:3px 8px;border:1px solid rgba(212,178,106,.35);"><i class="bi bi-patch-exclamation"></i>인증필요</a>
+            <div class="d-flex align-items-center gap-2 px-1 py-2">
+              {% if not user_is_verified %}
+              <a href="/verify/" class="d-flex align-items-center gap-1" style="font-size:1rem;color:#D4B26A;text-decoration:none;" title="인증필요">
+                <i class="bi bi-patch-exclamation" style="font-size:1.1rem;"></i>
+              </a>
+              {% else %}
+              <a href="/verify/" class="d-flex align-items-center" style="font-size:1rem;color:#D4B26A;text-decoration:none;" title="인증완료">
+                <i class="bi bi-patch-check-fill" style="font-size:1.1rem;"></i>
+              </a>
+              {% endif %}
+              <a href="/notifications/" class="position-relative d-flex align-items-center" style="color:rgba(250,250,250,.85);text-decoration:none;" title="알림">
+                <i class="fas fa-bell" style="font-size:1.05rem;"></i>
+                <span id="noti-dot" style="display:none;position:absolute;top:-2px;right:-2px;width:7px;height:7px;background:#7A263A;border-radius:50%;border:1.5px solid #242424;"></span>
+              </a>
+              {% if user.is_staff %}
+              <a href="/admin/" style="color:rgba(250,250,250,.85);text-decoration:none;" title="관리자">
+                <i class="fas fa-cog" style="font-size:1.05rem;"></i>
+              </a>
+              {% endif %}
+            </div>
           </li>
-          {% else %}
-          <li class="nav-item">
-            <span class="nav-link" style="color:#D4B26A;padding:5px 6px;"><i class="bi bi-patch-check-fill" style="font-size:0.9rem;"></i></span>
-          </li>
-          {% endif %}
-          <li class="nav-item">
-            <a href="/notifications/" class="nav-link position-relative" style="color:rgba(250,250,250,.8);padding:5px 8px;">
-              <i class="fas fa-bell"></i>
-              <span id="noti-dot" style="display:none;position:absolute;top:3px;right:3px;width:7px;height:7px;background:#7A263A;border-radius:50%;border:1.5px solid #242424;"></span>
-            </a>
-          </li>
-          {% if user.is_staff %}
-          <li class="nav-item"><a href="/admin/" class="nav-link" style="color:rgba(250,250,250,.8);font-size:0.82rem;padding:5px 8px;"><i class="fas fa-cog"></i></a></li>
-          {% endif %}
           <li class="nav-item dropdown">
             <button class="btn d-flex align-items-center gap-1 dropdown-toggle" data-bs-toggle="dropdown"
                     style="background:#7A263A;border:none;border-radius:20px;color:#FAFAFA;padding:4px 14px;font-size:0.82rem;font-weight:600;">
