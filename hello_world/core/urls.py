@@ -148,4 +148,24 @@ urlpatterns = [
     # 허브 페이지
     path('hub/together/', views.hub_together, name='hub_together'),
     path('hub/news/', views.hub_news, name='hub_news'),
+    # ── 관리 문서 게시판 ──────────────────────────────────────
+    path('docs/', views.management_doc_list, name='management_doc_list'),
+    path('docs/create/', views.management_doc_create, name='management_doc_create'),
+    path('docs/<int:pk>/', views.management_doc_detail, name='management_doc_detail'),
+    path('docs/<int:pk>/edit/', views.management_doc_edit, name='management_doc_edit'),
+    path('docs/<int:pk>/delete/', views.management_doc_delete, name='management_doc_delete'),
+
+    # ── 소그룹 모임 ───────────────────────────────────────────
+    path('groups/', views.group_list, name='group_list'),
+    path('groups/create/', views.group_create, name='group_create'),
+    path('groups/<int:pk>/', views.group_detail, name='group_detail'),
+    path('groups/<int:pk>/join/', views.group_join, name='group_join'),
+    path('groups/<int:pk>/leave/', views.group_leave, name='group_leave'),
+    path('groups/<int:pk>/post/create/', views.group_post_create, name='group_post_create'),
+    path('groups/<int:pk>/post/<int:post_pk>/', views.group_post_detail, name='group_post_detail'),
+
+    # ── 이웃 온기 점수 ────────────────────────────────────────
+    path('ratings/', views.rating_list, name='rating_list'),
+    path('ratings/give/<int:user_pk>/', views.rating_give, name='rating_give'),
+
 ]

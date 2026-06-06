@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}문서 삭제 확인{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:500px">
+  <div class="card border-danger">
+    <div class="card-header bg-danger text-white"><i class="fas fa-exclamation-triangle me-2"></i>문서 삭제</div>
+    <div class="card-body">
+      <p>아래 문서를 삭제하시겠습니까?</p>
+      <p class="fw-bold">{{ doc.title }}</p>
+      <form method="post" class="d-flex gap-2">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">삭제</button>
+        <a href="{% url 'management_doc_detail' doc.pk %}" class="btn btn-outline-secondary">취소</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

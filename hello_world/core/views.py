@@ -3736,3 +3736,339 @@ def faq_sample_csv(request):
     for row in samples:
         writer.writerow(row)
     return response
+
+
+# ============================================================
+# 관리 문서 게시판
+# ============================================================
+from .models import ManagementDocument
+
+def management_doc_list(request):
+    query = request.GET.get('q', '')
+    category = request.GET.get('category', '')
+    
+    docs = ManagementDocument.objects.filter(is_active=True)
+    if query:
+        docs = docs.filter(
+            models.Q(title__icontains=query) | models.Q(content__icontains=query)
+        )
+    if category:
+        docs = docs.filter(category=category)
+    
+    categories = ManagementDocument.objects.filter(is_active=True).values_list('category', flat=True).distinct()
+    
+    paginator = Paginator(docs, 15)
+    page = request.GET.get('page', 1)
+    docs = paginator.get_page(page)
+    
+    return render(request, 'core/management_doc_list.html', {
+        'docs': docs,
+        'categories': categories,
+        'query': query,
+        'selected_category': category,
+    })
+
+
+def management_doc_detail(request, pk):
+    doc = get_object_or_404(ManagementDocument, pk=pk, is_active=True)
+    return render(request, 'core/management_doc_detail.html', {'doc': doc})
+
+
+@login_required
+def management_doc_create(request):
+    if not request.user.is_staff:
+        messages.error(request, '운영진만 문서를 등록할 수 있습니다.')
+        return redirect('management_doc_list')
+    
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+        category = request.POST.get('category', '').strip()
+        if title and content and category:
+            ManagementDocument.objects.create(
+                title=title, content=content, category=category
+            )
+            messages.success(request, '문서가 등록되었습니다.')
+            return redirect('management_doc_list')
+        messages.error(request, '모든 항목을 입력해주세요.')
+    
+    return render(request, 'core/management_doc_form.html', {'action': '등록'})
+
+
+@login_required
+def management_doc_edit(request, pk):
+    if not request.user.is_staff:
+        messages.error(request, '운영진만 수정할 수 있습니다.')
+        return redirect('management_doc_list')
+    
+    doc = get_object_or_404(ManagementDocument, pk=pk)
+    
+    if request.method == 'POST':
+        doc.title = request.POST.get('title', doc.title).strip()
+        doc.content = request.POST.get('content', doc.content).strip()
+        doc.category = request.POST.get('category', doc.category).strip()
+        doc.save()
+        messages.success(request, '문서가 수정되었습니다.')
+        return redirect('management_doc_detail', pk=pk)
+    
+    return render(request, 'core/management_doc_form.html', {'doc': doc, 'action': '수정'})
+
+
+@login_required
+def management_doc_delete(request, pk):
+    if not request.user.is_staff:
+        messages.error(request, '운영진만 삭제할 수 있습니다.')
+        return redirect('management_doc_list')
+    
+    doc = get_object_or_404(ManagementDocument, pk=pk)
+    if request.method == 'POST':
+        doc.is_active = False
+        doc.save()
+        messages.success(request, '문서가 삭제되었습니다.')
+        return redirect('management_doc_list')
+    return render(request, 'core/management_doc_confirm_delete.html', {'doc': doc})
+
+
+# ============================================================
+# 소그룹 모임
+# ============================================================
+from .models import Group, GroupMember, GroupPost, GroupComment
+
+def group_list(request):
+    group_type = request.GET.get('type', '')
+    groups = Group.objects.filter(is_active=True)
+    if group_type:
+        groups = groups.filter(group_type=group_type)
+    
+    user_group_ids = []
+    if request.user.is_authenticated:
+        user_group_ids = list(
+            GroupMember.objects.filter(user=request.user, is_active=True)
+            .values_list('group_id', flat=True)
+        )
+    
+    return render(request, 'core/group_list.html', {
+        'groups': groups,
+        'group_types': Group.GROUP_TYPE,
+        'selected_type': group_type,
+        'user_group_ids': user_group_ids,
+    })
+
+
+@login_required
+def group_create(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        group_type = request.POST.get('group_type', '')
+        location = request.POST.get('location', '').strip()
+        regular_schedule = request.POST.get('regular_schedule', '').strip()
+        member_limit = request.POST.get('member_limit') or None
+        
+        if name and description and group_type:
+            group = Group.objects.create(
+                name=name, description=description, group_type=group_type,
+                location=location, regular_schedule=regular_schedule,
+                member_limit=member_limit, creator=request.user,
+            )
+            GroupMember.objects.create(group=group, user=request.user, role='leader')
+            messages.success(request, f'"{name}" 모임이 만들어졌습니다! 🎉')
+            return redirect('group_detail', pk=group.pk)
+        messages.error(request, '필수 항목을 모두 입력해주세요.')
+    
+    return render(request, 'core/group_form.html', {
+        'group_types': Group.GROUP_TYPE,
+        'action': '만들기',
+    })
+
+
+def group_detail(request, pk):
+    group = get_object_or_404(Group, pk=pk, is_active=True)
+    members = GroupMember.objects.filter(group=group, is_active=True).select_related('user')
+    posts = GroupPost.objects.filter(group=group).order_by('-created_at')[:20]
+    
+    user_member = None
+    if request.user.is_authenticated:
+        user_member = GroupMember.objects.filter(group=group, user=request.user, is_active=True).first()
+    
+    return render(request, 'core/group_detail.html', {
+        'group': group,
+        'members': members,
+        'posts': posts,
+        'user_member': user_member,
+    })
+
+
+@login_required
+def group_join(request, pk):
+    group = get_object_or_404(Group, pk=pk, is_active=True)
+    
+    if group.member_limit and group.members.count() >= group.member_limit:
+        messages.error(request, '정원이 가득 찼습니다.')
+        return redirect('group_detail', pk=pk)
+    
+    member, created = GroupMember.objects.get_or_create(
+        group=group, user=request.user,
+        defaults={'role': 'member', 'is_active': True}
+    )
+    if not created and not member.is_active:
+        member.is_active = True
+        member.save()
+        created = True
+    
+    if created:
+        messages.success(request, f'"{group.name}" 모임에 참여했습니다! 👋')
+    else:
+        messages.info(request, '이미 참여 중인 모임입니다.')
+    
+    return redirect('group_detail', pk=pk)
+
+
+@login_required
+def group_leave(request, pk):
+    group = get_object_or_404(Group, pk=pk)
+    GroupMember.objects.filter(group=group, user=request.user).update(is_active=False)
+    messages.success(request, '모임에서 나왔습니다.')
+    return redirect('group_list')
+
+
+@login_required
+def group_post_create(request, pk):
+    group = get_object_or_404(Group, pk=pk, is_active=True)
+    
+    # 멤버만 글 작성 가능
+    if not GroupMember.objects.filter(group=group, user=request.user, is_active=True).exists():
+        messages.error(request, '모임 멤버만 글을 작성할 수 있습니다.')
+        return redirect('group_detail', pk=pk)
+    
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        content = request.POST.get('content', '').strip()
+        if title and content:
+            GroupPost.objects.create(
+                group=group, author=request.user,
+                title=title, content=content
+            )
+            messages.success(request, '글이 작성되었습니다.')
+            return redirect('group_detail', pk=pk)
+    
+    return render(request, 'core/group_post_form.html', {'group': group})
+
+
+def group_post_detail(request, pk, post_pk):
+    group = get_object_or_404(Group, pk=pk)
+    post = get_object_or_404(GroupPost, pk=post_pk, group=group)
+    comments = GroupComment.objects.filter(post=post).select_related('author')
+    
+    user_member = None
+    if request.user.is_authenticated:
+        user_member = GroupMember.objects.filter(group=group, user=request.user, is_active=True).first()
+    
+    if request.method == 'POST' and request.user.is_authenticated and user_member:
+        content = request.POST.get('content', '').strip()
+        if content:
+            GroupComment.objects.create(post=post, author=request.user, content=content)
+            post.comment_count = comments.count() + 1
+            post.save(update_fields=['comment_count'])
+            messages.success(request, '댓글이 작성되었습니다.')
+            return redirect('group_post_detail', pk=pk, post_pk=post_pk)
+    
+    return render(request, 'core/group_post_detail.html', {
+        'group': group, 'post': post, 'comments': comments, 'user_member': user_member,
+    })
+
+
+# ============================================================
+# 이웃 온기 점수 (Rating)
+# ============================================================
+from .models import Rating
+
+@login_required
+def rating_list(request):
+    """내가 받은 평가 목록"""
+    ratings_received = Rating.objects.filter(rated_user=request.user).select_related('rater').order_by('-created_at')
+    ratings_given = Rating.objects.filter(rater=request.user).select_related('rated_user').order_by('-created_at')
+    
+    avg_score = ratings_received.aggregate(avg=models.Avg('score'))['avg'] or 0
+    
+    return render(request, 'core/rating_list.html', {
+        'ratings_received': ratings_received,
+        'ratings_given': ratings_given,
+        'avg_score': round(avg_score, 1),
+        'manners_score': request.user.manners_score,
+    })
+
+
+@login_required
+def rating_give(request, user_pk):
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    target_user = get_object_or_404(User, pk=user_pk)
+    
+    if target_user == request.user:
+        messages.error(request, '자신에게 평가할 수 없습니다.')
+        return redirect('rating_list')
+    
+    existing = Rating.objects.filter(rater=request.user, rated_user=target_user).first()
+    
+    if request.method == 'POST':
+        score = int(request.POST.get('score', 5))
+        comment = request.POST.get('comment', '').strip()
+        
+        if existing:
+            existing.score = score
+            existing.comment = comment
+            existing.save()
+            messages.success(request, '평가가 수정되었습니다.')
+        else:
+            Rating.objects.create(
+                rater=request.user, rated_user=target_user,
+                score=score, comment=comment
+            )
+            messages.success(request, f'{target_user.username}님을 평가했습니다. 💚')
+        
+        # 온기 점수 재계산
+        avg = Rating.objects.filter(rated_user=target_user).aggregate(avg=models.Avg('score'))['avg'] or 5
+        target_user.manners_score = round(avg * 20, 1)  # 5점 만점 → 100점 환산
+        target_user.save(update_fields=['manners_score'])
+        
+        return redirect('rating_list')
+    
+    return render(request, 'core/rating_give.html', {
+        'target_user': target_user,
+        'existing': existing,
+        'score_range': range(1, 6),
+    })
+
+
+# ============================================================
+# 배지 자동 발급 헬퍼 (봉사 승인 시 호출)
+# ============================================================
+def _auto_award_badge(user):
+    """봉사 승인 시 배지 자동 발급 로직"""
+    from .models import Badge, UserBadge
+    
+    approved_count = ActivityProof.objects.filter(user=user, status='approved').count()
+    total_points = user.mileage_points
+    
+    eligible_badges = Badge.objects.filter(
+        is_active=True,
+        required_activities__lte=approved_count,
+        required_points__lte=total_points,
+    )
+    
+    newly_awarded = []
+    for badge in eligible_badges:
+        _, created = UserBadge.objects.get_or_create(user=user, badge=badge)
+        if created:
+            user.current_badges.add(badge)
+            newly_awarded.append(badge)
+            # 알림 생성
+            Notification.objects.create(
+                recipient=user,
+                title=f'🏅 새 배지 획득: {badge.title}',
+                message=f'축하합니다! "{badge.title}" 배지를 획득하셨습니다. {badge.description}',
+                notification_type='badge',
+            )
+    
+    return newly_awarded
