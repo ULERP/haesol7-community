@@ -206,9 +206,83 @@
     <!-- 캘린더 탭 -->
     <div class="tab-pane" id="tab-calendar">
       {% if is_member %}
-      <a href="/calendar/create/?group={{ group.pk }}" class="btn btn-wine btn-sm mb-3 w-100">
+      <button type="button" class="btn btn-wine btn-sm mb-3 w-100" data-bs-toggle="modal" data-bs-target="#addEventModal">
         <i class="fas fa-plus me-1"></i>일정 추가
-      </a>
+      </button>
+
+<!-- 일정 추가 모달 -->
+<div class="modal fade" id="addEventModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-calendar-plus me-2"></i>일정 추가</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">제목 <span class="text-danger">*</span></label>
+          <input type="text" id="eventTitle" class="form-control" placeholder="일정 제목">
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold">시작</label>
+            <input type="datetime-local" id="eventStart" class="form-control">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold">종료</label>
+            <input type="datetime-local" id="eventEnd" class="form-control">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">장소</label>
+          <input type="text" id="eventLocation" class="form-control" placeholder="장소 (선택)">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">설명</label>
+          <textarea id="eventDesc" class="form-control" rows="3" placeholder="설명 (선택)"></textarea>
+        </div>
+        <div id="eventMsg" class="text-danger small"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <button type="button" class="btn btn-wine" onclick="submitEvent()">추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function submitEvent() {
+  const title = document.getElementById('eventTitle').value.trim();
+  const start = document.getElementById('eventStart').value;
+  if (!title || !start) {
+    document.getElementById('eventMsg').textContent = '제목과 시작 시간은 필수입니다.';
+    return;
+  }
+  fetch('/calendar/create/', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+    body: JSON.stringify({
+      title: title,
+      start_time: start + ':00',
+      end_time: document.getElementById('eventEnd').value ? document.getElementById('eventEnd').value + ':00' : null,
+      location: document.getElementById('eventLocation').value.trim(),
+      description: document.getElementById('eventDesc').value.trim(),
+      event_type: 'group',
+      group_id: {{ group.pk }},
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      bootstrap.Modal.getInstance(document.getElementById('addEventModal')).hide();
+      location.reload();
+    } else {
+      document.getElementById('eventMsg').textContent = data.error || '오류가 발생했습니다.';
+    }
+  });
+}
+</script>
       {% endif %}
       {% for ev in group_events %}
       <div class="d-flex gap-3 p-3 border-bottom">
