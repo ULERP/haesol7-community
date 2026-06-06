@@ -1,5 +1,104 @@
 {% extends 'base_2panel.html' %}
-{% block menu_groups %}active{% endblock %}
+{% block menu_groups %}active
+<!-- FullCalendar -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script>
+// ── 달력 초기화
+const eventsData = {{ group_events_json|safe }};
+const fcEvents = eventsData.map(e => ({
+  id: e.id,
+  title: e.title,
+  start: e.start_time,
+  end: e.end_time || undefined,
+  extendedProps: { location: e.location, description: e.description }
+}));
+
+document.addEventListener('DOMContentLoaded', function() {
+  const calEl = document.getElementById('groupCalendar');
+  if (!calEl) return;
+  const calendar = new FullCalendar.Calendar(calEl, {
+    initialView: 'dayGridMonth',
+    locale: 'ko',
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek' },
+    events: fcEvents,
+    eventClick: function(info) {
+      const p = info.event.extendedProps;
+      alert(info.event.title + (p.location ? '
+장소: ' + p.location : '') + (p.description ? '
+' + p.description : ''));
+    },
+    height: 'auto',
+  });
+  // 일정 탭 클릭 시 렌더
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.textContent.includes('일정')) {
+        setTimeout(() => calendar.render(), 100);
+      }
+    });
+  });
+});
+
+// ── 설문 투표
+function votePoll(pollId, optIdx) {
+  fetch('/polls/' + pollId + '/vote/', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+    body: JSON.stringify({option_index: optIdx})
+  }).then(r => r.json()).then(data => {
+    if (data.success) updatePollUI(pollId, data.results, data.total);
+  });
+}
+
+function updatePollUI(pollId, results, total) {
+  results.forEach((r, i) => {
+    const pct = document.querySelector('.poll-pct-' + pollId + '-' + i);
+    const bar = document.querySelector('.poll-bar-' + pollId + '-' + i);
+    if (pct) pct.textContent = r.pct + '%';
+    if (bar) bar.style.width = r.pct + '%';
+  });
+  const tot = document.querySelector('.poll-total-' + pollId);
+  if (tot) tot.textContent = '총 ' + total + '표';
+}
+
+// 페이지 로드 시 설문 결과 불러오기
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('[id^="poll-"]').forEach(el => {
+    const pollId = el.id.replace('poll-', '');
+    fetch('/polls/' + pollId + '/results/').then(r => r.json()).then(data => {
+      updatePollUI(pollId, data.results, data.total);
+    });
+  });
+});
+
+// ── 설문 만들기
+function addPollOption() {
+  const cnt = document.querySelectorAll('.poll-opt').length + 1;
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'form-control mb-2 poll-opt';
+  inp.placeholder = '옵션 ' + cnt;
+  document.getElementById('pollOptions').appendChild(inp);
+}
+
+function submitPoll() {
+  const question = document.getElementById('pollQuestion').value.trim();
+  const options = [...document.querySelectorAll('.poll-opt')].map(i => i.value.trim()).filter(Boolean);
+  if (!question || options.length < 2) {
+    document.getElementById('pollMsg').textContent = '질문과 옵션 2개 이상 필요';
+    return;
+  }
+  fetch('/polls/create/', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
+    body: JSON.stringify({question, options, group_id: {{ group.pk }} })
+  }).then(r => r.json()).then(data => {
+    if (data.success) { bootstrap.Modal.getInstance(document.getElementById('addPollModal')).hide(); location.reload(); }
+    else document.getElementById('pollMsg').textContent = data.error;
+  });
+}
+</script>
+{% endblock %}
 {% block title %}{{ group.name }}{% endblock %}
 
 {% block extra_head %}
@@ -124,6 +223,7 @@
     <button class="tab-btn" onclick="switchTab('members',this)">👥 멤버 {{ member_count }}</button>
     <button class="tab-btn" onclick="switchTab('calendar',this)">📅 일정</button>
     <button class="tab-btn" onclick="switchTab('info',this)">ℹ️ 정보</button>
+    <button class="tab-btn" onclick="switchTab('polls',this)">📊 설문조사</button>
     {% if is_leader %}<button class="tab-btn" onclick="switchTab('logs',this)">📋 활동기록</button>{% endif %}
   </div>
 
@@ -284,23 +384,77 @@ function submitEvent() {
 }
 </script>
       {% endif %}
-      {% for ev in group_events %}
-      <div class="d-flex gap-3 p-3 border-bottom">
-        <div style="width:40px;height:40px;background:var(--gl);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
-          <div style="font-size:0.6rem;color:var(--g);font-weight:700;">{{ ev.start_time|date:"m월" }}</div>
-          <div style="font-size:1rem;font-weight:800;color:var(--g);line-height:1;">{{ ev.start_time|date:"d" }}</div>
-        </div>
-        <div>
-          <div style="font-weight:600;font-size:0.86rem;">{{ ev.title }}</div>
-          <div style="font-size:0.72rem;color:#9ca3af;">{{ ev.start_time|date:"H:i" }}{% if ev.location %} · {{ ev.location }}{% endif %}</div>
+      <!-- FullCalendar -->
+      <div id="groupCalendar" style="font-size:0.82rem;"></div>
+    </div>
+
+    <!-- 설문조사 탭 -->
+    <div class="tab-pane" id="tab-polls">
+      {% if is_member %}
+      <button class="btn btn-wine btn-sm mb-3 w-100" data-bs-toggle="modal" data-bs-target="#addPollModal">
+        <i class="fas fa-plus me-1"></i>설문 만들기
+      </button>
+      {% endif %}
+
+      {% for poll in group_polls %}
+      <div class="card mb-3 border-0 shadow-sm" id="poll-{{ poll.id }}">
+        <div class="card-body">
+          <div class="fw-semibold mb-2">📊 {{ poll.question }}</div>
+          <div class="poll-options">
+            {% for opt in poll.options %}
+            <div class="mb-2">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>{{ opt }}</span>
+                <span class="text-muted poll-pct-{{ poll.id }}-{{ forloop.counter0 }}">-</span>
+              </div>
+              <div class="progress" style="height:6px;">
+                <div class="progress-bar bg-success poll-bar-{{ poll.id }}-{{ forloop.counter0 }}" style="width:0%"></div>
+              </div>
+              {% if is_member %}
+              <button class="btn btn-outline-secondary btn-sm mt-1" style="font-size:0.72rem;"
+                onclick="votePoll({{ poll.id }}, {{ forloop.counter0 }})">투표</button>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          <div class="text-muted small mt-2 poll-total-{{ poll.id }}"></div>
         </div>
       </div>
       {% empty %}
       <div class="text-center py-4 text-muted">
-        <i class="fas fa-calendar fa-2x mb-2 d-block opacity-25"></i>
-        등록된 일정이 없어요
+        <i class="fas fa-poll fa-2x mb-2 d-block opacity-25"></i>
+        등록된 설문이 없어요
       </div>
       {% endfor %}
+
+      <!-- 설문 만들기 모달 -->
+      <div class="modal fade" id="addPollModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">📊 설문 만들기</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">질문</label>
+                <input type="text" id="pollQuestion" class="form-control" placeholder="예: 다음 모임 장소는?">
+              </div>
+              <div id="pollOptions">
+                <label class="form-label fw-semibold">옵션</label>
+                <input type="text" class="form-control mb-2 poll-opt" placeholder="옵션 1">
+                <input type="text" class="form-control mb-2 poll-opt" placeholder="옵션 2">
+              </div>
+              <button class="btn btn-outline-secondary btn-sm" onclick="addPollOption()">+ 옵션 추가</button>
+              <div id="pollMsg" class="text-danger small mt-2"></div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+              <button class="btn btn-wine" onclick="submitPoll()">만들기</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 정보 탭 -->

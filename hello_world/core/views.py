@@ -1187,6 +1187,8 @@ def group_detail(request, pk):
 
     recent_posts = GroupPost.objects.filter(group=group).order_by('-created_at')[:5]
     group_events = CalendarEvent.objects.filter(group=group, is_approved=True).order_by('start_time')[:5]
+    from .models import Poll
+    group_polls = Poll.objects.filter(group=group, is_active=True).order_by('-created_at')
 
     return render(request, 'group_detail.html', {
         'group':           group,
@@ -1203,6 +1205,8 @@ def group_detail(request, pk):
         'is_leader':       my_role == 'leader',
         'is_mod':          my_role in ('leader', 'moderator'),
         'invited':         invited,
+        'group_polls':     group_polls,
+        'group_events_json': list(group_events.values('id','title','start_time','end_time','location','description')),
     })
 
 

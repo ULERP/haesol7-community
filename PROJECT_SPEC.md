@@ -123,3 +123,27 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 - feat: 네비바 기록하기 드롭다운 5개 게시판으로 정리
 - feat: 함께하기/단지소식 허브 페이지 오류 수정
 - 다음: 함께하기 허브에 나눔/장터 추가, 단지소식 허브에 FAQ/건의 추가
+
+
+## 6. 업데이트 이력 (2026.06.06)
+
+### 완료된 작업
+- views.py 262번 줄 문법 오류 수정 (쉼표 두 개)
+- 관리 문서 게시판  (management_docs 뷰, ManagementDocument 모델 활용)
+- 이웃 온기 점수  (rating_list, rating_give 뷰 추가)
+- 배지 자동 발급 헬퍼 (_auto_award_badge 함수 추가)
+- 소모임 일정 추가 버튼 오류 수정 (GET→모달 POST 방식)
+- Poll 모델 group FK 추가 (related_name='group_polls') + 마이그레이션 0037
+- poll_create / poll_vote / poll_results 뷰 추가
+- /polls/create/, /polls/<id>/vote/, /polls/<id>/results/ URL 등록
+- PythonAnywhere 배포 및 동기화 완료
+
+### 진행 중
+- 소모임 상세 페이지: 설문조사 탭 UI + FullCalendar 달력 뷰
+- 전체 공유 캘린더 (봉사활동 달력과 통합)
+
+### 주의사항
+- Poll.group related_name = 'group_polls' (ChatPoll.group과 충돌 방지)
+- calendar_event_create 함수 views.py에 2개 존재 (2606, 2695번) → 2695번이 유효
+- PA venv: /home/ULERP/haesol7-community/.venv (python3.12)
+- PA reload: touch /var/www/ulerp_pythonanywhere_com_wsgi.py
