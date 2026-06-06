@@ -304,24 +304,21 @@
 })();
 // 사이드바 섹션 폴딩
 function toggleSection(id) {
-  const sec = document.getElementById(id);
-  const label = sec ? sec.previousElementSibling : null;
-  if (!sec) return;
-  if (sec.classList.contains('folded')) {
-    // 펼치기
-    sec.classList.remove('folded');
-    sec.style.maxHeight = sec.scrollHeight + 'px';
+  const target = document.getElementById(id);
+  if (!target) return;
+  const isOpen = !target.classList.contains('folded');
+  // 모두 닫기
+  document.querySelectorAll('.sb-section').forEach(s => {
+    s.classList.add('folded');
+    s.style.maxHeight = '0';
+  });
+  document.querySelectorAll('.sb-label').forEach(l => l.classList.add('folded'));
+  // 닫혀있었으면 열기
+  if (!isOpen) {
+    target.classList.remove('folded');
+    target.style.maxHeight = target.scrollHeight + 'px';
+    const label = target.previousElementSibling;
     if (label) label.classList.remove('folded');
-    try { localStorage.setItem('sb_fold_' + id, '0'); } catch(e) {}
-  } else {
-    // 접기
-    sec.style.maxHeight = sec.scrollHeight + 'px';
-    requestAnimationFrame(() => {
-      sec.style.maxHeight = '0';
-    });
-    sec.classList.add('folded');
-    if (label) label.classList.add('folded');
-    try { localStorage.setItem('sb_fold_' + id, '1'); } catch(e) {}
   }
 }
 
