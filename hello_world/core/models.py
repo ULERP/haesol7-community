@@ -364,12 +364,17 @@ class Trade(models.Model):
 
 
 class Poll(models.Model):
-    post       = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='polls')
+    post       = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='polls', null=True, blank=True)
+    group      = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='group_polls', null=True, blank=True)
     question   = models.CharField(max_length=300)
     options    = models.JSONField(default=list, blank=True)
     votes      = models.JSONField(default=dict, blank=True)
     is_active  = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = '설문조사'
+        verbose_name_plural = '설문조사 목록'
 
     def __str__(self):
         return self.question

@@ -3785,3 +3785,61 @@ def rating_give(request, user_pk):
         'existing': existing,
         'score_range': range(1, 6),
     })
+
+
+# ── 설문조사 (공통: 게시판 + 소모임)
+@login_required
+def poll_create(request):
+    from .models import Poll
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=400)
+    import json
+    data = json.loads(request.body)
+    question = data.get('question', '').strip()
+    options  = data.get('options', [])
+    post_id  = data.get('post_id')
+    group_id = data.get('group_id')
+    if not question or len(options) < 2:
+        return JsonResponse({'error': '질문과 옵션 2개 이상 필요'}, status=400)
+    votes = {str(i): 0 for i in range(len(options))}
+    kwargs = {'question': question, 'options': options, 'votes': votes}
+    if post_id:
+        from .models import Post as _Post
+        kwargs['post'] = get_object_or_404(_Post, pk=post_id)
+    if group_id:
+        from .models import Group as _Group
+        kwargs['group'] = get_object_or_404(_Group, pk=group_id)
+    poll = Poll.objects.create(**kwargs)
+    return JsonResponse({'success': True, 'poll_id': poll.id})
+
+
+@login_required
+def poll_vote(request, poll_id):
+    from .models import Poll
+    poll = get_object_or_404(Poll, pk=poll_id, is_active=True)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=400)
+    import json
+    data = json.loads(request.body)
+    idx  = str(data.get('option_index'))
+    if idx not in poll.votes:
+        return JsonResponse({'error': '잘못된 옵션'}, status=400)
+    poll.votes[idx] = poll.votes.get(idx, 0) + 1
+    poll.save(update_fields=['votes'])
+    total = sum(poll.votes.values())
+    result = []
+    for i, opt in enumerate(poll.options):
+        cnt = poll.votes.get(str(i), 0)
+        result.append({'text': opt, 'count': cnt, 'pct': round(cnt/total*100) if total else 0})
+    return JsonResponse({'success': True, 'results': result, 'total': total})
+
+
+def poll_results(request, poll_id):
+    from .models import Poll
+    poll = get_object_or_404(Poll, pk=poll_id)
+    total = sum(poll.votes.values()) if poll.votes else 0
+    result = []
+    for i, opt in enumerate(poll.options):
+        cnt = poll.votes.get(str(i), 0)
+        result.append({'text': opt, 'count': cnt, 'pct': round(cnt/total*100) if total else 0})
+    return JsonResponse({'question': poll.question, 'results': result, 'total': total})
