@@ -96,7 +96,7 @@ def index(request):
     except: my_groups = []
 
     boards = Board.objects.filter(is_active=True).order_by('order')
-    active_boards = boards.exclude(board_type__in=['trade','qna','gallery'])
+    active_boards = boards.exclude(board_type__in=['trade','qna','gallery','faq','complaint']).exclude(name__in=['FAQ','나눔/장터','민원/오류','민원·건의'])
     recent_posts = Post.objects.filter(is_active=True).order_by('-created_at')[:10]
     upcoming_events = Activity.objects.filter(is_active=True).order_by('created_at')[:5]
     from .models import Badge, ActivityProof, Meetup
@@ -385,7 +385,7 @@ def post_list(request):
     if selected_tag:
         posts = posts.filter(tag=selected_tag)
     boards = Board.objects.filter(is_active=True).order_by('order')
-    active_boards = boards.exclude(board_type__in=['trade','qna','gallery'])
+    active_boards = boards.exclude(board_type__in=['trade','qna','gallery','faq','complaint']).exclude(name__in=['FAQ','나눔/장터','민원/오류','민원·건의'])
     return render(request, 'core/post_list.html', {
         'posts': posts.order_by('-created_at'),
         'boards': boards,
@@ -460,7 +460,7 @@ def post_write(request, board_id):
 def board_post_create(request):
     from .forms import PostForm
     boards = Board.objects.filter(is_active=True).order_by('order')
-    active_boards = boards.exclude(board_type__in=['trade','qna','gallery'])
+    active_boards = boards.exclude(board_type__in=['trade','qna','gallery','faq','complaint']).exclude(name__in=['FAQ','나눔/장터','민원/오류','민원·건의'])
     board_id = request.GET.get('board_id') or request.POST.get('board_id')
     board = get_object_or_404(Board, pk=board_id) if board_id else None
     if request.method == 'POST' and board:
