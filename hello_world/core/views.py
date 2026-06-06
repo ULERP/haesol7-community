@@ -3848,3 +3848,20 @@ def poll_results(request, poll_id):
         cnt = poll.votes.get(str(i), 0)
         result.append({'text': opt, 'count': cnt, 'pct': round(cnt/total*100) if total else 0})
     return JsonResponse({'question': poll.question, 'results': result, 'total': total})
+
+
+@login_required
+def group_post_edit(request, pk, post_pk):
+    from .models import Group, GroupPost, GroupMember
+    group = get_object_or_404(Group, pk=pk)
+    post = get_object_or_404(GroupPost, pk=post_pk, group=group)
+    if post.author != request.user and not request.user.is_staff:
+        messages.error(request, "수정 권한이 없습니다.")
+        return redirect("group_post_detail", pk=pk, post_pk=post_pk)
+    if request.method == "POST":
+        post.title = request.POST.get("title", post.title).strip()
+        post.content = request.POST.get("content", post.content).strip()
+        post.save()
+        messages.success(request, "글이 수정되었습니다.")
+        return redirect("group_post_detail", pk=pk, post_pk=post_pk)
+    return render(request, "groups/group_post_form.html", {"group": group, "post": post})

@@ -168,4 +168,5 @@ urlpatterns = [
     path('ratings/', views.rating_list, name='rating_list'),
     path('ratings/give/<int:user_pk>/', views.rating_give, name='rating_give'),
 
+    path('groups/<int:pk>/post/<int:post_pk>/edit/', views.group_post_edit, name='group_post_edit'),
 ]
