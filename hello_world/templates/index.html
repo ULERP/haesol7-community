@@ -260,8 +260,8 @@
         <i class="fas fa-chevron-right sb-fold-icon"></i>
       </div>
       <div class="sb-section" id="sec-chat">
-        <a href="/chat/public/" class="sb-item"><i class="fas fa-comments"></i><span class="sb-text">전체채팅</span></a>
-        <a href="/groups/" class="sb-item"><i class="fas fa-users"></i><span class="sb-text">소모임 채팅</span></a>
+        <a href="/chat/public/" class="sb-item"><i class="fas fa-comments" style="color:#7A263A;"></i><span class="sb-text">전체채팅</span></a>
+        <a href="/groups/" class="sb-item"><i class="fas fa-users" style="color:#D4B26A;"></i><span class="sb-text">소모임 채팅</span></a>
         <a href="/chat/dm/list/" class="sb-item"><i class="fas fa-comment-dots"></i><span class="sb-text">1:1 채팅</span></a>
         <a href="/letters/" class="sb-item"><i class="fas fa-envelope"></i><span class="sb-text">쪽지함</span></a>
       </div>
@@ -286,13 +286,13 @@
         <i class="fas fa-chevron-right sb-fold-icon"></i>
       </div>
       <div class="sb-section" id="sec-together">
-        <a href="/hub/together/" class="sb-item"><i class="fas fa-th-large" style="color:#7A263A;"></i><span class="sb-text">함께하기 전체</span></a>
+        <a href="/hub/together/" class="sb-item"><i class="fas fa-th-large" style="color:#7A263A;"></i><span class="sb-text">함께하기 전체보기</span></a>
         <a href="/groups/" class="sb-item"><i class="fas fa-users" style="color:#7A263A;"></i><span class="sb-text">소모임</span></a>
         <a href="/volunteer/" class="sb-item"><i class="fas fa-heart" style="color:#7A263A;"></i><span class="sb-text">봉사활동</span></a>
-        <a href="/calendar/" class="sb-item"><i class="fas fa-calendar-alt"></i><span class="sb-text">캘린더</span></a>
+        <a href="/calendar/" class="sb-item"><i class="fas fa-calendar-alt" style="color:#D4B26A;"></i><span class="sb-text">캘린더</span></a>
         <a href="/surveys/" class="sb-item"><i class="fas fa-poll"></i><span class="sb-text">설문조사</span></a>
-        <a href="/docs/" class="sb-item"><i class="fas fa-file-alt"></i><span class="sb-text">관리 문서</span></a>
-        <a href="/ratings/" class="sb-item"><i class="fas fa-heart"></i><span class="sb-text">온기점수</span></a>
+        <a href="/activity/submit/" class="sb-item"><i class="fas fa-camera" style="color:#D4B26A;"></i><span class="sb-text">활동 인증</span></a>
+        <a href="/board/14/" class="sb-item"><i class="fas fa-handshake" style="color:#7A263A;"></i><span class="sb-text">나눔/장터</span></a>
       </div>
       <div class="sb-divider"></div>
 
@@ -302,9 +302,12 @@
         <i class="fas fa-chevron-right sb-fold-icon"></i>
       </div>
       <div class="sb-section" id="sec-news">
-        <a href="/notices/" class="sb-item"><i class="fas fa-bell"></i><span class="sb-text">공지사항</span></a>
-        <a href="/complaints/" class="sb-item"><i class="fas fa-megaphone"></i><span class="sb-text">민원/오류</span></a>
-        <a href="/search/" class="sb-item"><i class="fas fa-search"></i><span class="sb-text">검색</span></a>
+        <a href="/hub/news/" class="sb-item"><i class="fas fa-th-large" style="color:#7A263A;"></i><span class="sb-text">단지소식 전체보기</span></a>
+        <a href="/notices/" class="sb-item"><i class="fas fa-bell" style="color:#7A263A;"></i><span class="sb-text">공지사항</span></a>
+        <a href="/complaints/" class="sb-item"><i class="bi bi-megaphone" style="color:#D4B26A;"></i><span class="sb-text">민원/오류</span></a>
+        <a href="/stats/" class="sb-item"><i class="fas fa-chart-bar"></i><span class="sb-text">단지 통계</span></a>
+        <a href="/community/docs/" class="sb-item"><i class="fas fa-file-alt"></i><span class="sb-text">관리 문서</span></a>
+        <a href="/faq/" class="sb-item"><i class="fas fa-question-circle"></i><span class="sb-text">FAQ</span></a>
       </div>
 
       {% if user.is_authenticated %}
