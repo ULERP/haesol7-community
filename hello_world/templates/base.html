@@ -142,28 +142,23 @@
 </script>
 <script>
 function toggleSection(id) {
-  const allSecs = document.querySelectorAll('.sb-section');
-  const allLabels = document.querySelectorAll('.sb-label');
   const target = document.getElementById(id);
   if (!target) return;
   const isOpen = !target.classList.contains('folded');
   // 모두 닫기
-  allSecs.forEach(s => {
+  document.querySelectorAll('.sb-section').forEach(s => {
     s.classList.add('folded');
     s.style.maxHeight = '0';
   });
-  allLabels.forEach(l => l.classList.add('folded'));
-  // 클릭한 것만 토글
-  if (isOpen) {
-    // 이미 열려있었으면 그냥 닫힌 상태 유지
-    return;
+  document.querySelectorAll('.sb-label').forEach(l => l.classList.add('folded'));
+  // 클릭한 것이 닫혀있었으면 열기
+  if (!isOpen) {
+    target.classList.remove('folded');
+    target.style.maxHeight = target.scrollHeight + 'px';
+    const label = target.previousElementSibling;
+    if (label) label.classList.remove('folded');
   }
-  target.classList.remove('folded');
-  target.style.maxHeight = target.scrollHeight + 'px';
-  const label = target.previousElementSibling;
-  if (label) label.classList.remove('folded');
 }
-// 초기화: 모두 닫기
 document.addEventListener('DOMContentLoaded', function() {
   document.querySelectorAll('.sb-section').forEach(s => {
     s.classList.add('folded');
