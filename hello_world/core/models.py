@@ -1089,6 +1089,7 @@ class NoticeCategory(models.Model):
 
 class CalendarEvent(models.Model):
     TYPE_CHOICES = [
+        ('personal',  '개인'),
         ('volunteer', '봉사'),
         ('event',     '단지행사'),
         ('group',     '소모임'),
@@ -1098,6 +1099,12 @@ class CalendarEvent(models.Model):
         ('group',   '소모임'),
         ('public',  '전체공개'),
         ('pending', '승인대기'),
+    ]
+    RECUR_CHOICES = [
+        ('none',    '반복 없음'),
+        ('daily',   '매일'),
+        ('weekly',  '매주'),
+        ('monthly', '매월'),
     ]
     title        = models.CharField('제목', max_length=200)
     description  = models.TextField('내용', blank=True)
@@ -1110,8 +1117,14 @@ class CalendarEvent(models.Model):
     visibility   = models.CharField('공개범위', max_length=20, choices=VISIBILITY_CHOICES, default='pending')
     is_approved  = models.BooleanField('승인여부', default=False)
     approved_by  = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_events', verbose_name='승인자')
-    approved_at  = models.DateTimeField('승인일시', null=True, blank=True)
-    created_at   = models.DateTimeField(auto_now_add=True)
+    approved_at    = models.DateTimeField('승인일시', null=True, blank=True)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    # 반복 일정
+    is_recurring   = models.BooleanField('반복여부', default=False)
+    recur_type     = models.CharField('반복종류', max_length=10, choices=[('none','없음'),('daily','매일'),('weekly','매주'),('monthly','매월')], default='none')
+    recur_interval = models.PositiveSmallIntegerField('반복간격', default=1)
+    recur_end_date = models.DateField('반복종료일', null=True, blank=True)
+    recur_parent   = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='recur_children', verbose_name='원본일정')
 
     class Meta:
         ordering = ['start_time']

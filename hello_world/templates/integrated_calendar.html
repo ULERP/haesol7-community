@@ -94,6 +94,7 @@
         <div class="mb-2">
           <label class="form-label small fw-bold">종류 *</label>
           <select id="newType" class="form-select form-select-sm" onchange="toggleGroupSelect()">
+            <option value="personal">🙋 개인일정</option>
             <option value="event">📅 단지행사</option>
             <option value="volunteer">🤝 봉사활동</option>
             <option value="group">👥 소모임</option>
@@ -125,6 +126,36 @@
         <div class="mb-2">
           <label class="form-label small fw-bold">내용</label>
           <textarea id="newDesc" class="form-control form-control-sm" rows="2" placeholder="일정 내용"></textarea>
+        </div>
+        <!-- 반복 설정 -->
+        <div class="mb-2">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="recurToggle" onchange="toggleRecur()">
+            <label class="form-check-label small fw-bold" for="recurToggle">🔁 반복 일정</label>
+          </div>
+        </div>
+        <div id="recurWrap" class="d-none mb-2 p-2 bg-light rounded">
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label small fw-bold">반복 주기</label>
+              <select id="recurType" class="form-select form-select-sm">
+                <option value="daily">매일</option>
+                <option value="weekly" selected>매주</option>
+                <option value="monthly">매월</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">간격</label>
+              <div class="input-group input-group-sm">
+                <input type="number" id="recurInterval" class="form-control form-control-sm" value="1" min="1" max="30">
+                <span class="input-group-text small" id="recurIntervalLabel">주</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="form-label small fw-bold">반복 종료일 *</label>
+            <input type="date" id="recurEndDate" class="form-control form-control-sm">
+          </div>
         </div>
         <div id="createNote" class="alert alert-info py-1 small mb-0 d-none"></div>
       </div>
@@ -201,16 +232,33 @@ function openCreateModal(dateStr) {
 }
 
 function toggleGroupSelect() {
-  document.getElementById('groupSelectWrap').classList.toggle('d-none', document.getElementById('newType').value !== 'group');
+  const t = document.getElementById('newType').value;
+  document.getElementById('groupSelectWrap').classList.toggle('d-none', t !== 'group');
   updateCreateNote();
 }
 
+function toggleRecur() {
+  const on = document.getElementById('recurToggle').checked;
+  document.getElementById('recurWrap').classList.toggle('d-none', !on);
+}
+
+function updateRecurLabel() {
+  const t = document.getElementById('recurType').value;
+  document.getElementById('recurIntervalLabel').textContent = t === 'daily' ? '일' : t === 'weekly' ? '주' : '월';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('recurType').addEventListener('change', updateRecurLabel);
+});
+
 function updateCreateNote() {
   const note = document.getElementById('createNote');
+  const t = document.getElementById('newType').value;
   note.classList.remove('d-none');
-  if (isStaff) { note.textContent = '✅ 관리자 권한으로 즉시 전체 공개됩니다.'; }
-  else if (document.getElementById('newType').value === 'group') { note.textContent = '👥 소모임 멤버에게만 공개됩니다.'; }
-  else { note.textContent = '⏳ 등록 후 관리자 승인 후 전체 공개됩니다.'; }
+  if (t === 'personal')       { note.className = 'alert alert-secondary py-1 small mb-0'; note.textContent = '🔒 나만 볼 수 있는 개인 일정입니다.'; }
+  else if (isStaff)           { note.className = 'alert alert-success py-1 small mb-0';   note.textContent = '✅ 관리자 권한으로 즉시 전체 공개됩니다.'; }
+  else if (t === 'group')     { note.className = 'alert alert-warning py-1 small mb-0';   note.textContent = '👥 소모임 멤버에게만 공개됩니다.'; }
+  else                        { note.className = 'alert alert-info py-1 small mb-0';      note.textContent = '⏳ 등록 후 관리자 승인 후 전체 공개됩니다.'; }
 }
 
 function submitCreate() {
@@ -219,23 +267,36 @@ function submitCreate() {
   if (!title || !start) { alert('제목과 시작 시간은 필수입니다.'); return; }
   const endVal = document.getElementById('newEnd').value;
   const grpEl  = document.getElementById('newGroup');
+  const isRecur    = document.getElementById('recurToggle').checked;
+  const recurType  = document.getElementById('recurType').value;
+  const recurEnd   = document.getElementById('recurEndDate').value;
+  if (isRecur && !recurEnd) { alert('반복 종료일을 입력해주세요.'); return; }
+
   fetch('/calendar/create/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
     body: JSON.stringify({
-      title: title,
-      event_type: document.getElementById('newType').value,
-      start_time: start.replace('T',' ') + ':00',
-      end_time:   endVal ? endVal.replace('T',' ') + ':00' : null,
-      location:   document.getElementById('newLocation').value.trim(),
-      description:document.getElementById('newDesc').value.trim(),
-      group_id:   grpEl ? grpEl.value || null : null,
+      title:          title,
+      event_type:     document.getElementById('newType').value,
+      start_time:     start.replace('T',' ') + ':00',
+      end_time:       endVal ? endVal.replace('T',' ') + ':00' : null,
+      location:       document.getElementById('newLocation').value.trim(),
+      description:    document.getElementById('newDesc').value.trim(),
+      group_id:       grpEl ? grpEl.value || null : null,
+      is_recurring:   isRecur,
+      recur_type:     recurType,
+      recur_interval: parseInt(document.getElementById('recurInterval').value) || 1,
+      recur_end_date: recurEnd || null,
     })
   }).then(r => r.json()).then(res => {
     if (res.success) {
       bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-      alert(res.visibility === 'pending' ? '등록되었습니다. 관리자 승인 후 공개됩니다.' :
-            res.visibility === 'group'   ? '소모임 멤버에게 공개됩니다.' : '일정이 등록되었습니다.');
+      let msg = res.visibility === 'pending' ? '등록되었습니다. 관리자 승인 후 공개됩니다.' :
+                res.visibility === 'group'   ? '소모임 멤버에게 공개됩니다.' :
+                res.visibility === 'private' ? '개인 일정이 등록되었습니다.' : '일정이 등록되었습니다.';
+      if (res.recur_count > 0) msg += `
+(반복 일정 ${res.recur_count}개 추가 생성됨)`;
+      alert(msg);
       location.reload();
     } else { alert(res.error || '오류가 발생했습니다.'); }
   });

@@ -2617,6 +2617,11 @@ def calendar_event_create(request):
         return JsonResponse({'error': '잘못된 요청'}, status=400)
     import json
     from .models import CalendarEvent, Group
+    from django.utils import timezone
+    from django.utils.dateparse import parse_datetime
+    from datetime import timedelta, date
+    from dateutil.relativedelta import relativedelta
+
     data = json.loads(request.body)
 
     event_type = data.get('event_type', 'event')
@@ -2630,7 +2635,11 @@ def calendar_event_create(request):
             return JsonResponse({'error': '소모임을 찾을 수 없습니다'}, status=404)
 
     # 권한에 따라 visibility 결정
-    if request.user.is_staff or request.user.is_superuser:
+    if event_type == 'personal':
+        visibility  = 'private'
+        is_approved = True
+        approved_by = request.user
+    elif request.user.is_staff or request.user.is_superuser:
         visibility  = 'public'
         is_approved = True
         approved_by = request.user
@@ -2643,15 +2652,19 @@ def calendar_event_create(request):
         is_approved = False
         approved_by = None
 
-    from django.utils import timezone
-    from django.utils.dateparse import parse_datetime
+    # 반복 설정
+    is_recurring   = data.get('is_recurring', False)
+    recur_type     = data.get('recur_type', 'none') if is_recurring else 'none'
+    recur_interval = int(data.get('recur_interval', 1))
+    recur_end_date = data.get('recur_end_date')  # 'YYYY-MM-DD'
 
-    event = CalendarEvent.objects.create(
+    start_dt = parse_datetime(data.get('start_time'))
+    end_dt   = parse_datetime(data.get('end_time')) if data.get('end_time') else None
+
+    common = dict(
         title       = data.get('title', '').strip(),
         description = data.get('description', '').strip(),
         event_type  = event_type,
-        start_time  = parse_datetime(data.get('start_time')),
-        end_time    = parse_datetime(data.get('end_time')) if data.get('end_time') else None,
         location    = data.get('location', '').strip(),
         creator     = request.user,
         group       = group,
@@ -2659,8 +2672,40 @@ def calendar_event_create(request):
         is_approved = is_approved,
         approved_by = approved_by,
         approved_at = timezone.now() if is_approved else None,
+        is_recurring   = is_recurring,
+        recur_type     = recur_type,
+        recur_interval = recur_interval,
+        recur_end_date = date.fromisoformat(recur_end_date) if recur_end_date else None,
     )
-    return JsonResponse({'success': True, 'id': event.id, 'visibility': visibility})
+
+    # 원본 이벤트 생성
+    event = CalendarEvent.objects.create(start_time=start_dt, end_time=end_dt, **common)
+
+    # 반복 이벤트 일괄 생성 (최대 365개 제한)
+    if is_recurring and recur_type != 'none' and recur_end_date:
+        end_limit = date.fromisoformat(recur_end_date)
+        cur_start = start_dt
+        cur_end   = end_dt
+        count     = 0
+        while count < 365:
+            if recur_type == 'daily':
+                cur_start = cur_start + timedelta(days=recur_interval)
+                cur_end   = cur_end + timedelta(days=recur_interval) if cur_end else None
+            elif recur_type == 'weekly':
+                cur_start = cur_start + timedelta(weeks=recur_interval)
+                cur_end   = cur_end + timedelta(weeks=recur_interval) if cur_end else None
+            elif recur_type == 'monthly':
+                cur_start = cur_start + relativedelta(months=recur_interval)
+                cur_end   = cur_end + relativedelta(months=recur_interval) if cur_end else None
+            if cur_start.date() > end_limit:
+                break
+            CalendarEvent.objects.create(
+                start_time=cur_start, end_time=cur_end,
+                recur_parent=event, **common
+            )
+            count += 1
+
+    return JsonResponse({'success': True, 'id': event.id, 'visibility': visibility, 'recur_count': count if is_recurring and recur_type != 'none' else 0})
 
 
 @login_required
