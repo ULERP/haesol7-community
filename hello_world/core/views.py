@@ -1798,6 +1798,7 @@ def rate_user(request, user_id):
         recalculate_manners_score(rated_user)
         # 평가 알림
         if created:
+            from .models import Notification
             Notification.objects.create(
                 recipient=rated_user,
                 title='따뜻한 이웃 온기를 받았어요 ❤️',
