@@ -274,3 +274,20 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 2. CalendarEvent naive datetime 경고 수정
 3. board.icon 필드 PA DB 확인
 4. rate_user Notification 오류 PA 확인
+
+
+## 12. 업데이트 이력 (2026-06-08 - 3차)
+
+### 완료된 작업
+- fix: 캘린더 등록 모달 스크롤 추가 (max-height:70vh, overflow-y:auto)
+  - 반복 설정 UI가 모바일에서 잘리던 문제 수정
+- feat: 소모임 일정 추가 모달에 반복 일정 기능 추가
+  - group_detail.html addEventModal에 반복 설정 UI 추가
+  - toggleGrpRecur / updateGrpRecurLabel 함수 추가
+  - submitEvent 함수에 반복 파라미터 전송 로직 추가
+
+### 잔여 이슈 (다음 작업)
+1. favicon.ico 404 오류 수정
+2. CalendarEvent naive datetime 경고 수정
+3. board.icon 필드 PA DB 확인
+4. rate_user Notification 오류 PA 확인
