@@ -149,10 +149,10 @@ urlpatterns = [
     path('hub/together/', views.hub_together, name='hub_together'),
     path('hub/news/', views.hub_news, name='hub_news'),
     # ── 관리 문서 게시판 ──────────────────────────────────────
-    path('docs/', views.management_doc_list, name='management_doc_list'),
-    path('docs/create/', views.management_doc_create, name='management_doc_create'),
+    path('docs/', views.management_docs, name='management_docs'),
+    path('docs/create/', views.management_doc_upload, name='management_doc_create'),
     path('docs/<int:pk>/', views.management_doc_detail, name='management_doc_detail'),
-    path('docs/<int:pk>/edit/', views.management_doc_edit, name='management_doc_edit'),
+    
     path('docs/<int:pk>/delete/', views.management_doc_delete, name='management_doc_delete'),
 
     # ── 소그룹 모임 ───────────────────────────────────────────
