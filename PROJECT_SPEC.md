@@ -147,3 +147,31 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 - calendar_event_create 함수 views.py에 2개 존재 (2606, 2695번) → 2695번이 유효
 - PA venv: /home/ULERP/haesol7-community/.venv (python3.12)
 - PA reload: touch /var/www/ulerp_pythonanywhere_com_wsgi.py
+
+
+## 7. 업데이트 이력 (2026.06.06 - 2차)
+
+### 완료된 작업
+- 소모임 일정 추가 모달 방식으로 수정 (GET→POST)
+- FullCalendar 6.1.11 소모임 달력 탭 추가
+- Poll 모델 group FK 추가 (related_name='group_polls') + migration 0037
+- 소모임 설문조사 탭 추가 (만들기/투표/결과 실시간)
+- poll_create / poll_vote / poll_results API 뷰 추가
+- admin ActivityProof 승인 시 포인트 자동 적립 + 배지 자동 발급 연동
+- calendar_event_create 중복 함수 존재 (2610, 2699번) → 추후 정리 필요
+
+### 현재 URL 구조 (신규 추가분)
+- /docs/ → 관리 문서 게시판
+- /ratings/ → 이웃 온기 점수
+- /ratings/give/<user_pk>/ → 평가하기
+- /polls/create/ → 설문 생성 (POST JSON)
+- /polls/<id>/vote/ → 투표 (POST JSON)
+- /polls/<id>/results/ → 결과 조회 (GET JSON)
+- /calendar/create/ → 일정 생성 (POST JSON)
+
+### 배포 정보
+- VS: GitHub Codespaces
+- FA: https://ulerp.pythonanywhere.com
+- PA venv: /home/ULERP/haesol7-community/.venv (python3.12)
+- PA reload: touch /var/www/ulerp_pythonanywhere_com_wsgi.py
+- 관리자: admin / haesol7777
