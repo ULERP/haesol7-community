@@ -213,7 +213,31 @@
   .sidebar-l{display:none;}
   .home-hero{height:auto;}
 }
-</style>
+
+  /* 사이드바 아코디언 */
+  .sb-accordion{display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:7px 8px;border-radius:8px;transition:background .15s;}
+  .sb-accordion:hover{background:var(--gl);}
+  .sb-accordion .sb-fold-icon{transition:transform .2s;font-size:0.65rem;color:#9ca3af;}
+  .sb-accordion.open .sb-fold-icon{transform:rotate(90deg);}
+  .sb-section{display:none;padding-left:4px;}
+  .sb-section.open{display:block;}
+  </style>
+  <script>
+  function toggleSection(id, el) {
+    // 아코디언: 다른 섹션 모두 닫기
+    document.querySelectorAll('.sb-section').forEach(s => {
+      if (s.id !== id) { s.classList.remove('open'); }
+    });
+    document.querySelectorAll('.sb-accordion').forEach(a => {
+      if (a !== el) { a.classList.remove('open'); }
+    });
+    // 클릭한 섹션 토글
+    const sec = document.getElementById(id);
+    if (sec) sec.classList.toggle('open');
+    if (el) el.classList.toggle('open');
+  }
+  </script>
+  <style>
 {% endblock %}
 
 {% block full_content %}
@@ -252,34 +276,60 @@
 
             <a href="/" class="sb-item active"><i class="fas fa-home"></i><span class="sb-text">홈</span></a>
       <div class="sb-divider"></div>
-      <div class="sb-label" onclick="toggleSection('sec-chat')">💬 대화하기<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+
+      <!-- 💬 대화하기 -->
+      <div class="sb-label sb-accordion" onclick="toggleSection('sec-chat',this)">
+        <span><i class="fas fa-comments me-1" style="color:#7A263A;font-size:0.8rem;"></i>💬 대화하기</span>
+        <i class="fas fa-chevron-right sb-fold-icon"></i>
+      </div>
       <div class="sb-section" id="sec-chat">
-      <a href="/chat/public/" class="sb-item"><i class="fas fa-comments"></i><span class="sb-text">전체채팅</span></a>
-      <a href="/groups/" class="sb-item"><i class="fas fa-users"></i><span class="sb-text">소모임채팅</span></a>
-      <a href="/chat/dm/list/" class="sb-item"><i class="fas fa-comment-dots"></i><span class="sb-text">1:1 채팅</span></a>
-      <a href="/letters/" class="sb-item"><i class="fas fa-envelope"></i><span class="sb-text">쪽지함</span></a>
+        <a href="/chat/public/" class="sb-item"><i class="fas fa-comments"></i><span class="sb-text">전체채팅</span></a>
+        <a href="/groups/" class="sb-item"><i class="fas fa-users"></i><span class="sb-text">소모임 채팅</span></a>
+        <a href="/chat/dm/list/" class="sb-item"><i class="fas fa-comment-dots"></i><span class="sb-text">1:1 채팅</span></a>
+        <a href="/letters/" class="sb-item"><i class="fas fa-envelope"></i><span class="sb-text">쪽지함</span></a>
       </div>
       <div class="sb-divider"></div>
-      <div class="sb-label" onclick="toggleSection('sec-record')">📋 기록하기<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+
+      <!-- 📋 기록하기 -->
+      <div class="sb-label sb-accordion" onclick="toggleSection('sec-record',this)">
+        <span><i class="fas fa-clipboard-list me-1" style="color:#7A263A;font-size:0.8rem;"></i>📋 기록하기</span>
+        <i class="fas fa-chevron-right sb-fold-icon"></i>
+      </div>
       <div class="sb-section" id="sec-record">
-      {% for board in active_boards %}
-      <a href="/board/{{ board.id }}/" class="sb-item"><i class="{{ board.icon }}"></i><span class="sb-text">{{ board.name }}</span></a>
-      {% endfor %}
+        <a href="/boards/" class="sb-item"><i class="fas fa-th-large" style="color:#7A263A;"></i><span class="sb-text">전체 게시판</span></a>
+        <a href="/board/8/" class="sb-item"><i class="fas fa-bullhorn" style="color:#7A263A;"></i><span class="sb-text">공지 및 행정</span></a>
+        <a href="/board/9/" class="sb-item"><i class="fas fa-comments" style="color:#D4B26A;"></i><span class="sb-text">우리 동네 소통</span></a>
+        <a href="/board/10/" class="sb-item"><i class="fas fa-lightbulb" style="color:#D4B26A;"></i><span class="sb-text">생활 정보 공유</span></a>
+        <a href="/board/11/" class="sb-item"><i class="fas fa-hiking"></i><span class="sb-text">여가와 활동</span></a>
+        <a href="/board/12/" class="sb-item"><i class="fas fa-archive"></i><span class="sb-text">지킴이 아카이브</span></a>
       </div>
       <div class="sb-divider"></div>
-      <div class="sb-label" onclick="toggleSection('sec-together')">🤝 함께하기<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+
+      <!-- 🤝 함께하기 -->
+      <div class="sb-label sb-accordion" onclick="toggleSection('sec-together',this)">
+        <span><i class="fas fa-hands-helping me-1" style="color:#7A263A;font-size:0.8rem;"></i>🤝 함께하기</span>
+        <i class="fas fa-chevron-right sb-fold-icon"></i>
+      </div>
       <div class="sb-section" id="sec-together">
-      <a href="/volunteer/" class="sb-item"><i class="fas fa-heart"></i><span class="sb-text">봉사활동</span></a>
-      <a href="/surveys/" class="sb-item"><i class="fas fa-poll"></i><span class="sb-text">설문조사</span></a>
-      <a href="/calendar/" class="sb-item"><i class="fas fa-calendar-alt"></i><span class="sb-text">캘린더</span></a>
+        <a href="/hub/together/" class="sb-item"><i class="fas fa-th-large" style="color:#7A263A;"></i><span class="sb-text">함께하기 전체</span></a>
+        <a href="/groups/" class="sb-item"><i class="fas fa-users" style="color:#7A263A;"></i><span class="sb-text">소모임</span></a>
+        <a href="/volunteer/" class="sb-item"><i class="fas fa-heart" style="color:#7A263A;"></i><span class="sb-text">봉사활동</span></a>
+        <a href="/calendar/" class="sb-item"><i class="fas fa-calendar-alt"></i><span class="sb-text">캘린더</span></a>
+        <a href="/surveys/" class="sb-item"><i class="fas fa-poll"></i><span class="sb-text">설문조사</span></a>
+        <a href="/docs/" class="sb-item"><i class="fas fa-file-alt"></i><span class="sb-text">관리 문서</span></a>
+        <a href="/ratings/" class="sb-item"><i class="fas fa-heart"></i><span class="sb-text">온기점수</span></a>
       </div>
       <div class="sb-divider"></div>
-      <div class="sb-label" onclick="toggleSection('sec-news')">📢 단지소식<i class="fas fa-chevron-down sb-fold-icon"></i></div>
+
+      <!-- 📢 단지소식 -->
+      <div class="sb-label sb-accordion" onclick="toggleSection('sec-news',this)">
+        <span><i class="fas fa-bell me-1" style="color:#D4B26A;font-size:0.8rem;"></i>📢 단지소식</span>
+        <i class="fas fa-chevron-right sb-fold-icon"></i>
+      </div>
       <div class="sb-section" id="sec-news">
-      <a href="/notices/" class="sb-item"><i class="fas fa-bell"></i><span class="sb-text">공지사항</span></a>
-      <a href="/complaints/" class="sb-item"><i class="bi bi-megaphone"></i><span class="sb-text">민원/오류</span></a>
-      <a href="/community/docs/" class="sb-item"><i class="fas fa-file-alt"></i><span class="sb-text">관리 문서</span></a>
-      <a href="/search/" class="sb-item"><i class="fas fa-search"></i><span class="sb-text">검색</span></a>
+        <a href="/notices/" class="sb-item"><i class="fas fa-bell"></i><span class="sb-text">공지사항</span></a>
+        <a href="/complaints/" class="sb-item"><i class="fas fa-megaphone"></i><span class="sb-text">민원/오류</span></a>
+        <a href="/search/" class="sb-item"><i class="fas fa-search"></i><span class="sb-text">검색</span></a>
       </div>
 
       {% if user.is_authenticated %}
