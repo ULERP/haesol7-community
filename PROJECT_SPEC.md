@@ -258,3 +258,19 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 3. CalendarEvent naive datetime 경고 수정
 4. board.icon 필드 PA DB 확인 필요
 5. rate_user Notification 오류 PA 확인
+
+
+## 11. 업데이트 이력 (2026-06-08 - 2차)
+
+### 완료된 작업
+- fix: 모바일 햄버거 메뉴 배경 불투명 처리 (#242424)
+  - navbar.html #mainNav에 background:#242424 추가
+- fix: 인증/알림/설정 아이콘 한 줄 정리
+  - 세 줄 → 한 줄 (d-flex gap-2)
+  - 아이콘 크기 1.05~1.1rem으로 확대
+
+### 잔여 이슈 (다음 작업)
+1. favicon.ico 404 오류 수정
+2. CalendarEvent naive datetime 경고 수정
+3. board.icon 필드 PA DB 확인
+4. rate_user Notification 오류 PA 확인
