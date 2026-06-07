@@ -1,0 +1,97 @@
+{% extends 'manage/base.html' %}
+{% block title %}소모임 관리{% endblock %}
+{% block page_title %}🤝 소모임 관리{% endblock %}
+{% block nav_groups %}active{% endblock %}
+
+{% block content %}
+<div class="mg-stat-grid" style="grid-template-columns:repeat(4,1fr);">
+  <div class="mg-stat accent"><div class="mg-stat-icon">🤝</div><div class="mg-stat-num">{{ stats.total }}</div><div class="mg-stat-label">전체 소모임</div></div>
+  <div class="mg-stat ok"><div class="mg-stat-icon">✅</div><div class="mg-stat-num">{{ stats.active }}</div><div class="mg-stat-label">운영중</div></div>
+  <div class="mg-stat warn"><div class="mg-stat-icon">⏳</div><div class="mg-stat-num">{{ stats.pending }}</div><div class="mg-stat-label">승인 대기</div></div>
+  <div class="mg-stat info"><div class="mg-stat-icon">👥</div><div class="mg-stat-num">{{ stats.members }}</div><div class="mg-stat-label">전체 멤버</div></div>
+</div>
+
+<div class="mg-section">
+  <div class="mg-tabs">
+    <a href="?tab=list" class="mg-tab {% if tab == 'list' or not tab %}active{% endif %}">📋 전체 목록</a>
+    <a href="?tab=pending" class="mg-tab {% if tab == 'pending' %}active{% endif %}">⏳ 승인 대기{% if stats.pending %} <span style="background:#7A263A;color:#fff;border-radius:10px;padding:0 6px;font-size:0.65rem;">{{ stats.pending }}</span>{% endif %}</a>
+  </div>
+
+  {% if tab == 'pending' %}
+  <div class="mg-section-body">
+    <table class="mg-table">
+      <thead><tr><th>소모임명</th><th>유형</th><th>개설자</th><th>가입방식</th><th>신청일</th><th>액션</th></tr></thead>
+      <tbody>
+        {% for g in pending %}
+        <tr id="group-row-{{ g.pk }}">
+          <td><strong>{{ g.name }}</strong><div style="font-size:0.72rem;color:#9ca3af;">{{ g.description|truncatechars:30 }}</div></td>
+          <td><span class="badge-info">{{ g.get_group_type_display }}</span></td>
+          <td>{{ g.creator.nickname|default:g.creator.username }}</td>
+          <td>{{ g.get_join_type_display }}</td>
+          <td style="color:#9ca3af;font-size:0.75rem;">{{ g.created_at|date:"m/d H:i" }}</td>
+          <td>
+            <div style="display:flex;gap:4px;">
+              <button class="btn-mg btn-mg-green" onclick="groupAction({{ g.pk }},'approve',this)">✅ 승인</button>
+              <button class="btn-mg btn-mg-red" onclick="groupAction({{ g.pk }},'reject',this)">❌ 거부</button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;padding:30px;color:#9ca3af;">승인 대기 소모임이 없습니다 🎉</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% else %}
+  <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;">
+    <form method="get" class="mg-search" style="flex:1;">
+      <input type="hidden" name="tab" value="list">
+      <input type="text" name="q" value="{{ q }}" placeholder="소모임명, 개설자 검색...">
+      <button type="submit" class="btn-mg btn-mg-wine">검색</button>
+    </form>
+  </div>
+  <table class="mg-table">
+    <thead><tr><th>소모임명</th><th>유형</th><th>개설자</th><th>멤버</th><th>상태</th><th>날짜</th><th>액션</th></tr></thead>
+    <tbody>
+      {% for g in groups %}
+      <tr>
+        <td><strong>{{ g.name }}</strong></td>
+        <td><span class="badge-info">{{ g.get_group_type_display }}</span></td>
+        <td>{{ g.creator.nickname|default:"-" }}</td>
+        <td>{{ g.member_count }}명</td>
+        <td>
+          {% if g.status == 'active' %}<span class="badge-ok">운영중</span>
+          {% elif g.status == 'pending' %}<span class="badge-warn">대기</span>
+          {% elif g.status == 'dissolved' %}<span class="badge-no">해체</span>
+          {% else %}<span class="badge-gray">{{ g.status }}</span>{% endif %}
+        </td>
+        <td style="color:#9ca3af;font-size:0.75rem;">{{ g.created_at|date:"m/d" }}</td>
+        <td><a href="/admin/core/group/{{ g.pk }}/change/" target="_blank" class="btn-mg btn-mg-gray">관리</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if groups.has_other_pages %}
+  <div style="padding:12px 16px;display:flex;gap:4px;justify-content:center;">
+    {% if groups.has_previous %}<a href="?tab=list&page={{ groups.previous_page_number }}" class="btn-mg btn-mg-gray">‹</a>{% endif %}
+    <span style="padding:5px 12px;font-size:0.8rem;">{{ groups.number }} / {{ groups.paginator.num_pages }}</span>
+    {% if groups.has_next %}<a href="?tab=list&page={{ groups.next_page_number }}" class="btn-mg btn-mg-gray">›</a>{% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function groupAction(groupId, action, btn) {
+  if(!confirm(action === 'approve' ? '승인하시겠습니까?' : '거부하시겠습니까?')) return;
+  mgAction('{% url "manage_group_action" %}', {group_id: groupId, action: action}, res => {
+    const row = document.getElementById('group-row-'+groupId);
+    if(row) row.style.opacity = '0.4';
+    mgToast(res.msg);
+  });
+}
+</script>
+{% endblock %}

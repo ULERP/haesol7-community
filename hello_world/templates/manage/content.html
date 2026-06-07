@@ -1,0 +1,99 @@
+{% extends 'manage/base.html' %}
+{% block title %}콘텐츠 관리{% endblock %}
+{% block page_title %}📋 콘텐츠 관리{% endblock %}
+{% block nav_content %}active{% endblock %}
+
+{% block content %}
+<div class="mg-stat-grid" style="grid-template-columns:repeat(4,1fr);">
+  <div class="mg-stat accent"><div class="mg-stat-icon">📋</div><div class="mg-stat-num">{{ stats.total_posts }}</div><div class="mg-stat-label">전체 게시글</div></div>
+  <div class="mg-stat warn"><div class="mg-stat-icon">🚫</div><div class="mg-stat-num">{{ stats.hidden_posts }}</div><div class="mg-stat-label">숨김 게시글</div></div>
+  <div class="mg-stat ok"><div class="mg-stat-icon">💬</div><div class="mg-stat-num">{{ stats.total_comments }}</div><div class="mg-stat-label">전체 댓글</div></div>
+  <div class="mg-stat info"><div class="mg-stat-icon">📌</div><div class="mg-stat-num">{{ stats.total_boards }}</div><div class="mg-stat-label">게시판 수</div></div>
+</div>
+
+<div class="mg-section">
+  <div class="mg-tabs">
+    <a href="?tab=posts" class="mg-tab {% if tab == 'posts' or not tab %}active{% endif %}">📋 게시글</a>
+    <a href="?tab=comments" class="mg-tab {% if tab == 'comments' %}active{% endif %}">💬 댓글</a>
+    <a href="?tab=boards" class="mg-tab {% if tab == 'boards' %}active{% endif %}">📌 게시판 설정</a>
+  </div>
+
+  {% if tab == 'posts' or not tab %}
+  <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;flex-wrap:wrap;">
+    <form method="get" class="mg-search" style="flex:1;">
+      <input type="hidden" name="tab" value="posts">
+      <input type="text" name="q" value="{{ q }}" placeholder="제목, 작성자 검색...">
+      <select name="board" style="padding:7px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.82rem;">
+        <option value="">전체 게시판</option>
+        {% for b in boards %}<option value="{{ b.pk }}" {% if board_id == b.pk|stringformat:'s' %}selected{% endif %}>{{ b.name }}</option>{% endfor %}
+      </select>
+      <button type="submit" class="btn-mg btn-mg-wine">검색</button>
+    </form>
+  </div>
+  <table class="mg-table">
+    <thead><tr><th>제목</th><th>작성자</th><th>게시판</th><th>조회</th><th>좋아요</th><th>상태</th><th>날짜</th><th>액션</th></tr></thead>
+    <tbody>
+      {% for p in posts %}
+      <tr>
+        <td><a href="/posts/{{ p.pk }}/" target="_blank" style="color:#1F2937;text-decoration:none;font-weight:600;">{{ p.title|truncatechars:25 }}</a></td>
+        <td>{{ p.author.nickname|default:"-" }}</td>
+        <td><span class="badge-gray">{{ p.board.name }}</span></td>
+        <td>{{ p.view_count }}</td>
+        <td>{{ p.like_count }}</td>
+        <td>{% if p.is_active %}<span class="badge-ok">공개</span>{% else %}<span class="badge-no">숨김</span>{% endif %}</td>
+        <td style="color:#9ca3af;font-size:0.75rem;">{{ p.created_at|date:"m/d" }}</td>
+        <td>
+          <a href="/admin/core/post/{{ p.pk }}/change/" target="_blank" class="btn-mg btn-mg-gray">수정</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if posts.has_other_pages %}
+  <div style="padding:12px 16px;display:flex;gap:4px;justify-content:center;">
+    {% if posts.has_previous %}<a href="?tab=posts&page={{ posts.previous_page_number }}&q={{ q }}" class="btn-mg btn-mg-gray">‹</a>{% endif %}
+    <span style="padding:5px 12px;font-size:0.8rem;">{{ posts.number }} / {{ posts.paginator.num_pages }}</span>
+    {% if posts.has_next %}<a href="?tab=posts&page={{ posts.next_page_number }}&q={{ q }}" class="btn-mg btn-mg-gray">›</a>{% endif %}
+  </div>
+  {% endif %}
+
+  {% elif tab == 'comments' %}
+  <table class="mg-table">
+    <thead><tr><th>내용</th><th>작성자</th><th>게시글</th><th>상태</th><th>날짜</th><th>액션</th></tr></thead>
+    <tbody>
+      {% for c in comments %}
+      <tr>
+        <td>{{ c.content|truncatechars:40 }}</td>
+        <td>{{ c.author.nickname|default:"-" }}</td>
+        <td><a href="/posts/{{ c.post.pk }}/" target="_blank" style="color:#7A263A;">{{ c.post.title|truncatechars:20 }}</a></td>
+        <td>{% if c.is_active %}<span class="badge-ok">공개</span>{% else %}<span class="badge-no">숨김</span>{% endif %}</td>
+        <td style="color:#9ca3af;font-size:0.75rem;">{{ c.created_at|date:"m/d" }}</td>
+        <td><a href="/admin/core/comment/{{ c.pk }}/change/" target="_blank" class="btn-mg btn-mg-gray">수정</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% elif tab == 'boards' %}
+  <table class="mg-table">
+    <thead><tr><th>게시판명</th><th>유형</th><th>레이아웃</th><th>쓰기권한</th><th>순서</th><th>활성</th><th>액션</th></tr></thead>
+    <tbody>
+      {% for b in boards %}
+      <tr>
+        <td><strong>{{ b.name }}</strong></td>
+        <td><span class="badge-info">{{ b.board_type }}</span></td>
+        <td><span class="badge-gray">{{ b.layout_type }}</span></td>
+        <td>{{ b.write_permission }}</td>
+        <td>{{ b.order }}</td>
+        <td>{% if b.is_active %}<span class="badge-ok">활성</span>{% else %}<span class="badge-no">비활성</span>{% endif %}</td>
+        <td><a href="/admin/core/board/{{ b.pk }}/change/" target="_blank" class="btn-mg btn-mg-gray">설정</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div style="padding:12px 16px;">
+    <a href="/admin/core/board/add/" target="_blank" class="btn-mg btn-mg-wine">➕ 게시판 추가</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

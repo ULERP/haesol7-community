@@ -1,0 +1,105 @@
+{% extends 'manage/base.html' %}
+{% block title %}시스템{% endblock %}
+{% block page_title %}⚙️ 시스템 관리{% endblock %}
+{% block nav_system %}active{% endblock %}
+
+{% block content %}
+<div class="mg-stat-grid" style="grid-template-columns:repeat(3,1fr);">
+  <div class="mg-stat warn"><div class="mg-stat-icon">🔔</div><div class="mg-stat-num">{{ stats.unread_noti }}</div><div class="mg-stat-label">읽지 않은 알림</div></div>
+  <div class="mg-stat info"><div class="mg-stat-icon">📋</div><div class="mg-stat-num">{{ stats.total_logs }}</div><div class="mg-stat-label">관리자 로그</div></div>
+  <div class="mg-stat ok"><div class="mg-stat-icon">📊</div><div class="mg-stat-num">{{ stats.active_surveys }}</div><div class="mg-stat-label">진행중 설문</div></div>
+</div>
+
+<div class="mg-section">
+  <div class="mg-tabs">
+    <a href="?tab=site" class="mg-tab {% if tab == 'site' or not tab %}active{% endif %}">🌐 사이트 설정</a>
+    <a href="?tab=notis" class="mg-tab {% if tab == 'notis' %}active{% endif %}">🔔 알림 관리</a>
+    <a href="?tab=surveys" class="mg-tab {% if tab == 'surveys' %}active{% endif %}">📊 설문조사</a>
+    <a href="?tab=logs" class="mg-tab {% if tab == 'logs' %}active{% endif %}">📋 관리자 로그</a>
+  </div>
+
+  {% if tab == 'site' or not tab %}
+  <div style="padding:20px;">
+    {% if site_cfg %}
+    <table class="mg-table" style="max-width:500px;">
+      <tbody>
+        <tr><td style="font-weight:700;width:140px;">사이트명</td><td>{{ site_cfg.site_name }}</td></tr>
+        <tr><td style="font-weight:700;">테마 색상</td><td><span style="background:{{ site_cfg.hero_color }};color:#fff;padding:3px 12px;border-radius:6px;">{{ site_cfg.hero_color }}</span></td></tr>
+        <tr><td style="font-weight:700;">최종 수정</td><td>{{ site_cfg.updated_at|date:"Y-m-d H:i" }}</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;">
+      <a href="/admin/core/siteconfig/{{ site_cfg.pk }}/change/" target="_blank" class="btn-mg btn-mg-wine">⚙️ 사이트 설정 수정</a>
+    </div>
+    {% else %}
+    <p style="color:#9ca3af;">사이트 설정이 없습니다.</p>
+    {% endif %}
+  </div>
+
+  {% elif tab == 'notis' %}
+  <table class="mg-table">
+    <thead><tr><th>수신자</th><th>유형</th><th>메시지</th><th>읽음</th><th>날짜</th></tr></thead>
+    <tbody>
+      {% for n in notis %}
+      <tr>
+        <td>{{ n.recipient.nickname|default:n.recipient.username }}</td>
+        <td><span class="badge-info">{{ n.notification_type }}</span></td>
+        <td style="font-size:0.78rem;">{{ n.message|truncatechars:40 }}</td>
+        <td>{% if n.is_read %}<span class="badge-ok">읽음</span>{% else %}<span class="badge-warn">미읽음</span>{% endif %}</td>
+        <td style="color:#9ca3af;font-size:0.75rem;">{{ n.created_at|date:"m/d H:i" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if notis.has_other_pages %}
+  <div style="padding:12px 16px;display:flex;gap:4px;justify-content:center;">
+    {% if notis.has_previous %}<a href="?tab=notis&page={{ notis.previous_page_number }}" class="btn-mg btn-mg-gray">‹</a>{% endif %}
+    <span style="padding:5px 12px;font-size:0.8rem;">{{ notis.number }} / {{ notis.paginator.num_pages }}</span>
+    {% if notis.has_next %}<a href="?tab=notis&page={{ notis.next_page_number }}" class="btn-mg btn-mg-gray">›</a>{% endif %}
+  </div>
+  {% endif %}
+
+  {% elif tab == 'surveys' %}
+  <table class="mg-table">
+    <thead><tr><th>제목</th><th>유형</th><th>작성자</th><th>참여수</th><th>상태</th><th>날짜</th><th>액션</th></tr></thead>
+    <tbody>
+      {% for s in surveys %}
+      <tr>
+        <td><strong>{{ s.title|truncatechars:25 }}</strong></td>
+        <td><span class="badge-info">{{ s.survey_type }}</span></td>
+        <td>{{ s.creator.nickname|default:"-" }}</td>
+        <td>{{ s.responses.count }}명</td>
+        <td>{% if s.status == 'active' %}<span class="badge-ok">진행중</span>{% elif s.status == 'closed' %}<span class="badge-gray">종료</span>{% else %}<span class="badge-warn">초안</span>{% endif %}</td>
+        <td style="color:#9ca3af;font-size:0.75rem;">{{ s.created_at|date:"m/d" }}</td>
+        <td><a href="/admin/core/survey/{{ s.pk }}/change/" target="_blank" class="btn-mg btn-mg-gray">관리</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% elif tab == 'logs' %}
+  <table class="mg-table">
+    <thead><tr><th>날짜</th><th>관리자</th><th>액션</th><th>대상</th><th>내용</th><th>IP</th></tr></thead>
+    <tbody>
+      {% for l in logs %}
+      <tr>
+        <td style="color:#9ca3af;font-size:0.75rem;white-space:nowrap;">{{ l.created_at|date:"m/d H:i" }}</td>
+        <td><strong>{{ l.admin.nickname|default:l.admin.username }}</strong></td>
+        <td><span class="badge-info">{{ l.action }}</span></td>
+        <td>{{ l.target_user.nickname|default:"-" }}</td>
+        <td style="font-size:0.78rem;">{{ l.detail|truncatechars:30 }}</td>
+        <td style="color:#9ca3af;font-size:0.72rem;">{{ l.ip_address }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if logs.has_other_pages %}
+  <div style="padding:12px 16px;display:flex;gap:4px;justify-content:center;">
+    {% if logs.has_previous %}<a href="?tab=logs&page={{ logs.previous_page_number }}" class="btn-mg btn-mg-gray">‹</a>{% endif %}
+    <span style="padding:5px 12px;font-size:0.8rem;">{{ logs.number }} / {{ logs.paginator.num_pages }}</span>
+    {% if logs.has_next %}<a href="?tab=logs&page={{ logs.next_page_number }}" class="btn-mg btn-mg-gray">›</a>{% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

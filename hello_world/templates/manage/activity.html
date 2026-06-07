@@ -1,0 +1,120 @@
+{% extends 'manage/base.html' %}
+{% block title %}봉사/활동 관리{% endblock %}
+{% block page_title %}🏃 봉사/활동 관리{% endblock %}
+{% block nav_activity %}active{% endblock %}
+
+{% block content %}
+<div class="mg-stat-grid" style="grid-template-columns:repeat(5,1fr);">
+  <div class="mg-stat warn"><div class="mg-stat-icon">📸</div><div class="mg-stat-num">{{ stats.pending_proofs }}</div><div class="mg-stat-label">인증 대기</div></div>
+  <div class="mg-stat ok"><div class="mg-stat-icon">✅</div><div class="mg-stat-num">{{ stats.approved_proofs }}</div><div class="mg-stat-label">인증 승인</div></div>
+  <div class="mg-stat accent"><div class="mg-stat-icon">🤝</div><div class="mg-stat-num">{{ stats.total_meetups }}</div><div class="mg-stat-label">봉사활동</div></div>
+  <div class="mg-stat warn"><div class="mg-stat-icon">⏳</div><div class="mg-stat-num">{{ stats.pending_meetups }}</div><div class="mg-stat-label">봉사 승인대기</div></div>
+  <div class="mg-stat info"><div class="mg-stat-icon">📅</div><div class="mg-stat-num">{{ stats.pending_events }}</div><div class="mg-stat-label">일정 승인대기</div></div>
+</div>
+
+<div class="mg-section">
+  <div class="mg-tabs">
+    <a href="?tab=proofs" class="mg-tab {% if tab == 'proofs' or not tab %}active{% endif %}">📸 활동 인증{% if stats.pending_proofs %} <span style="background:#7A263A;color:#fff;border-radius:10px;padding:0 6px;font-size:0.65rem;">{{ stats.pending_proofs }}</span>{% endif %}</a>
+    <a href="?tab=meetups" class="mg-tab {% if tab == 'meetups' %}active{% endif %}">🤝 봉사활동</a>
+    <a href="?tab=calendar" class="mg-tab {% if tab == 'calendar' %}active{% endif %}">📅 캘린더 일정{% if stats.pending_events %} <span style="background:#7A263A;color:#fff;border-radius:10px;padding:0 6px;font-size:0.65rem;">{{ stats.pending_events }}</span>{% endif %}</a>
+  </div>
+
+  {% if tab == 'proofs' or not tab %}
+  <table class="mg-table">
+    <thead><tr><th>회원</th><th>활동</th><th>시간</th><th>상태</th><th>신청일</th><th>액션</th></tr></thead>
+    <tbody>
+      {% for p in proofs %}
+      <tr id="proof-row-{{ p.pk }}">
+        <td><strong>{{ p.user.nickname|default:p.user.username }}</strong></td>
+        <td>{{ p.activity.name }}</td>
+        <td>{{ p.duration_hours }}h</td>
+        <td>
+          {% if p.status == 'pending' %}<span class="badge-warn">⏳ 대기</span>
+          {% elif p.status == 'approved' %}<span class="badge-ok">✅ 승인</span>
+          {% else %}<span class="badge-no">❌ 반려</span>{% endif %}
+        </td>
+        <td style="color:#9ca3af;font-size:0.75rem;">{{ p.submitted_at|date:"m/d H:i" }}</td>
+        <td>
+          {% if p.status == 'pending' %}
+          <div style="display:flex;gap:4px;">
+            <button class="btn-mg btn-mg-green" onclick="proofAction({{ p.pk }},'approve',this)">✅ 승인</button>
+            <button class="btn-mg btn-mg-red" onclick="proofAction({{ p.pk }},'reject',this)">❌ 반려</button>
+          </div>
+          {% else %}<span style="color:#9ca3af;font-size:0.75rem;">처리완료</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:30px;color:#9ca3af;">활동 인증 내역이 없습니다</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% elif tab == 'meetups' %}
+  <table class="mg-table">
+    <thead><tr><th>제목</th><th>개설자</th><th>일정</th><th>참가자</th><th>상태</th><th>확정</th><th>액션</th></tr></thead>
+    <tbody>
+      {% for m in meetups %}
+      <tr>
+        <td><strong>{{ m.title|truncatechars:20 }}</strong></td>
+        <td>{{ m.creator.nickname|default:"-" }}</td>
+        <td style="font-size:0.75rem;">{{ m.scheduled_at|date:"m/d H:i" }}</td>
+        <td>{{ m.participants.count }}명</td>
+        <td><span class="badge-{% if m.status == 'completed' %}ok{% elif m.status == 'cancelled' %}no{% else %}info{% endif %}">{{ m.get_status_display }}</span></td>
+        <td>{% if m.is_confirmed %}<span class="badge-ok">확정</span>{% else %}<span class="badge-warn">미확정</span>{% endif %}</td>
+        <td><a href="/admin/core/meetup/{{ m.pk }}/change/" target="_blank" class="btn-mg btn-mg-gray">관리</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% elif tab == 'calendar' %}
+  <table class="mg-table">
+    <thead><tr><th>제목</th><th>유형</th><th>작성자</th><th>소모임</th><th>공개범위</th><th>시작일</th><th>액션</th></tr></thead>
+    <tbody>
+      {% for e in calendar %}
+      <tr>
+        <td><strong>{{ e.title|truncatechars:20 }}</strong></td>
+        <td><span class="badge-info">{{ e.get_event_type_display }}</span></td>
+        <td>{{ e.creator.nickname|default:"-" }}</td>
+        <td>{{ e.group.name|default:"-" }}</td>
+        <td>
+          {% if e.visibility == 'pending' or e.visibility == 'group_pending' %}
+          <span class="badge-warn">⏳ 승인대기</span>
+          {% elif e.visibility == 'public' %}<span class="badge-ok">전체공개</span>
+          {% elif e.visibility == 'group' %}<span class="badge-info">소모임</span>
+          {% else %}<span class="badge-gray">{{ e.visibility }}</span>{% endif %}
+        </td>
+        <td style="font-size:0.75rem;color:#6b7280;">{{ e.start_time|date:"m/d H:i" }}</td>
+        <td><a href="/admin/core/calendarevent/{{ e.pk }}/change/" target="_blank" class="btn-mg btn-mg-gray">관리</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if tab == 'proofs' or not tab %}
+  {% if proofs.has_other_pages %}
+  <div style="padding:12px 16px;display:flex;gap:4px;justify-content:center;">
+    {% if proofs.has_previous %}<a href="?tab=proofs&page={{ proofs.previous_page_number }}" class="btn-mg btn-mg-gray">‹</a>{% endif %}
+    <span style="padding:5px 12px;font-size:0.8rem;">{{ proofs.number }} / {{ proofs.paginator.num_pages }}</span>
+    {% if proofs.has_next %}<a href="?tab=proofs&page={{ proofs.next_page_number }}" class="btn-mg btn-mg-gray">›</a>{% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function proofAction(proofId, action, btn) {
+  if(!confirm(action === 'approve' ? '승인하시겠습니까?' : '반려하시겠습니까?')) return;
+  mgAction('{% url "manage_proof_action" %}', {proof_id: proofId, action: action}, res => {
+    const row = document.getElementById('proof-row-'+proofId);
+    if(row) {
+      row.querySelector('td:nth-child(4)').innerHTML = action === 'approve' ? '<span class="badge-ok">✅ 승인</span>' : '<span class="badge-no">❌ 반려</span>';
+      row.querySelector('td:last-child').innerHTML = '<span style="color:#9ca3af;font-size:0.75rem;">처리완료</span>';
+    }
+  });
+}
+</script>
+{% endblock %}
