@@ -257,20 +257,29 @@ document.getElementById('writeForm').addEventListener('submit', function(e) {
   document.getElementById('hiddenContent').value = content;
 });
 
-// 이미지 삽입
+// 이미지 삽입 (서버 업로드)
 function insertImage() {
   document.getElementById('imageInput').click();
 }
 function handleImageUpload(input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const range = quill.getSelection(true);
-    quill.insertEmbed(range.index, 'image', e.target.result);
-    quill.setSelection(range.index + 1);
-  };
-  reader.readAsDataURL(file);
+  const formData = new FormData();
+  formData.append('image', file);
+  fetch('/posts/image/upload/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''},
+    body: formData,
+  }).then(r => r.json()).then(res => {
+    if (res.success) {
+      const range = quill.getSelection(true);
+      quill.insertEmbed(range.index, 'image', res.url);
+      quill.setSelection(range.index + 1);
+    } else {
+      alert(res.error || '이미지 업로드 실패');
+    }
+  });
+  input.value = '';
 }
 
 // 링크 삽입

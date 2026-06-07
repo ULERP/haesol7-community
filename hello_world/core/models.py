@@ -257,14 +257,16 @@ class Post(models.Model):
 
 
     def get_thumbnail(self):
-        """첫 번째 이미지 URL 반환 (PostImage 또는 본문 img src 추출)"""
+        """첫 번째 이미지 URL 반환 (PostImage 또는 본문 URL 이미지)"""
         first = self.images.first()
         if first:
             return first.image.url
         import re
-        m = re.search(r'src=["\']([^"\']+)["\']', self.content or '')
-        if m:
-            return m.group(1)  # base64 포함 모든 이미지
+        # base64 제외, URL만 추출
+        for m in re.finditer(r'src=["\']([^"\']+)["\']', self.content or ''):
+            src = m.group(1)
+            if not src.startswith('data:'):
+                return src
         return None
 
 class PostImage(models.Model):

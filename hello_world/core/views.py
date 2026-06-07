@@ -2866,6 +2866,27 @@ def calendar_event_create(request):
 
 
 @login_required
+def post_image_upload(request):
+    """Quill 에디터 이미지 서버 업로드 API"""
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    image = request.FILES.get('image')
+    if not image:
+        return JsonResponse({'error': '이미지가 없습니다'}, status=400)
+    from .models import PostImage, Post
+    import uuid, os
+    from django.core.files.base import ContentFile
+    from django.utils import timezone
+    # 임시 저장 (post 없이) - 나중에 post와 연결
+    ext = os.path.splitext(image.name)[1].lower() or '.jpg'
+    filename = f'posts/{timezone.now().year}/{timezone.now().month}/{uuid.uuid4().hex[:12]}{ext}'
+    from django.core.files.storage import default_storage
+    path = default_storage.save(filename, ContentFile(image.read()))
+    url  = default_storage.url(path)
+    return JsonResponse({'success': True, 'url': url})
+
+
+@login_required
 def group_calendar_events(request, pk):
     """소모임 캘린더 이벤트 JSON API"""
     import json
