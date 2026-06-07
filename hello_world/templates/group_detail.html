@@ -16,9 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     events: fcEvents,
     eventClick: function(info) {
       const p = info.event.extendedProps;
-      alert(info.event.title + (p.location ? '
-장소: ' + p.location : '') + (p.description ? '
-' + p.description : ''));
+      alert(info.event.title + (p.location ? '\n장소: ' + p.location : '') + (p.description ? '\n' + p.description : ''));
     },
     height: 'auto',
   });
