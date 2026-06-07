@@ -225,6 +225,7 @@
 const quill = new Quill('#quillEditor', {
   theme: 'snow',
   placeholder: '내용을 입력하세요. 외부에서 복사한 내용도 그대로 붙여넣을 수 있어요.',
+  scrollingContainer: '#quillEditor',
   modules: {
     toolbar: [
       [{ header: [1, 2, 3, false] }],
@@ -240,6 +241,11 @@ const quill = new Quill('#quillEditor', {
     clipboard: { matchVisual: false }
   }
 });
+// 에디터 컨테이너 스크롤 강제 적용
+document.querySelector('.ql-container').style.overflowY = 'auto';
+document.querySelector('.ql-container').style.height = '360px';
+document.querySelector('.ql-editor').style.minHeight = '340px';
+document.querySelector('.ql-editor').style.maxHeight = 'none';
 
 // 기존 내용 있으면 채우기
 {% if post_form.content.value %}
