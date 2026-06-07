@@ -2828,6 +2828,45 @@ def calendar_event_create(request):
 
 
 @login_required
+def calendar_event_edit(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    import json
+    from .models import CalendarEvent, GroupMember
+    from django.utils.dateparse import parse_datetime
+    from django.utils.timezone import make_aware, is_naive
+
+    try:
+        event = CalendarEvent.objects.get(id=pk)
+    except CalendarEvent.DoesNotExist:
+        return JsonResponse({'error': '일정을 찾을 수 없습니다'}, status=404)
+
+    user = request.user
+    is_leader = (
+        event.group and (
+            event.group.creator == user or
+            GroupMember.objects.filter(group=event.group, user=user, role='leader', join_status='approved').exists()
+        )
+    )
+    if event.creator != user and not is_leader and not user.is_staff:
+        return JsonResponse({'error': '권한이 없습니다'}, status=403)
+
+    data = json.loads(request.body)
+    start_dt = parse_datetime(data.get('start_time', ''))
+    end_dt   = parse_datetime(data.get('end_time', '')) if data.get('end_time') else None
+    if start_dt and is_naive(start_dt): start_dt = make_aware(start_dt)
+    if end_dt   and is_naive(end_dt):   end_dt   = make_aware(end_dt)
+
+    event.title       = data.get('title', event.title).strip()
+    event.description = data.get('description', event.description).strip()
+    event.location    = data.get('location', event.location).strip()
+    if start_dt: event.start_time = start_dt
+    if end_dt:   event.end_time   = end_dt
+    event.save()
+    return JsonResponse({'success': True})
+
+
+@login_required
 def calendar_event_delete(request, pk):
     from .models import CalendarEvent
     try:

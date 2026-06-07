@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
     headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek' },
     events: fcEvents,
     eventClick: function(info) {
-      const p = info.event.extendedProps;
-      alert(info.event.title + (p.location ? '\n장소: ' + p.location : '') + (p.description ? '\n' + p.description : ''));
+      info.jsEvent.preventDefault();
+      showEventDetail(info.event);
     },
     height: 'auto',
   });
@@ -31,6 +31,81 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <script>
+// ── 일정 상세/수정/삭제
+let currentEventId = null;
+const isGroupLeader = {{ is_leader|yesno:"true,false" }};
+const currentUserId = {{ user.pk|default:"null" }};
+const isStaffUser   = {{ user.is_staff|yesno:"true,false" }};
+
+function showEventDetail(ev) {
+  const p = ev.extendedProps || {};
+  currentEventId = p.cal_id || ev.id;
+  document.getElementById('evDetailTitle').textContent    = ev.title;
+  document.getElementById('evDetailLocation').textContent = p.location    || '';
+  document.getElementById('evDetailDesc').textContent     = p.description || '';
+  document.getElementById('evDetailStart').textContent    = ev.startStr   || '';
+
+  // 수정/삭제 버튼: 내가 만든 일정이거나 소모임장/관리자
+  const canEdit = isGroupLeader || isStaffUser;
+  document.getElementById('evDetailEditBtn').classList.toggle('d-none', !canEdit);
+  document.getElementById('evDetailDelBtn').classList.toggle('d-none',  !canEdit);
+
+  new bootstrap.Modal(document.getElementById('eventDetailModal')).show();
+}
+
+function deleteCalEvent() {
+  if (!currentEventId || !confirm('일정을 삭제하시겠습니까?')) return;
+  fetch('/calendar/' + currentEventId + '/delete/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': getCsrfToken()}
+  }).then(r => r.json()).then(res => {
+    if (res.success) {
+      bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
+      location.reload();
+    } else { alert(res.error || '오류가 발생했습니다.'); }
+  });
+}
+
+function openEditModal() {
+  // 수정 모달 열기 (addEventModal 재활용)
+  bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
+  // 기존 addEventModal에 데이터 채우기
+  const title = document.getElementById('evDetailTitle').textContent;
+  document.getElementById('eventTitle').value    = title.replace(/^[🙋📅🤝👥⏳🔒👥]\s*/,'');
+  document.getElementById('eventEditId').value   = currentEventId;
+  document.getElementById('addEventModalLabel').textContent = '일정 수정';
+  document.getElementById('eventSubmitBtn').textContent = '수정하기';
+  document.getElementById('eventSubmitBtn').onclick = submitEditEvent;
+  new bootstrap.Modal(document.getElementById('addEventModal')).show();
+}
+
+function submitEditEvent() {
+  const id    = document.getElementById('eventEditId').value;
+  const title = document.getElementById('eventTitle').value.trim();
+  const start = document.getElementById('eventStart').value;
+  if (!title || !start) { document.getElementById('eventMsg').textContent = '제목과 시작 시간은 필수입니다.'; return; }
+  fetch('/calendar/' + id + '/edit/', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken': getCsrfToken()},
+    body: JSON.stringify({
+      title:       title,
+      start_time:  new Date(start).toISOString(),
+      end_time:    document.getElementById('eventEnd').value ? new Date(document.getElementById('eventEnd').value).toISOString() : null,
+      location:    document.getElementById('eventLocation').value.trim(),
+      description: document.getElementById('eventDesc').value.trim(),
+    })
+  }).then(r => r.json()).then(res => {
+    if (res.success) {
+      bootstrap.Modal.getInstance(document.getElementById('addEventModal')).hide();
+      location.reload();
+    } else { document.getElementById('eventMsg').textContent = res.error || '오류'; }
+  });
+}
+
+function getCsrfToken() {
+  const v = document.cookie.match('(^|;)\s*csrftoken\s*=\s*([^;]+)');
+  return v ? v.pop() : '';
+}
 // ── 설문 투표
 function votePoll(pollId, optIdx) {
   fetch('/polls/' + pollId + '/vote/', {
@@ -303,11 +378,34 @@ function submitPoll() {
       </button>
 
 <!-- 일정 추가 모달 -->
+<!-- 일정 상세 모달 -->
+<div class="modal fade" id="eventDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content" style="border-radius:14px;">
+      <div class="modal-header py-2" style="border-bottom:2px solid #D4B26A;">
+        <h6 class="modal-title fw-bold" id="evDetailTitle"></h6>
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body py-2">
+        <div class="small mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i><span id="evDetailLocation"></span></div>
+        <div class="small mb-1"><i class="fas fa-clock text-muted me-1"></i><span id="evDetailStart"></span></div>
+        <div class="small text-muted" id="evDetailDesc"></div>
+      </div>
+      <div class="modal-footer py-2 gap-2">
+        <button id="evDetailEditBtn" class="btn btn-sm btn-outline-secondary d-none" onclick="openEditModal()">✏️ 수정</button>
+        <button id="evDetailDelBtn"  class="btn btn-sm btn-danger d-none" onclick="deleteCalEvent()">🗑 삭제</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="addEventModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-calendar-plus me-2"></i>일정 추가</h5>
+        <h5 class="modal-title" id="addEventModalLabel"><i class="fas fa-calendar-plus me-2"></i>일정 추가</h5>
+        <input type="hidden" id="eventEditId" value="">
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -367,7 +465,7 @@ function submitPoll() {
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-        <button type="button" class="btn btn-wine" onclick="submitEvent()">추가</button>
+        <button type="button" class="btn btn-wine" id="eventSubmitBtn" onclick="submitEvent()">추가</button>
       </div>
     </div>
   </div>

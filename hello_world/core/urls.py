@@ -57,6 +57,7 @@ urlpatterns = [
     path('volunteer/<int:pk>/rate/',    views.volunteer_rate,    name='volunteer_rate'),
     path('calendar/', views.integrated_calendar, name='integrated_calendar'),
     path('calendar/create/', views.calendar_event_create, name='calendar_event_create'),
+    path('calendar/<int:pk>/edit/', views.calendar_event_edit, name='calendar_event_edit'),
     path('calendar/<int:pk>/delete/', views.calendar_event_delete, name='calendar_event_delete'),
     path('calendar/<int:pk>/approve/', views.calendar_event_approve, name='calendar_event_approve'),
 
