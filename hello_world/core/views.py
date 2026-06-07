@@ -1155,6 +1155,7 @@ def group_create(request):
 
 
 def group_detail(request, pk):
+    import json
     from .models import Group, GroupMember, GroupPost, GroupLeaderLog, CalendarEvent, Survey
     from django.db.models import Q
     group = get_object_or_404(Group, pk=pk)
