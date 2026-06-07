@@ -355,6 +355,11 @@ def board_detail(request, board_id):
             'board': board,
             'reason': reason,
         })
+    # FAQ 게시판은 전용 뷰로 리다이렉트
+    if board.board_type in ('faq', 'qna') or board.id == 13:
+        from django.shortcuts import redirect
+        return redirect('faq')
+
     tag = request.GET.get('tag', '')
     q   = request.GET.get('q', '')
     posts = Post.objects.filter(board=board, is_active=True)
@@ -363,15 +368,24 @@ def board_detail(request, board_id):
     if q:
         posts = posts.filter(title__icontains=q) | posts.filter(content__icontains=q)
     posts = posts.order_by('-is_pinned', '-created_at')
+    # 태그 필터: 대분류>소분류 형식이면 대분류만 표시
+    raw_tags = board.get_tags_list()
+    display_tags = []
+    seen = set()
+    for t in raw_tags:
+        label = t.split('>')[0] if '>' in t else t
+        if label not in seen:
+            seen.add(label)
+            display_tags.append(label)
     return render(request, 'board_detail.html', {
-        'board':       board,
-        'posts':       posts,
-        'total_count': posts.count(),
-        'tags':        board.get_tags_list(),
+        'board':        board,
+        'posts':        posts,
+        'total_count':  posts.count(),
+        'tags':         display_tags,
         'selected_tag': tag,
-        'q':           q,
-        'can_write':   check_board_permission(request.user, board, 'write'),
-        'can_comment': check_board_permission(request.user, board, 'comment'),
+        'q':            q,
+        'can_write':    check_board_permission(request.user, board, 'write'),
+        'can_comment':  check_board_permission(request.user, board, 'comment'),
     })
 
 def post_list(request):
