@@ -1,8 +1,6 @@
 {% extends 'base_2panel.html' %}
 {% block menu_groups %}active{% endblock %}
-{% block extra_head %}
-<!-- FullCalendar -->
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+{% block extra_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script>
 // ── 달력 초기화
@@ -35,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-{% block extra_scripts %}
 <script>
 // ── 설문 투표
 function votePoll(pollId, optIdx) {
@@ -99,6 +96,7 @@ function submitPoll() {
 {% block title %}{{ group.name }}{% endblock %}
 
 {% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <style>
   .group-hero { background: linear-gradient(135deg,#7A263A,#7A263A); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
   .group-emblem { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; border: 3px solid rgba(255,255,255,.4); }
