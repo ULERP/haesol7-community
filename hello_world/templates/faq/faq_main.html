@@ -173,7 +173,7 @@
     <span class="sec-hd-sub">카테고리로 빠르게 찾아보세요</span>
   </div>
   <div class="major-grid">
-    {% for maj, mins in cat_tree.items %}
+    {% for maj, mins, cnt in cat_tree_list %}
     <a href="?major={{ maj }}" class="major-card">
       <span class="major-emoji">
         {% if '입주' in maj or '생활' in maj %}🏠
@@ -187,7 +187,7 @@
         {% else %}📋{% endif %}
       </span>
       <span class="major-name">{{ maj }}</span>
-      <span class="major-cnt">{{ cat_counts|default_if_none:0 }} 개</span>
+      <span class="major-cnt">{{ cnt }}개</span>
     </a>
     {% empty %}
     <a href="?major=관리비/요금" class="major-card"><span class="major-emoji">💰</span><span class="major-name">관리비/요금</span></a>

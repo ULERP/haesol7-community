@@ -4064,11 +4064,14 @@ def faq_view(request):
         stage = 1
         display_posts = total_posts.order_by('-view_count', '-created_at')[:10]
 
+    # cat_tree를 (대분류, [소분류], 카운트) 튜플 리스트로 변환
+    cat_tree_list = [(maj, mins, cat_counts.get(maj, 0)) for maj, mins in cat_tree.items()]
     return render(request, 'faq/faq_main.html', {
         'faq_board':     faq_board,
         'posts':         display_posts,
         'popular':       popular,
         'cat_tree':      cat_tree,
+        'cat_tree_list': cat_tree_list,
         'cat_counts':    dict(cat_counts),
         'q':             q,
         'major':         major,
