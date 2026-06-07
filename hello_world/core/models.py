@@ -262,11 +262,9 @@ class Post(models.Model):
         if first:
             return first.image.url
         import re
-        m = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', self.content or "")
+        m = re.search(r'src=["\']([^"\']+)["\']', self.content or '')
         if m:
-            src = m.group(1)
-            if not src.startswith("data:"):
-                return src
+            return m.group(1)  # base64 포함 모든 이미지
         return None
 
 class PostImage(models.Model):

@@ -7,7 +7,7 @@
 <style>
   /* ── 에디터 고정 레이아웃 ── */
   .ql-toolbar{border-radius:10px 10px 0 0!important;border-color:#d1d5db!important;background:#f9fafb;position:sticky;top:0;z-index:100;}
-  .ql-container{border-radius:0 0 10px 10px!important;border-color:#d1d5db!important;font-size:0.95rem;height:360px;overflow-y:auto;}
+  .ql-container{border-radius:0 0 10px 10px!important;border-color:#d1d5db!important;font-size:0.95rem;min-height:360px;overflow-y:visible;}
   .ql-editor{min-height:340px;line-height:1.8;}
   .ql-editor.ql-blank::before{color:#9ca3af;font-style:normal;}
   .ql-snow .ql-picker{font-size:0.82rem;}
@@ -27,7 +27,7 @@
   .btn-cancel-main{padding:12px 20px;border-radius:10px;border:1px solid #e0e0e0;background:#f5f5f5;color:#666;font-weight:700;font-size:0.88rem;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all .15s;}
   .btn-cancel-main:hover{background:#e0e0e0;color:#242424;}
   @media(max-width:768px){
-    .ql-container{height:280px;}
+    .ql-container{min-height:280px;}
     .write-nav-bar{margin:-16px -16px 16px -16px;}
     .write-action-bar{margin:16px -16px -16px -16px;}
   }
