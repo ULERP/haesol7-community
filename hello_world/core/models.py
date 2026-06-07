@@ -1128,6 +1128,9 @@ class CalendarEvent(models.Model):
     # 예: "FREQ=WEEKLY;INTERVAL=1;UNTIL=20261231T000000Z"
     rrule          = models.TextField('반복규칙(RRule)', blank=True)
     recur_interval = models.PositiveSmallIntegerField('반복간격', default=1)
+    # 추가 기능
+    color     = models.CharField('색상', max_length=20, blank=True, default='')
+    all_day   = models.BooleanField('종일여부', default=False)
 
     class Meta:
         ordering = ['start_time']
@@ -1137,6 +1140,30 @@ class CalendarEvent(models.Model):
     def __str__(self):
         return f"[{self.get_event_type_display()}] {self.title}"
 
+
+
+class CalendarEventAttendee(models.Model):
+    STATUS_CHOICES = [('attending','참석'),('declined','불참'),('maybe','미정')]
+    event   = models.ForeignKey(CalendarEvent, on_delete=models.CASCADE, related_name='attendees')
+    user    = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='event_attendances')
+    status  = models.CharField('참석여부', max_length=20, choices=STATUS_CHOICES, default='attending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ('event', 'user')
+        verbose_name = '일정 참석자'
+    def __str__(self):
+        return f"{self.event.title} - {self.user.username}"
+
+class CalendarEventComment(models.Model):
+    event      = models.ForeignKey(CalendarEvent, on_delete=models.CASCADE, related_name='comments')
+    author     = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='event_comments')
+    content    = models.TextField('내용')
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = '일정 댓글'
+    def __str__(self):
+        return f"{self.event.title} 댓글 by {self.author.username}"
 
 class SiteConfig(models.Model):
     hero_image   = models.ImageField('히어로 배경사진', upload_to='site/', blank=True, null=True)

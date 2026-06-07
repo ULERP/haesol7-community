@@ -1,0 +1,217 @@
+{% extends 'base_2panel.html' %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block extra_head %}
+<style>
+:root{--wine:#7A263A;--gold:#D4B26A;--dark:#242424;}
+.attend-btn{border:2px solid #ddd;background:#fff;border-radius:20px;padding:6px 16px;font-size:0.85rem;cursor:pointer;transition:.15s;}
+.attend-btn.active-attending{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+.attend-btn.active-maybe{background:#f59e0b;color:#fff;border-color:#f59e0b;}
+.attend-btn.active-declined{background:#ef4444;color:#fff;border-color:#ef4444;}
+.comment-card{background:#f8f9fa;border-radius:10px;padding:10px 14px;margin-bottom:8px;}
+.event-hero{background:linear-gradient(135deg,var(--wine),#a03050);border-radius:16px;padding:24px;color:#fff;margin-bottom:20px;}
+</style>
+{% endblock %}
+{% block content %}
+<!-- 히어로 -->
+<div class="event-hero">
+  <div class="d-flex justify-content-between align-items-start">
+    <div>
+      <div class="mb-2">
+        <span class="badge bg-light text-dark me-1">{{ event.get_event_type_display }}</span>
+        <span class="badge" style="background:rgba(255,255,255,.2);">{{ event.get_visibility_display }}</span>
+      </div>
+      <h4 class="fw-bold mb-1">{{ event.title }}</h4>
+      <div class="small opacity-75">
+        <i class="fas fa-clock me-1"></i>{{ event.start_time|date:"Y.m.d H:i" }}
+        {% if event.end_time %} ~ {{ event.end_time|date:"m.d H:i" }}{% endif %}
+      </div>
+      {% if event.location %}
+      <div class="small opacity-75 mt-1"><i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}</div>
+      {% endif %}
+    </div>
+    {% if can_edit %}
+    <div class="d-flex gap-2">
+      <a href="#" onclick="openEditModal()" class="btn btn-sm btn-light">✏️ 수정</a>
+      <a href="#" onclick="deleteEvent()" class="btn btn-sm btn-danger">🗑 삭제</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- 메인 -->
+  <div class="col-12 col-lg-8">
+    <!-- 내용 -->
+    {% if event.description %}
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+      <div class="card-body">
+        <h6 class="fw-bold mb-2">📝 내용</h6>
+        <p class="mb-0" style="white-space:pre-wrap;">{{ event.description }}</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 참석 버튼 -->
+    {% if user.is_authenticated %}
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">참석 여부 <span class="badge" style="background:var(--wine);" id="attendCount">{{ attend_count }}명 참석</span></h6>
+        <div class="d-flex gap-2 flex-wrap">
+          <button class="attend-btn {% if my_attend.status == 'attending' %}active-attending{% endif %}" onclick="setAttend('attending')" id="btn-attending">✅ 참석</button>
+          <button class="attend-btn {% if my_attend.status == 'maybe' %}active-maybe{% endif %}" onclick="setAttend('maybe')" id="btn-maybe">🤔 미정</button>
+          <button class="attend-btn {% if my_attend.status == 'declined' %}active-declined{% endif %}" onclick="setAttend('declined')" id="btn-declined">❌ 불참</button>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 댓글 -->
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">💬 댓글 <span class="text-muted small" id="commentCount">({{ event.comments.count }})</span></h6>
+        <div id="commentList">
+          {% for c in comments %}
+          <div class="comment-card" id="comment-{{ c.id }}">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small fw-bold">{{ c.author.nickname|default:c.author.username }}</span>
+              <div class="d-flex gap-2 align-items-center">
+                <span class="small text-muted">{{ c.created_at|date:"m/d H:i" }}</span>
+                {% if c.author == user or user.is_staff %}
+                <button class="btn btn-link btn-sm p-0 text-danger" onclick="deleteComment({{ c.id }})">삭제</button>
+                {% endif %}
+              </div>
+            </div>
+            <p class="small mb-0">{{ c.content }}</p>
+          </div>
+          {% empty %}
+          <p class="text-muted small" id="noComment">아직 댓글이 없습니다.</p>
+          {% endfor %}
+        </div>
+        {% if user.is_authenticated %}
+        <div class="mt-3 d-flex gap-2">
+          <input type="text" id="commentInput" class="form-control form-control-sm" placeholder="댓글을 입력하세요...">
+          <button class="btn btn-sm text-white px-3" style="background:var(--wine);border-radius:20px;white-space:nowrap;" onclick="submitComment()">등록</button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 사이드 -->
+  <div class="col-12 col-lg-4">
+    <!-- 참석자 목록 -->
+    <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">👥 참석자 <span class="text-muted small">({{ attend_count }}명)</span></h6>
+        {% for a in attendees %}
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--wine);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;">
+            {{ a.user.nickname|default:a.user.username|slice:":1" }}
+          </div>
+          <div class="small">
+            <div class="fw-bold">{{ a.user.nickname|default:a.user.username }}</div>
+            <div class="text-muted" style="font-size:0.7rem;">
+              {% if a.status == 'attending' %}✅ 참석{% elif a.status == 'maybe' %}🤔 미정{% else %}❌ 불참{% endif %}
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted small">아직 참석자가 없습니다.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 일정 정보 -->
+    <div class="card border-0 shadow-sm" style="border-radius:12px;">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3">📋 일정 정보</h6>
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted small">작성자</td><td class="small">{{ event.creator.nickname|default:event.creator.username }}</td></tr>
+          <tr><td class="text-muted small">종류</td><td class="small">{{ event.get_event_type_display }}</td></tr>
+          <tr><td class="text-muted small">공개범위</td><td class="small">{{ event.get_visibility_display }}</td></tr>
+          {% if event.group %}<tr><td class="text-muted small">소모임</td><td class="small">{{ event.group.name }}</td></tr>{% endif %}
+          {% if event.rrule %}<tr><td class="text-muted small">반복</td><td class="small">반복 일정</td></tr>{% endif %}
+          <tr><td class="text-muted small">등록일</td><td class="small">{{ event.created_at|date:"Y.m.d" }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const eventId = {{ event.id }};
+function getCsrf() {
+  const v = document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+
+// 참석
+function setAttend(status) {
+  fetch(`/calendar/${eventId}/attend/`, {
+    method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':getCsrf()},
+    body: JSON.stringify({status})
+  }).then(r=>r.json()).then(res=>{
+    if(res.success){
+      ['attending','maybe','declined'].forEach(s=>{
+        const btn = document.getElementById('btn-'+s);
+        btn.className = 'attend-btn' + (s===status ? ` active-${s}` : '');
+      });
+      document.getElementById('attendCount').textContent = res.attend_count+'명 참석';
+    }
+  });
+}
+
+// 댓글 등록
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const content = input.value.trim();
+  if(!content) return;
+  fetch(`/calendar/${eventId}/comment/`, {
+    method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':getCsrf()},
+    body: JSON.stringify({content})
+  }).then(r=>r.json()).then(res=>{
+    if(res.success){
+      const noComment = document.getElementById('noComment');
+      if(noComment) noComment.remove();
+      const div = document.createElement('div');
+      div.className='comment-card'; div.id='comment-'+res.id;
+      div.innerHTML=`<div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="small fw-bold">${res.author}</span>
+        <div class="d-flex gap-2 align-items-center">
+          <span class="small text-muted">${res.created_at}</span>
+          <button class="btn btn-link btn-sm p-0 text-danger" onclick="deleteComment(${res.id})">삭제</button>
+        </div>
+      </div><p class="small mb-0">${res.content}</p>`;
+      document.getElementById('commentList').appendChild(div);
+      input.value='';
+      const cnt = document.getElementById('commentCount');
+      cnt.textContent = '('+( document.querySelectorAll('.comment-card').length )+')';
+    }
+  });
+}
+
+// 댓글 삭제
+function deleteComment(id) {
+  if(!confirm('댓글을 삭제하시겠습니까?')) return;
+  fetch(`/calendar/${eventId}/comment/${id}/delete/`, {
+    method:'POST', headers:{'X-CSRFToken':getCsrf()}
+  }).then(r=>r.json()).then(res=>{
+    if(res.success){
+      document.getElementById('comment-'+id).remove();
+      const cnt = document.getElementById('commentCount');
+      cnt.textContent = '('+(document.querySelectorAll('.comment-card').length)+')';
+    }
+  });
+}
+
+// 삭제
+function deleteEvent() {
+  if(!confirm('일정을 삭제하시겠습니까?')) return;
+  fetch(`/calendar/${eventId}/delete/`, {
+    method:'POST', headers:{'X-CSRFToken':getCsrf()}
+  }).then(r=>r.json()).then(res=>{
+    if(res.success) location.href='/calendar/';
+  });
+}
+</script>
+{% endblock %}

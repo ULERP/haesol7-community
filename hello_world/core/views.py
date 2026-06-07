@@ -2834,6 +2834,115 @@ def calendar_event_create(request):
 
 
 @login_required
+def calendar_event_detail(request, pk):
+    from .models import CalendarEvent, CalendarEventAttendee, CalendarEventComment, GroupMember
+    from django.db.models import Q
+    try:
+        event = CalendarEvent.objects.get(id=pk)
+    except CalendarEvent.DoesNotExist:
+        from django.http import Http404
+        raise Http404
+
+    user = request.user
+    # 접근 권한 체크
+    my_group_ids = list(GroupMember.objects.filter(user=user, join_status='approved').values_list('group_id', flat=True))
+    can_view = (
+        event.visibility == 'public' or
+        event.creator == user or
+        (event.visibility == 'group' and event.group_id in my_group_ids) or
+        (event.visibility == 'private' and event.creator == user) or
+        user.is_staff
+    )
+    if not can_view:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden()
+
+    attendees   = event.attendees.select_related('user').all()
+    comments    = event.comments.select_related('author').all()
+    my_attend   = attendees.filter(user=user).first() if user.is_authenticated else None
+    attend_count = attendees.filter(status='attending').count()
+
+    is_leader = (
+        event.group and (
+            event.group.creator == user or
+            GroupMember.objects.filter(group=event.group, user=user, role='leader', join_status='approved').exists()
+        )
+    ) if event.group else False
+    can_edit = event.creator == user or is_leader or user.is_staff
+
+    return render(request, 'calendar_event_detail.html', {
+        'event':        event,
+        'attendees':    attendees,
+        'comments':     comments,
+        'my_attend':    my_attend,
+        'attend_count': attend_count,
+        'can_edit':     can_edit,
+    })
+
+
+@login_required
+def calendar_event_attend(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    import json
+    from .models import CalendarEvent, CalendarEventAttendee
+    try:
+        event = CalendarEvent.objects.get(id=pk)
+    except CalendarEvent.DoesNotExist:
+        return JsonResponse({'error': '일정 없음'}, status=404)
+
+    data   = json.loads(request.body)
+    status = data.get('status', 'attending')
+    obj, created = CalendarEventAttendee.objects.update_or_create(
+        event=event, user=request.user,
+        defaults={'status': status}
+    )
+    attend_count = event.attendees.filter(status='attending').count()
+    return JsonResponse({'success': True, 'status': status, 'attend_count': attend_count})
+
+
+@login_required
+def calendar_event_comment(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    import json
+    from .models import CalendarEvent, CalendarEventComment
+    try:
+        event = CalendarEvent.objects.get(id=pk)
+    except CalendarEvent.DoesNotExist:
+        return JsonResponse({'error': '일정 없음'}, status=404)
+
+    data    = json.loads(request.body)
+    content = data.get('content', '').strip()
+    if not content:
+        return JsonResponse({'error': '내용을 입력해주세요'}, status=400)
+
+    comment = CalendarEventComment.objects.create(
+        event=event, author=request.user, content=content
+    )
+    return JsonResponse({
+        'success':    True,
+        'id':         comment.id,
+        'content':    comment.content,
+        'author':     comment.author.nickname or comment.author.username,
+        'created_at': comment.created_at.strftime('%m/%d %H:%M'),
+    })
+
+
+@login_required
+def calendar_event_comment_delete(request, pk, comment_pk):
+    from .models import CalendarEventComment
+    try:
+        comment = CalendarEventComment.objects.get(id=comment_pk, event_id=pk)
+    except CalendarEventComment.DoesNotExist:
+        return JsonResponse({'error': '댓글 없음'}, status=404)
+    if comment.author != request.user and not request.user.is_staff:
+        return JsonResponse({'error': '권한 없음'}, status=403)
+    comment.delete()
+    return JsonResponse({'success': True})
+
+
+@login_required
 def calendar_event_edit(request, pk):
     if request.method != 'POST':
         return JsonResponse({'error': '잘못된 요청'}, status=400)
