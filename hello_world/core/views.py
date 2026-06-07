@@ -3949,7 +3949,7 @@ def hub_news(request):
     from .models import Post, Board, ManagementDocument, Group, Meetup
 
     notices = Post.objects.filter(is_active=True, board__board_type='notice').order_by('-created_at')[:4]
-    faq_posts = Post.objects.filter(is_active=True, board__board_type='faq').order_by('-created_at')[:4]
+    faq_posts = Post.objects.filter(is_active=True, board__board_type__in=['faq','qna']).order_by('-view_count','-created_at')[:4]
     docs = ManagementDocument.objects.order_by('-created_at')[:4]
 
     # 민원/오류
