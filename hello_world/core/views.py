@@ -454,7 +454,7 @@ def post_write(request, board_id):
             for idx, (ext, b64data) in enumerate(b64_imgs[:5]):  # 최대 5개
                 try:
                     img_data = base64.b64decode(b64data)
-                    filename = f'posts/{post.created_at.year}/{post.created_at.month}/{uuid.uuid4().hex[:8]}.{ext}'
+                    filename = f'{uuid.uuid4().hex[:8]}.{ext}'
                     pi = PostImage(post=post, order=len(images)+idx)
                     pi.image.save(filename, ContentFile(img_data), save=True)
                     # 본문의 base64를 저장된 URL로 교체
@@ -2878,10 +2878,19 @@ def post_image_upload(request):
     from django.utils import timezone
     # 임시 저장 (post 없이) - 나중에 post와 연결
     ext = os.path.splitext(image.name)[1].lower() or '.jpg'
-    filename = f'posts/{timezone.now().year}/{timezone.now().month}/{uuid.uuid4().hex[:12]}{ext}'
     from django.core.files.storage import default_storage
-    path = default_storage.save(filename, ContentFile(image.read()))
-    url  = default_storage.url(path)
+    # upload_to가 'posts/%Y/%m/'이므로 파일명만 지정
+    filename = f'{uuid.uuid4().hex[:12]}{ext}'
+    from hello_world.core.models import PostImage as _PI
+    pi = _PI(post=None)
+    pi.image.save(f'posts/{timezone.now().year}/{timezone.now().month}/{filename}',
+                  ContentFile(image.read()), save=False)
+    # default_storage로 직접 저장 (중복 방지)
+    path = default_storage.save(
+        f'posts/{timezone.now().year}/{timezone.now().month}/{filename}',
+        ContentFile(image.read())
+    )
+    url = default_storage.url(path)
     return JsonResponse({'success': True, 'url': url})
 
 
