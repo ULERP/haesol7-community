@@ -5,14 +5,7 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 <script>
 // ── 달력 초기화
-const eventsData = {{ group_events_json|safe }};
-const fcEvents = eventsData.map(e => ({
-  id: e.id,
-  title: e.title,
-  start: e.start_time,
-  end: e.end_time || undefined,
-  extendedProps: { location: e.location, description: e.description }
-}));
+const fcEvents = {{ group_events_json|safe }};
 
 document.addEventListener('DOMContentLoaded', function() {
   const calEl = document.getElementById('groupCalendar');

@@ -1210,7 +1210,14 @@ def group_detail(request, pk):
         'is_mod':          my_role in ('leader', 'moderator'),
         'invited':         invited,
         'group_polls':     group_polls,
-        'group_events_json': list(group_events.values('id','title','start_time','end_time','location','description')),
+        'group_events_json': json.dumps([{
+            'id': e.id,
+            'title': e.title,
+            'start': e.start_time.isoformat(),
+            'end': e.end_time.isoformat() if e.end_time else None,
+            'location': e.location,
+            'description': e.description,
+        } for e in group_events], ensure_ascii=False),
     })
 
 
