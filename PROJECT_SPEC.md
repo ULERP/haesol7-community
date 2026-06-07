@@ -378,3 +378,25 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 2. CalendarEvent naive datetime 경고 수정
 3. board.icon 필드 PA DB 확인
 4. rate_user Notification 오류 PA 확인
+
+
+## 18. 업데이트 이력 (2026-06-08 - 9차)
+
+### 완료된 작업
+- feat: Quill 에디터 이미지 서버 업로드 API 추가 (/posts/image/upload/)
+  - base64 대신 서버에 파일로 저장 후 URL 삽입
+- feat: 기존 게시물 base64 이미지 → 파일 변환 (15개)
+  - PA DB PostImage 경로 수정
+  - PA 파일 이동 완료
+- fix: get_thumbnail base64 제외, URL만 반환
+- fix: 게시판 모든 레이아웃 썸네일 정상 표시
+
+### PA 작업 내역
+- PostImage 15개 경로 수정 (중복 경로 제거)
+- 게시물 12개 본문 URL 수정
+- 파일 15개 이동: posts/2026/06/posts/2026/06/ → posts/2026/06/
+
+### 잔여 이슈 (다음 작업)
+1. favicon.ico 404 오류 수정
+2. board.icon 필드 PA DB 확인
+3. rate_user Notification 오류 PA 확인
