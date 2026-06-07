@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 // ── 일정 상세/수정/삭제
 let currentEventId = null;
+let currentEventData = {};
 const isGroupLeader = {{ is_leader|yesno:"true,false" }};
 const currentUserId = {{ user.pk|default:"null" }};
 const isStaffUser   = {{ user.is_staff|yesno:"true,false" }};
@@ -41,6 +42,14 @@ const isStaffUser   = {{ user.is_staff|yesno:"true,false" }};
 function showEventDetail(ev) {
   const p = ev.extendedProps || {};
   currentEventId = p.cal_id || ev.id;
+  // 수정용 데이터 저장
+  currentEventData = {
+    title:       ev.title.replace(/^[🙋📅🤝👥⏳🔒👥\s]*/,''),
+    start:       ev.startStr ? ev.startStr.substring(0,16) : '',
+    end:         ev.endStr   ? ev.endStr.substring(0,16)   : '',
+    location:    p.location    || '',
+    description: p.description || '',
+  };
   document.getElementById('evDetailTitle').textContent    = ev.title;
   document.getElementById('evDetailLocation').textContent = p.location    || '';
   document.getElementById('evDetailDesc').textContent     = p.description || '';
@@ -68,15 +77,17 @@ function deleteCalEvent() {
 }
 
 function openEditModal() {
-  // 수정 모달 열기 (addEventModal 재활용)
   bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
-  // 기존 addEventModal에 데이터 채우기
-  const title = document.getElementById('evDetailTitle').textContent;
-  document.getElementById('eventTitle').value    = title.replace(/^[🙋📅🤝👥⏳🔒👥]\s*/,'');
+  // 수정 모달에 기존 데이터 채우기
+  document.getElementById('eventTitle').value    = currentEventData.title;
+  document.getElementById('eventStart').value    = currentEventData.start;
+  document.getElementById('eventEnd').value      = currentEventData.end;
+  document.getElementById('eventLocation').value = currentEventData.location;
+  document.getElementById('eventDesc').value     = currentEventData.description;
   document.getElementById('eventEditId').value   = currentEventId;
-  document.getElementById('addEventModalLabel').textContent = '일정 수정';
-  document.getElementById('eventSubmitBtn').textContent = '수정하기';
-  document.getElementById('eventSubmitBtn').onclick = submitEditEvent;
+  document.getElementById('addEventModalLabel').textContent = '✏️ 일정 수정';
+  document.getElementById('eventSubmitBtn').textContent     = '수정하기';
+  document.getElementById('eventSubmitBtn').onclick         = submitEditEvent;
   new bootstrap.Modal(document.getElementById('addEventModal')).show();
 }
 
