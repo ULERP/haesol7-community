@@ -2517,6 +2517,7 @@ def certificate_pdf(request, user_id):
 # ============================================================
 # 통합 캘린더 (봉사 + 소모임 + 단지행사)
 # ============================================================
+@login_required
 def integrated_calendar(request):
     from .models import Meetup, Event, Group, CalendarEvent, GroupMember
     import json
@@ -2525,53 +2526,108 @@ def integrated_calendar(request):
     user = request.user
     events = []
 
-    # 내가 속한 소모임 ID 목록
-    my_group_ids = []
-    if user.is_authenticated:
-        my_group_ids = list(GroupMember.objects.filter(
-            user=user, join_status='approved'
-        ).values_list('group_id', flat=True))
+    # 내가 속한 소모임 ID 목록 + 내가 소모임장인 소모임
+    my_group_ids = list(GroupMember.objects.filter(
+        user=user, join_status='approved'
+    ).values_list('group_id', flat=True))
+    my_leader_group_ids = list(Group.objects.filter(leader=user).values_list('id', flat=True))
 
-    # 1. CalendarEvent (권한 기반)
-    if user.is_authenticated:
+    # CalendarEvent 권한 기반 필터링
+    # 볼 수 있는 조건:
+    #   1. 내가 만든 것 (visibility 무관)
+    #   2. 전체공개 승인완료
+    #   3. 소모임공개 승인완료 + 내가 그 소모임 멤버
+    #   4. 소모임공개 승인대기 + 내가 그 소모임장
+    #   5. 전체공개 승인대기 + 내가 관리자
+    ce_qs = CalendarEvent.objects.filter(
+        Q(creator=user) |
+        Q(visibility='public') |
+        Q(visibility='group', group_id__in=my_group_ids) |
+        Q(visibility='group_pending', group_id__in=my_leader_group_ids) |
+        Q(visibility='pending', is_approved=False) if user.is_staff else Q(visibility='public') | Q(creator=user) | Q(visibility='group', group_id__in=my_group_ids)
+    ).select_related('creator', 'group').distinct()
+
+    if not user.is_staff:
         ce_qs = CalendarEvent.objects.filter(
-            Q(visibility='public', is_approved=True) |
+            Q(creator=user) |
+            Q(visibility='public') |
             Q(visibility='group', group_id__in=my_group_ids) |
-            Q(creator=user)
-        ).select_related('creator', 'group')
-    else:
-        ce_qs = CalendarEvent.objects.filter(
-            visibility='public', is_approved=True
-        ).select_related('creator', 'group')
+            Q(visibility='group_pending', group_id__in=my_leader_group_ids)
+        ).select_related('creator', 'group').distinct()
 
-    color_map = {'volunteer': '#1a7a4a', 'event': '#e74c3c', 'group': '#f39c12'}
-    icon_map  = {'volunteer': '🤝', 'event': '📅', 'group': '👥'}
+    color_map = {
+        'personal':  '#6b7280',
+        'volunteer': '#1a7a4a',
+        'event':     '#7A263A',
+        'group':     '#D4B26A',
+    }
+    icon_map = {
+        'personal':  '🙋',
+        'volunteer': '🤝',
+        'event':     '📅',
+        'group':     '👥',
+    }
+    badge_map = {
+        'private':       '🔒',
+        'group_pending': '⏳',
+        'group':         '👥',
+        'pending':       '⏳',
+        'public':        '',
+    }
+
     for ce in ce_qs:
-        color = '#9ca3af' if ce.visibility == 'private' else color_map.get(ce.event_type, '#6b7280')
-        icon  = icon_map.get(ce.event_type, '📌')
-        events.append({
-            'id': f'ce_{ce.id}',
-            'title': f'{icon} {ce.title}',
-            'start': ce.start_time.isoformat(),
-            'end': ce.end_time.isoformat() if ce.end_time else None,
-            'backgroundColor': color,
-            'borderColor': color,
-            'extendedProps': {
-                'type': ce.get_event_type_display(),
-                'visibility': ce.get_visibility_display(),
-                'location': ce.location,
-                'creator': ce.creator.nickname or ce.creator.username,
-                'group': ce.group.name if ce.group else None,
-                'is_mine': user.is_authenticated and ce.creator == user,
-            }
-        })
+        color  = color_map.get(ce.event_type, '#6b7280')
+        icon   = icon_map.get(ce.event_type, '📌')
+        badge  = badge_map.get(ce.visibility, '')
+        is_pending = ce.visibility in ('pending', 'group_pending')
+        if is_pending:
+            color = '#9ca3af'  # 승인대기는 회색
+        if ce.visibility == 'private':
+            color = '#6b7280'
 
-    # 2. 봉사활동 (승인된 것 전체 공개)
+        ev = {
+            'id':              f'ce_{ce.id}',
+            'title':           f'{badge}{icon} {ce.title}',
+            'start':           ce.start_time.isoformat(),
+            'end':             ce.end_time.isoformat() if ce.end_time else None,
+            'backgroundColor': color,
+            'borderColor':     color,
+            'extendedProps': {
+                'cal_id':      ce.id,
+                'type':        ce.get_event_type_display(),
+                'visibility':  ce.visibility,
+                'vis_label':   ce.get_visibility_display(),
+                'location':    ce.location,
+                'description': ce.description,
+                'creator':     ce.creator.nickname or ce.creator.username,
+                'creator_id':  ce.creator.id,
+                'group':       ce.group.name if ce.group else None,
+                'group_id':    ce.group.id if ce.group else None,
+                'is_mine':     ce.creator == user,
+                'is_pending':  is_pending,
+                'can_approve': (
+                    (ce.visibility == 'pending' and user.is_staff) or
+                    (ce.visibility == 'group_pending' and ce.group_id in my_leader_group_ids)
+                ),
+            }
+        }
+        # RRule 반복 설정
+        if ce.rrule:
+            ev['rrule']    = ce.rrule
+            ev['duration'] = None
+            if ce.end_time:
+                delta = ce.end_time - ce.start_time
+                h, s  = divmod(int(delta.total_seconds()), 3600)
+                m     = s // 60
+                ev['duration'] = f'{h:02d}:{m:02d}'
+        events.append(ev)
+
+    # 봉사활동
     meetups = Meetup.objects.filter(
         is_confirmed=True,
         status__in=['recruiting', 'confirmed'],
         scheduled_at__isnull=False,
-    ).select_related('creator', 'group')
+    ).select_related('creator')
     for m in meetups:
         events.append({
             'id': f'meetup_{m.id}',
@@ -2580,10 +2636,10 @@ def integrated_calendar(request):
             'url': f'/volunteer/{m.id}/',
             'backgroundColor': '#1a7a4a',
             'borderColor': '#1a7a4a',
-            'extendedProps': {'type': '봉사활동', 'location': m.location}
+            'extendedProps': {'type': '봉사활동', 'location': m.location, 'cal_id': None}
         })
 
-    # 3. 단지 행사
+    # 단지행사
     for e in Event.objects.filter(start_time__isnull=False).select_related('post'):
         events.append({
             'id': f'event_{e.id}',
@@ -2591,15 +2647,21 @@ def integrated_calendar(request):
             'start': e.start_time.isoformat(),
             'end': e.end_time.isoformat() if e.end_time else None,
             'url': f'/posts/{e.post.id}/',
-            'backgroundColor': '#e74c3c',
-            'borderColor': '#e74c3c',
-            'extendedProps': {'type': '단지행사', 'location': e.location}
+            'backgroundColor': '#7A263A',
+            'borderColor': '#7A263A',
+            'extendedProps': {'type': '단지행사', 'location': e.location, 'cal_id': None}
         })
 
+    # 내 소모임 목록 (등록 모달용)
+    my_groups = list(Group.objects.filter(id__in=my_group_ids).values('id', 'name'))
+    is_leader = len(my_leader_group_ids) > 0
+
     return render(request, 'integrated_calendar.html', {
-        'events_json': json.dumps(events, ensure_ascii=False, default=str),
-        'my_group_ids': my_group_ids,
-        'total_events': len(events),
+        'events_json':         json.dumps(events, ensure_ascii=False, default=str),
+        'my_groups_json':      json.dumps(my_groups, ensure_ascii=False),
+        'my_leader_group_ids': json.dumps(my_leader_group_ids),
+        'total_events':        len(events),
+        'is_leader':           is_leader,
     })
 def error_404(request, exception=None):
     return render(request, '404.html', status=404)
@@ -2616,16 +2678,15 @@ def calendar_event_create(request):
     if request.method != 'POST':
         return JsonResponse({'error': '잘못된 요청'}, status=400)
     import json
-    from .models import CalendarEvent, Group
+    from .models import CalendarEvent, Group, Notification
     from django.utils import timezone
     from django.utils.dateparse import parse_datetime
-    from datetime import timedelta, date
-    from dateutil.relativedelta import relativedelta
 
-    data = json.loads(request.body)
-
-    event_type = data.get('event_type', 'event')
+    data       = json.loads(request.body)
+    user       = request.user
+    event_type = data.get('event_type', 'personal')
     group_id   = data.get('group_id')
+    visibility = data.get('visibility', 'private')  # 사용자가 선택한 공개범위
     group      = None
 
     if group_id:
@@ -2634,78 +2695,117 @@ def calendar_event_create(request):
         except Group.DoesNotExist:
             return JsonResponse({'error': '소모임을 찾을 수 없습니다'}, status=404)
 
-    # 권한에 따라 visibility 결정
-    if event_type == 'personal':
-        visibility  = 'private'
-        is_approved = True
-        approved_by = request.user
-    elif request.user.is_staff or request.user.is_superuser:
-        visibility  = 'public'
-        is_approved = True
-        approved_by = request.user
-    elif event_type == 'group' and group:
-        visibility  = 'group'
-        is_approved = True
-        approved_by = request.user
-    else:
-        visibility  = 'pending'
-        is_approved = False
-        approved_by = None
+    # 권한 검증 및 실제 visibility 결정
+    # 사용자가 선택한 visibility를 기반으로, 권한에 따라 즉시승인 or 승인대기 처리
+    is_approved       = False
+    approved_by       = None
+    approved_at       = None
+    final_visibility  = visibility
+    notify_targets    = []  # 알림 보낼 대상
+    approval_note     = ''  # 사용자에게 보여줄 안내
 
-    # 반복 설정
-    is_recurring   = data.get('is_recurring', False)
-    recur_type     = data.get('recur_type', 'none') if is_recurring else 'none'
-    recur_interval = int(data.get('recur_interval', 1))
-    recur_end_date = data.get('recur_end_date')  # 'YYYY-MM-DD'
+    if visibility == 'private':
+        # 나만보기: 항상 즉시
+        is_approved      = True
+        approved_by      = user
+        approved_at      = timezone.now()
+        final_visibility = 'private'
+        approval_note    = '나만 볼 수 있는 개인 일정입니다.'
+
+    elif visibility == 'group':
+        # 소모임공개: 소모임장이면 즉시, 아니면 승인대기
+        if group and (user.is_staff or (group.leader == user)):
+            is_approved      = True
+            approved_by      = user
+            approved_at      = timezone.now()
+            final_visibility = 'group'
+            approval_note    = '소모임 멤버에게 즉시 공개됩니다.'
+        else:
+            final_visibility = 'group_pending'
+            approval_note    = '소모임장 승인 후 멤버에게 공개됩니다.'
+            if group and group.leader:
+                notify_targets.append(('group_leader', group.leader))
+
+    elif visibility == 'public':
+        # 전체공개: 관리자면 즉시, 아니면 승인대기
+        if user.is_staff or user.is_superuser:
+            is_approved      = True
+            approved_by      = user
+            approved_at      = timezone.now()
+            final_visibility = 'public'
+            approval_note    = '즉시 전체 공개됩니다.'
+        else:
+            final_visibility = 'pending'
+            approval_note    = '관리자 승인 후 전체 공개됩니다.'
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            for admin in User.objects.filter(is_staff=True):
+                notify_targets.append(('admin', admin))
+
+    # RRule 생성
+    rrule          = ''
+    recur_interval = 1
+    recur_type     = data.get('recur_type', '')
+    if data.get('is_recurring') and recur_type and recur_type != 'none':
+        recur_interval = int(data.get('recur_interval', 1))
+        recur_end      = data.get('recur_end_date', '')
+        freq_map       = {'daily': 'DAILY', 'weekly': 'WEEKLY', 'monthly': 'MONTHLY'}
+        freq           = freq_map.get(recur_type, 'WEEKLY')
+        until          = recur_end.replace('-', '') + 'T000000Z' if recur_end else ''
+        rrule          = f'FREQ={freq};INTERVAL={recur_interval}'
+        if until:
+            rrule += f';UNTIL={until}'
 
     start_dt = parse_datetime(data.get('start_time'))
     end_dt   = parse_datetime(data.get('end_time')) if data.get('end_time') else None
 
-    common = dict(
-        title       = data.get('title', '').strip(),
-        description = data.get('description', '').strip(),
-        event_type  = event_type,
-        location    = data.get('location', '').strip(),
-        creator     = request.user,
-        group       = group,
-        visibility  = visibility,
-        is_approved = is_approved,
-        approved_by = approved_by,
-        approved_at = timezone.now() if is_approved else None,
-        is_recurring   = is_recurring,
-        recur_type     = recur_type,
+    # timezone aware 처리
+    from django.utils.timezone import make_aware, is_naive
+    if start_dt and is_naive(start_dt):
+        start_dt = make_aware(start_dt)
+    if end_dt and is_naive(end_dt):
+        end_dt = make_aware(end_dt)
+
+    event = CalendarEvent.objects.create(
+        title          = data.get('title', '').strip(),
+        description    = data.get('description', '').strip(),
+        event_type     = event_type,
+        start_time     = start_dt,
+        end_time       = end_dt,
+        location       = data.get('location', '').strip(),
+        creator        = user,
+        group          = group,
+        visibility     = final_visibility,
+        is_approved    = is_approved,
+        approved_by    = approved_by,
+        approved_at    = approved_at,
+        rrule          = rrule,
         recur_interval = recur_interval,
-        recur_end_date = date.fromisoformat(recur_end_date) if recur_end_date else None,
     )
 
-    # 원본 이벤트 생성
-    event = CalendarEvent.objects.create(start_time=start_dt, end_time=end_dt, **common)
-
-    # 반복 이벤트 일괄 생성 (최대 365개 제한)
-    if is_recurring and recur_type != 'none' and recur_end_date:
-        end_limit = date.fromisoformat(recur_end_date)
-        cur_start = start_dt
-        cur_end   = end_dt
-        count     = 0
-        while count < 365:
-            if recur_type == 'daily':
-                cur_start = cur_start + timedelta(days=recur_interval)
-                cur_end   = cur_end + timedelta(days=recur_interval) if cur_end else None
-            elif recur_type == 'weekly':
-                cur_start = cur_start + timedelta(weeks=recur_interval)
-                cur_end   = cur_end + timedelta(weeks=recur_interval) if cur_end else None
-            elif recur_type == 'monthly':
-                cur_start = cur_start + relativedelta(months=recur_interval)
-                cur_end   = cur_end + relativedelta(months=recur_interval) if cur_end else None
-            if cur_start.date() > end_limit:
-                break
-            CalendarEvent.objects.create(
-                start_time=cur_start, end_time=cur_end,
-                recur_parent=event, **common
+    # 승인 요청 알림 발송
+    for ntype, target in notify_targets:
+        try:
+            if ntype == 'group_leader':
+                msg = f'📅 {user.nickname or user.username}님이 [{group.name}] 소모임 일정 승인을 요청했습니다: {event.title}'
+            else:
+                msg = f'📅 {user.nickname or user.username}님이 전체공개 일정 승인을 요청했습니다: {event.title}'
+            Notification.objects.create(
+                recipient=target,
+                sender=user,
+                notification_type='calendar_approval',
+                message=msg,
+                link=f'/calendar/',
             )
-            count += 1
+        except Exception:
+            pass
 
-    return JsonResponse({'success': True, 'id': event.id, 'visibility': visibility, 'recur_count': count if is_recurring and recur_type != 'none' else 0})
+    return JsonResponse({
+        'success':      True,
+        'id':           event.id,
+        'visibility':   final_visibility,
+        'approval_note': approval_note,
+    })
 
 
 @login_required
@@ -2725,21 +2825,56 @@ def calendar_event_delete(request, pk):
 
 @login_required
 def calendar_event_approve(request, pk):
-    if not request.user.is_staff and not request.user.is_superuser:
-        return JsonResponse({'error': '권한이 없습니다'}, status=403)
-    from .models import CalendarEvent
+    from .models import CalendarEvent, Notification
     from django.utils import timezone
     try:
         event = CalendarEvent.objects.get(id=pk)
     except CalendarEvent.DoesNotExist:
         return JsonResponse({'error': '일정을 찾을 수 없습니다'}, status=404)
 
-    event.is_approved = True
-    event.visibility  = 'public'
-    event.approved_by = request.user
-    event.approved_at = timezone.now()
-    event.save()
-    return JsonResponse({'success': True})
+    user = request.user
+
+    # 소모임장 승인
+    if event.visibility == 'group_pending':
+        if not (event.group and event.group.leader == user) and not user.is_staff:
+            return JsonResponse({'error': '소모임장 권한이 필요합니다'}, status=403)
+        event.visibility         = 'group'
+        event.is_approved        = True
+        event.group_approved_by  = user
+        event.group_approved_at  = timezone.now()
+        event.save()
+        try:
+            Notification.objects.create(
+                recipient=event.creator, sender=user,
+                notification_type='calendar_approved',
+                message=f'✅ 소모임 일정이 승인됐습니다: {event.title}',
+                link='/calendar/',
+            )
+        except Exception:
+            pass
+        return JsonResponse({'success': True, 'visibility': 'group'})
+
+    # 관리자 승인
+    if event.visibility == 'pending':
+        if not user.is_staff and not user.is_superuser:
+            return JsonResponse({'error': '관리자 권한이 필요합니다'}, status=403)
+        event.visibility  = 'public'
+        event.is_approved = True
+        event.approved_by = user
+        event.approved_at = timezone.now()
+        event.save()
+        try:
+            Notification.objects.create(
+                recipient=event.creator, sender=user,
+                notification_type='calendar_approved',
+                message=f'✅ 일정이 전체 공개 승인됐습니다: {event.title}',
+                link='/calendar/',
+            )
+        except Exception:
+            pass
+        return JsonResponse({'success': True, 'visibility': 'public'})
+
+    return JsonResponse({'error': '승인할 수 없는 상태입니다'}, status=400)
 
 
 # ════════════════════════════════════════════════════════

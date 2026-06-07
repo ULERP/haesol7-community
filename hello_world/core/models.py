@@ -1094,17 +1094,18 @@ class CalendarEvent(models.Model):
         ('event',     '단지행사'),
         ('group',     '소모임'),
     ]
+    # 공개범위:
+    #   private        = 나만보기 (즉시적용)
+    #   group_pending  = 소모임공개 승인대기 (소모임장 승인 필요)
+    #   group          = 소모임공개 (승인완료)
+    #   pending        = 전체공개 승인대기 (관리자 승인 필요)
+    #   public         = 전체공개 (승인완료)
     VISIBILITY_CHOICES = [
-        ('private', '개인'),
-        ('group',   '소모임'),
-        ('public',  '전체공개'),
-        ('pending', '승인대기'),
-    ]
-    RECUR_CHOICES = [
-        ('none',    '반복 없음'),
-        ('daily',   '매일'),
-        ('weekly',  '매주'),
-        ('monthly', '매월'),
+        ('private',       '나만보기'),
+        ('group_pending', '소모임공개(승인대기)'),
+        ('group',         '소모임공개'),
+        ('pending',       '전체공개(승인대기)'),
+        ('public',        '전체공개'),
     ]
     title        = models.CharField('제목', max_length=200)
     description  = models.TextField('내용', blank=True)
@@ -1114,17 +1115,19 @@ class CalendarEvent(models.Model):
     location     = models.CharField('장소', max_length=200, blank=True)
     creator      = models.ForeignKey('CustomUser', on_delete=models.CASCADE, related_name='calendar_events', verbose_name='작성자')
     group        = models.ForeignKey('Group', on_delete=models.SET_NULL, null=True, blank=True, related_name='calendar_events', verbose_name='소모임')
-    visibility   = models.CharField('공개범위', max_length=20, choices=VISIBILITY_CHOICES, default='pending')
-    is_approved  = models.BooleanField('승인여부', default=False)
+    visibility   = models.CharField('공개범위', max_length=20, choices=VISIBILITY_CHOICES, default='private')
+    # 승인 (관리자)
+    is_approved  = models.BooleanField('관리자승인', default=False)
     approved_by  = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_events', verbose_name='승인자')
-    approved_at    = models.DateTimeField('승인일시', null=True, blank=True)
-    created_at     = models.DateTimeField(auto_now_add=True)
-    # 반복 일정
-    is_recurring   = models.BooleanField('반복여부', default=False)
-    recur_type     = models.CharField('반복종류', max_length=10, choices=[('none','없음'),('daily','매일'),('weekly','매주'),('monthly','매월')], default='none')
+    approved_at  = models.DateTimeField('승인일시', null=True, blank=True)
+    # 소모임장 승인
+    group_approved_by = models.ForeignKey('CustomUser', on_delete=models.SET_NULL, null=True, blank=True, related_name='group_approved_events', verbose_name='소모임장승인자')
+    group_approved_at = models.DateTimeField('소모임장승인일시', null=True, blank=True)
+    created_at   = models.DateTimeField(auto_now_add=True)
+    # 반복 일정 (RRule 방식 - DB에 규칙만 저장, 인스턴스는 프론트에서 생성)
+    # 예: "FREQ=WEEKLY;INTERVAL=1;UNTIL=20261231T000000Z"
+    rrule          = models.TextField('반복규칙(RRule)', blank=True)
     recur_interval = models.PositiveSmallIntegerField('반복간격', default=1)
-    recur_end_date = models.DateField('반복종료일', null=True, blank=True)
-    recur_parent   = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='recur_children', verbose_name='원본일정')
 
     class Meta:
         ordering = ['start_time']
