@@ -185,25 +185,24 @@ if not EMAIL_HOST_USER:
 # Jazzmin 관리자 UI 설정
 # ════════════════════════════════════════════════════
 JAZZMIN_SETTINGS = {
-    "site_title": "해솔7 지킴이",
-    "site_header": "해솔7 지킴이 관리자",
+    "site_title": "해솔7 관리자",
+    "site_header": "🌿 해솔7 지킴이",
     "site_brand": "🌿 해솔7",
-    "welcome_sign": "해솔마을 7단지 지킴이 관리자 페이지입니다",
+    "welcome_sign": "해솔마을 7단지 지킴이 관리자 페이지",
     "copyright": "해솔마을7단지 지킴이",
-    "search_model": ["core.CustomUser", "core.Post"],
+    "search_model": ["core.CustomUser", "core.Post", "core.Group"],
     "topmenu_links": [
         {"name": "🏠 사이트", "url": "/", "new_window": True},
         {"name": "📋 게시판", "url": "/boards/", "new_window": True},
         {"name": "✅ 인증관리", "url": "/verify/admin/", "new_window": True},
-        {"name": "👥 회원", "model": "core.CustomUser"},
-        {"name": "📝 게시글", "model": "core.Post"},
+        {"name": "📅 캘린더", "url": "/calendar/", "new_window": True},
     ],
     "usermenu_links": [
         {"name": "🏠 사이트 보기", "url": "/", "new_window": True},
-        {"name": "✅ 인증 관리", "url": "/verify/admin/", "new_window": True},
+        {"name": "✅ 입주민 인증", "url": "/verify/admin/", "new_window": True},
     ],
     "show_sidebar": True,
-    "navigation_expanded": False,
+    "navigation_expanded": True,
     "custom_links": {
         "core": [{
             "name": "🏠 사이트 바로가기",
