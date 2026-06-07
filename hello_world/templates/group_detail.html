@@ -1,6 +1,6 @@
 {% extends 'base_2panel.html' %}
 {% block menu_groups %}active{% endblock %}
-{% block panel_extra_head %}
+{% block extra_head %}
 <!-- FullCalendar -->
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-{% block panel_extra_js %}
+{% block extra_scripts %}
 <script>
 // ── 설문 투표
 function votePoll(pollId, optIdx) {
