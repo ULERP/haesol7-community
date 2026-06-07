@@ -221,51 +221,104 @@ JAZZMIN_SETTINGS = {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.group": "fas fa-users",
-        "core.customuser": "fas fa-user-circle",
-        "core.membergrade": "fas fa-trophy",
-        "core.badge": "fas fa-medal",
-        "core.userbadge": "fas fa-award",
-        "core.userfollow": "fas fa-user-friends",
-        "core.rating": "fas fa-heart",
-        "core.board": "fas fa-clipboard-list",
-        "core.post": "fas fa-file-alt",
-        "core.comment": "fas fa-comment",
+        # 👥 회원 관리
+        "core.customuser":      "fas fa-user-circle",
+        "core.membergrade":     "fas fa-trophy",
+        "core.badge":           "fas fa-medal",
+        "core.userbadge":       "fas fa-award",
+        "core.userfollow":      "fas fa-user-friends",
+        "core.rating":          "fas fa-heart",
+        # 📋 콘텐츠 관리
+        "core.board":           "fas fa-clipboard-list",
+        "core.post":            "fas fa-file-alt",
+        "core.postimage":       "fas fa-image",
+        "core.comment":         "fas fa-comment",
         "core.managementdocument": "fas fa-file-pdf",
-        "core.group": "fas fa-users",
-        "core.groupmember": "fas fa-user-plus",
-        "core.groupleaderlog": "fas fa-history",
+        # 🤝 소모임
+        "core.group":           "fas fa-users",
+        "core.groupmember":     "fas fa-user-plus",
+        "core.groupleaderlog":  "fas fa-history",
         "core.groupdissolvevote": "fas fa-vote-yea",
-        "core.activity": "fas fa-running",
-        "core.activityproof": "fas fa-camera",
-        "core.calendarevent": "fas fa-calendar-alt",
-        "core.event": "fas fa-calendar",
-        "core.survey": "fas fa-poll",
-        "core.notification": "fas fa-bell",
-        "core.siteconfig": "fas fa-cog",
-        "core.adminactionlog": "fas fa-shield-alt",
+        # 🏃 봉사/활동
+        "core.meetup":          "fas fa-hands-helping",
+        "core.meetuprating":    "fas fa-star",
+        "core.activity":        "fas fa-running",
+        "core.activityproof":   "fas fa-camera",
+        # 📅 캘린더
+        "core.calendarevent":   "fas fa-calendar-alt",
+        "core.calendareventattendee": "fas fa-user-check",
+        "core.calendareventcomment":  "fas fa-comment-alt",
+        "core.event":           "fas fa-calendar",
+        # 📊 설문/알림
+        "core.survey":          "fas fa-poll",
+        "core.notification":    "fas fa-bell",
+        # ⚙️ 시스템
+        "core.siteconfig":      "fas fa-cog",
+        "core.adminactionlog":  "fas fa-shield-alt",
     },
     "groups": {
         "core": {
-            "👥 회원 관리": ["customuser", "membergrade", "badge", "userbadge", "userfollow", "rating"],
-            "📋 게시판": ["board", "post", "comment", "managementdocument"],
-            "🤝 소모임": ["group", "groupmember", "groupleaderlog", "groupdissolvevote"],
-            "📅 활동/봉사": ["activity", "activityproof", "calendarevent", "event"],
-            "⚙️ 운영": ["survey", "notification", "siteconfig", "adminactionlog"],
+            "👥 회원 관리": [
+                "customuser",       # 전체 회원 목록/인증/권한
+                "membergrade",      # 회원 등급
+                "badge", "userbadge", # 배지
+                "userfollow",       # 팔로우
+                "rating",           # 이웃 온기 점수
+            ],
+            "📋 콘텐츠 관리": [
+                "board",            # 게시판 설정
+                "post",             # 게시글 관리
+                "comment",          # 댓글 관리
+                "managementdocument", # 관리 문서
+            ],
+            "🤝 소모임 관리": [
+                "group",            # 소모임 목록/승인
+                "groupmember",      # 소모임 회원
+                "groupleaderlog",   # 리더 변경 이력
+                "groupdissolvevote", # 해체 투표
+            ],
+            "🏃 봉사/활동 관리": [
+                "meetup",           # 봉사활동 모집/승인
+                "meetuprating",     # 봉사 평점
+                "activity",         # 활동 유형
+                "activityproof",    # 활동 인증 승인
+            ],
+            "📅 캘린더 관리": [
+                "calendarevent",    # 일정 승인/관리
+                "calendareventattendee", # 참석자
+                "event",            # 단지 행사
+            ],
+            "📊 운영 관리": [
+                "survey",           # 설문조사
+                "notification",     # 알림 발송/관리
+            ],
+            "⚙️ 시스템": [
+                "siteconfig",       # 사이트 설정
+                "adminactionlog",   # 관리자 활동 로그
+            ],
         }
     },
     "order_with_respect_to": [
+        # 👥 회원
         "core.customuser", "core.membergrade", "core.badge",
         "core.userbadge", "core.userfollow", "core.rating",
+        # 📋 콘텐츠
         "core.board", "core.post", "core.comment", "core.managementdocument",
+        # 🤝 소모임
         "core.group", "core.groupmember", "core.groupleaderlog", "core.groupdissolvevote",
-        "core.activity", "core.activityproof", "core.calendarevent", "core.event",
+        # 🏃 봉사/활동
+        "core.meetup", "core.meetuprating", "core.activity", "core.activityproof",
+        # 📅 캘린더
+        "core.calendarevent", "core.calendareventattendee", "core.event",
+        # 📊 운영
         "core.survey", "core.notification",
+        # ⚙️ 시스템
         "core.siteconfig", "core.adminactionlog",
     ],
     "default_icon_parents": "fas fa-folder",
     "default_icon_children": "fas fa-circle",
     "related_modal_active": True,
-    "custom_css": None,
+    "custom_css": "admin/css/custom_admin.css",
     "custom_js": None,
     "show_ui_builder": False,
     "changeform_format": "horizontal_tabs",
@@ -277,15 +330,15 @@ JAZZMIN_UI_TWEAKS = {
     "footer_small_text": False,
     "body_small_text": False,
     "brand_small_text": False,
-    "brand_colour": "navbar-success",
-    "accent": "accent-teal",
-    "navbar": "navbar-success navbar-dark",
-    "no_navbar_border": False,
+    "brand_colour": "navbar-dark",
+    "accent": "accent-warning",
+    "navbar": "navbar-dark",
+    "no_navbar_border": True,
     "navbar_fixed": True,
     "layout_boxed": False,
     "footer_fixed": False,
     "sidebar_fixed": True,
-    "sidebar": "sidebar-dark-success",
+    "sidebar": "sidebar-dark-warning",
     "sidebar_nav_small_text": False,
     "sidebar_disable_expand": False,
     "sidebar_nav_child_indent": True,
@@ -295,12 +348,12 @@ JAZZMIN_UI_TWEAKS = {
     "theme": "default",
     "dark_mode_theme": None,
     "button_classes": {
-        "primary": "btn-primary",
+        "primary":   "btn-warning",
         "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success",
+        "info":      "btn-info",
+        "warning":   "btn-warning",
+        "danger":    "btn-danger",
+        "success":   "btn-success",
     },
 }
 

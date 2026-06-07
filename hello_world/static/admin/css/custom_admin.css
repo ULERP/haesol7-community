@@ -1,0 +1,145 @@
+/* ── 해솔7 지킴이 관리자 커스텀 테마 ── */
+:root {
+  --wine: #7A263A;
+  --gold: #D4B26A;
+  --dark: #1F2937;
+  --dark2: #242424;
+}
+
+/* 상단 네비바 */
+.navbar, .main-header {
+  background: var(--dark) !important;
+  border-bottom: 2px solid var(--gold) !important;
+}
+.navbar-brand, .brand-link {
+  background: var(--dark) !important;
+  border-bottom: 1px solid var(--gold) !important;
+  color: var(--gold) !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.3px;
+}
+
+/* 사이드바 */
+.main-sidebar, .sidebar {
+  background: var(--dark2) !important;
+}
+.sidebar a, .nav-sidebar .nav-link {
+  color: rgba(250,250,250,.75) !important;
+  border-radius: 8px !important;
+  margin: 2px 8px !important;
+}
+.nav-sidebar .nav-link:hover,
+.nav-sidebar .nav-link.active {
+  background: var(--wine) !important;
+  color: #fff !important;
+}
+.nav-sidebar .nav-treeview .nav-link.active {
+  background: rgba(212,178,106,.15) !important;
+  color: var(--gold) !important;
+}
+.nav-header {
+  color: var(--gold) !important;
+  font-size: 0.7rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .08em !important;
+  padding: 12px 16px 4px !important;
+}
+
+/* 대시보드 카드 */
+.small-box {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+.small-box.bg-warning { background: var(--gold) !important; }
+.small-box.bg-danger  { background: var(--wine) !important; }
+.small-box.bg-info    { background: #3b82f6 !important; }
+.small-box.bg-success { background: #1a7a4a !important; }
+
+/* 버튼 */
+.btn-warning {
+  background: var(--gold) !important;
+  border-color: var(--gold) !important;
+  color: var(--dark2) !important;
+  font-weight: 700 !important;
+}
+.btn-primary {
+  background: var(--wine) !important;
+  border-color: var(--wine) !important;
+}
+.btn-warning:hover { opacity: .85 !important; }
+
+/* 테이블 헤더 */
+#result_list thead th {
+  background: var(--dark) !important;
+  color: var(--gold) !important;
+  border-bottom: 2px solid var(--gold) !important;
+  font-weight: 700;
+}
+#result_list tbody tr:hover {
+  background: rgba(212,178,106,.08) !important;
+}
+
+/* 선택된 행 */
+#result_list tbody tr.selected {
+  background: rgba(122,38,58,.1) !important;
+}
+
+/* 폼 */
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 2px rgba(212,178,106,.25) !important;
+}
+
+/* 링크 */
+a { color: var(--wine) !important; }
+a:hover { color: var(--gold) !important; }
+.navbar a, .main-sidebar a { color: inherit !important; }
+
+/* 탭 */
+.nav-tabs .nav-link.active {
+  border-bottom: 2px solid var(--wine) !important;
+  color: var(--wine) !important;
+  font-weight: 700;
+}
+
+/* 필터 사이드바 */
+#changelist-filter h2 {
+  background: var(--dark) !important;
+  color: var(--gold) !important;
+  padding: 8px 12px;
+  border-radius: 8px 8px 0 0;
+}
+#changelist-filter h3 {
+  color: var(--wine) !important;
+  font-weight: 700;
+}
+
+/* 페이지 타이틀 */
+#content h1 {
+  color: var(--dark2) !important;
+  font-weight: 800;
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: 8px;
+}
+
+/* 액션 선택 */
+.actions select {
+  border: 1px solid var(--gold) !important;
+  border-radius: 6px !important;
+}
+
+/* 브레드크럼 */
+.breadcrumb-item a { color: var(--wine) !important; }
+
+/* 모달 */
+.modal-header {
+  background: var(--dark) !important;
+  color: var(--gold) !important;
+}
+
+/* 푸터 */
+footer.main-footer {
+  background: var(--dark) !important;
+  color: rgba(255,255,255,.5) !important;
+  border-top: 1px solid var(--gold) !important;
+}
