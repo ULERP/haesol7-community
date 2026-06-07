@@ -338,11 +338,20 @@ function toggleSection(id){
   const target=document.getElementById(id);
   if(!target)return;
   const isOpen=!target.classList.contains("folded");
-  const h=target.scrollHeight;
+  // 닫기 전 모든 섹션의 실제 높이 미리 측정
   SB_SECS.forEach(sid=>{
     const s=document.getElementById(sid);
-    if(s){s.classList.add("folded");s.style.maxHeight="0";}
+    if(s){
+      s.classList.remove("folded");
+      s.style.maxHeight="none";
+    }
+  });
+  const h=target.scrollHeight;
+  // 모두 닫기
+  SB_SECS.forEach(sid=>{
+    const s=document.getElementById(sid);
     const l=s?s.previousElementSibling:null;
+    if(s){s.classList.add("folded");s.style.maxHeight="0";}
     if(l)l.classList.add("folded");
   });
   if(isOpen){
