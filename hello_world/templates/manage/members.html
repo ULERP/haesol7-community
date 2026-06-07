@@ -1,0 +1,191 @@
+{% extends 'manage/base.html' %}
+{% block title %}회원 관리{% endblock %}
+{% block page_title %}👥 회원 관리{% endblock %}
+{% block nav_members %}active{% endblock %}
+
+{% block content %}
+<!-- 통계 -->
+<div class="mg-stat-grid" style="grid-template-columns:repeat(4,1fr);">
+  <div class="mg-stat accent"><div class="mg-stat-icon">👥</div><div class="mg-stat-num">{{ stats.total }}</div><div class="mg-stat-label">전체 회원</div></div>
+  <div class="mg-stat ok"><div class="mg-stat-icon">✅</div><div class="mg-stat-num">{{ stats.verified }}</div><div class="mg-stat-label">인증 회원</div></div>
+  <div class="mg-stat warn"><div class="mg-stat-icon">⚠️</div><div class="mg-stat-num">{{ stats.unverified }}</div><div class="mg-stat-label">미인증</div></div>
+  <div class="mg-stat info"><div class="mg-stat-icon">🛡️</div><div class="mg-stat-num">{{ stats.staff }}</div><div class="mg-stat-label">관리자</div></div>
+</div>
+
+<div class="mg-section">
+  <!-- 탭 -->
+  <div class="mg-tabs">
+    <a href="?tab=list" class="mg-tab {% if tab == 'list' %}active{% endif %}">📋 전체 회원</a>
+    <a href="?tab=pending" class="mg-tab {% if tab == 'pending' %}active{% endif %}">⚠️ 인증 대기 {% if stats.unverified %}<span style="background:#7A263A;color:#fff;border-radius:10px;padding:0 6px;font-size:0.65rem;">{{ stats.unverified }}</span>{% endif %}</a>
+    <a href="?tab=grades" class="mg-tab {% if tab == 'grades' %}active{% endif %}">🏅 등급 관리</a>
+    <a href="?tab=badges" class="mg-tab {% if tab == 'badges' %}active{% endif %}">🎖️ 배지 관리</a>
+  </div>
+
+  {% if tab == 'list' or not tab %}
+  <!-- 검색 -->
+  <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <form method="get" class="mg-search" style="flex:1;">
+      <input type="hidden" name="tab" value="list">
+      <input type="text" name="q" value="{{ q }}" placeholder="이름, 닉네임, 동호수 검색..." style="min-width:200px;flex:1;">
+      <button type="submit" class="btn-mg btn-mg-wine">검색</button>
+    </form>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+      <a href="?tab=list" class="btn-mg {% if not status %}btn-mg-wine{% else %}btn-mg-gray{% endif %}">전체</a>
+      <a href="?tab=list&status=unverified" class="btn-mg {% if status == 'unverified' %}btn-mg-wine{% else %}btn-mg-gray{% endif %}">미인증</a>
+      <a href="?tab=list&status=verified" class="btn-mg {% if status == 'verified' %}btn-mg-wine{% else %}btn-mg-gray{% endif %}">인증</a>
+      <a href="?tab=list&status=inactive" class="btn-mg {% if status == 'inactive' %}btn-mg-wine{% else %}btn-mg-gray{% endif %}">비활성</a>
+      <a href="?tab=list&status=staff" class="btn-mg {% if status == 'staff' %}btn-mg-wine{% else %}btn-mg-gray{% endif %}">관리자</a>
+    </div>
+  </div>
+  <div class="mg-section-body">
+    <table class="mg-table">
+      <thead>
+        <tr>
+          <th>회원</th><th>동/호수</th><th>연락처</th>
+          <th>인증</th><th>활성</th><th>포인트</th><th>가입일</th><th>액션</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr id="user-row-{{ u.pk }}">
+          <td>
+            <div style="font-weight:700;">{{ u.nickname|default:u.username }}</div>
+            <div style="font-size:0.72rem;color:#9ca3af;">{{ u.username }}</div>
+          </td>
+          <td>{% if u.dong %}{{ u.dong }}동 {{ u.ho }}호{% else %}<span style="color:#d1d5db;">-</span>{% endif %}</td>
+          <td style="font-size:0.75rem;color:#6b7280;">{{ u.email|default:"-" }}</td>
+          <td>
+            {% if u.is_verified %}
+            <span class="badge-ok">✅ 인증</span>
+            {% else %}
+            <span class="badge-no">미인증</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.is_active %}
+            <span class="badge-ok">활성</span>
+            {% else %}
+            <span class="badge-warn">비활성</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ u.mileage_points }}P</strong></td>
+          <td style="color:#9ca3af;font-size:0.75rem;">{{ u.date_joined|date:"m/d/y" }}</td>
+          <td>
+            <div style="display:flex;gap:4px;">
+              {% if not u.is_verified %}
+              <button class="btn-mg btn-mg-green" onclick="userAction({{ u.pk }},'verify',this)">인증</button>
+              {% else %}
+              <button class="btn-mg btn-mg-gray" onclick="userAction({{ u.pk }},'unverify',this)">취소</button>
+              {% endif %}
+              {% if not u.is_superuser %}
+              <button class="btn-mg btn-mg-{% if u.is_active %}red{% else %}green{% endif %}" onclick="userAction({{ u.pk }},'toggle_active',this)">
+                {% if u.is_active %}정지{% else %}활성{% endif %}
+              </button>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <!-- 페이지네이션 -->
+    {% if users.has_other_pages %}
+    <div style="padding:12px 16px;display:flex;gap:4px;justify-content:center;">
+      {% if users.has_previous %}<a href="?tab=list&page={{ users.previous_page_number }}&q={{ q }}&status={{ status }}" class="btn-mg btn-mg-gray">‹</a>{% endif %}
+      <span style="padding:5px 12px;font-size:0.8rem;">{{ users.number }} / {{ users.paginator.num_pages }}</span>
+      {% if users.has_next %}<a href="?tab=list&page={{ users.next_page_number }}&q={{ q }}&status={{ status }}" class="btn-mg btn-mg-gray">›</a>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% elif tab == 'pending' %}
+  <div class="mg-section-body">
+    <table class="mg-table">
+      <thead><tr><th>회원</th><th>동/호수</th><th>이메일</th><th>가입일</th><th>액션</th></tr></thead>
+      <tbody>
+        {% for u in pending_verify %}
+        <tr id="user-row-{{ u.pk }}">
+          <td><div style="font-weight:700;">{{ u.nickname|default:u.username }}</div><div style="font-size:0.72rem;color:#9ca3af;">{{ u.username }}</div></td>
+          <td>{% if u.dong %}{{ u.dong }}동 {{ u.ho }}호{% else %}<span style="color:#d1d5db;">-</span>{% endif %}</td>
+          <td style="font-size:0.75rem;">{{ u.email|default:"-" }}</td>
+          <td style="color:#9ca3af;font-size:0.75rem;">{{ u.date_joined|date:"m/d H:i" }}</td>
+          <td>
+            <button class="btn-mg btn-mg-green" onclick="userAction({{ u.pk }},'verify',this)">✅ 인증 승인</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;padding:30px;color:#9ca3af;">인증 대기 회원이 없습니다 🎉</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% elif tab == 'grades' %}
+  <div style="padding:16px;">
+    <table class="mg-table">
+      <thead><tr><th>등급명</th><th>필요 포인트</th><th>필요 활동수</th><th>색상</th><th>순서</th><th>활성</th></tr></thead>
+      <tbody>
+        {% for g in grades %}
+        <tr>
+          <td><strong>{{ g.name }}</strong></td>
+          <td>{{ g.required_points }}P</td>
+          <td>{{ g.required_activities }}회</td>
+          <td><span style="background:{{ g.badge_color }};color:#fff;padding:2px 10px;border-radius:6px;font-size:0.75rem;">{{ g.badge_color }}</span></td>
+          <td>{{ g.order }}</td>
+          <td>{% if g.is_active %}<span class="badge-ok">활성</span>{% else %}<span class="badge-gray">비활성</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div style="margin-top:12px;">
+      <a href="/admin/core/membergrade/" target="_blank" class="btn-mg btn-mg-wine">➕ 등급 관리 (Django Admin)</a>
+    </div>
+  </div>
+
+  {% elif tab == 'badges' %}
+  <div style="padding:16px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
+      {% for b in badges %}
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px;">
+        <div style="font-weight:700;font-size:0.85rem;margin-bottom:4px;">{{ b.title }}</div>
+        <div style="font-size:0.72rem;color:#6b7280;margin-bottom:6px;">{{ b.description|truncatechars:50 }}</div>
+        <div style="display:flex;gap:6px;font-size:0.7rem;">
+          <span class="badge-info">{{ b.category }}</span>
+          <span class="badge-gray">{{ b.required_points }}P</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="margin-top:12px;">
+      <a href="/admin/core/badge/" target="_blank" class="btn-mg btn-mg-wine">➕ 배지 관리 (Django Admin)</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function userAction(userId, action, btn) {
+  const labels = {verify:'인증 승인', unverify:'인증 취소', toggle_active:'상태 변경'};
+  if(!confirm(`${labels[action]||action} 하시겠습니까?`)) return;
+  mgAction('{% url "manage_user_action" %}', {user_id: userId, action: action}, res => {
+    const row = document.getElementById('user-row-'+userId);
+    if(action === 'verify') {
+      row.querySelector('td:nth-child(4)').innerHTML = '<span class="badge-ok">✅ 인증</span>';
+      btn.textContent = '취소'; btn.className = 'btn-mg btn-mg-gray';
+      btn.setAttribute('onclick', `userAction(${userId},'unverify',this)`);
+    } else if(action === 'unverify') {
+      row.querySelector('td:nth-child(4)').innerHTML = '<span class="badge-no">미인증</span>';
+      btn.textContent = '인증'; btn.className = 'btn-mg btn-mg-green';
+      btn.setAttribute('onclick', `userAction(${userId},'verify',this)`);
+    } else if(action === 'toggle_active') {
+      const isActive = res.active;
+      row.querySelector('td:nth-child(5)').innerHTML = isActive ? '<span class="badge-ok">활성</span>' : '<span class="badge-warn">비활성</span>';
+      btn.textContent = isActive ? '정지' : '활성';
+      btn.className = `btn-mg btn-mg-${isActive ? 'red' : 'green'}`;
+    }
+  });
+}
+</script>
+{% endblock %}

@@ -17,6 +17,17 @@ urlpatterns = [
     path('accounts/password-reset/send-email/',          views.pw_send_email,         name='pw_send_email'),
     path('accounts/password-reset/email-confirm/',       views.pw_email_confirm,      name='pw_email_confirm'),
     path('admin-tools/members/',            views.admin_member_manage, name='admin_member_manage'),
+    # ── 커스텀 관리자 페이지
+    path('manage/',                          views.manage_dashboard,   name='manage_dashboard'),
+    path('manage/members/',                  views.manage_members,     name='manage_members'),
+    path('manage/content/',                  views.manage_content,     name='manage_content'),
+    path('manage/groups/',                   views.manage_groups,      name='manage_groups'),
+    path('manage/activity/',                 views.manage_activity,    name='manage_activity'),
+    path('manage/system/',                   views.manage_system,      name='manage_system'),
+    # AJAX 액션
+    path('manage/ajax/user-action/',         views.manage_user_action, name='manage_user_action'),
+    path('manage/ajax/group-action/',        views.manage_group_action,name='manage_group_action'),
+    path('manage/ajax/proof-action/',        views.manage_proof_action,name='manage_proof_action'),
     path('admin-tools/members/pw-reset/',   views.admin_pw_reset,      name='admin_pw_reset'),
     path('admin-tools/members/grade/',      views.admin_grade_change,  name='admin_grade_change'),
     path('admin-tools/members/toggle/',     views.admin_toggle_active, name='admin_toggle_active'),

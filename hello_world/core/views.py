@@ -4286,3 +4286,353 @@ def group_post_edit(request, pk, post_pk):
         messages.success(request, "글이 수정되었습니다.")
         return redirect("group_post_detail", pk=pk, post_pk=post_pk)
     return render(request, "groups/group_post_form.html", {"group": group, "post": post})
+
+
+# ════════════════════════════════════════════════════════════════
+# 🛠️ 커스텀 관리자 페이지
+# ════════════════════════════════════════════════════════════════
+from functools import wraps
+
+def _manage_required(view_func):
+    """스태프 권한 필요"""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_staff:
+            from django.shortcuts import redirect
+            return redirect('/')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+@_manage_required
+def manage_dashboard(request):
+    """커스텀 관리자 대시보드"""
+    from .models import (
+        CustomUser, Post, Group, ActivityProof, Survey,
+        Notification, CalendarEvent, Meetup, Comment
+    )
+    from django.utils import timezone
+    from datetime import timedelta
+    now      = timezone.now()
+    week_ago = now - timedelta(days=7)
+    month_ago= now - timedelta(days=30)
+
+    stats = {
+        # 회원
+        'total_users':      CustomUser.objects.filter(is_active=True).count(),
+        'unverified':       CustomUser.objects.filter(is_verified=False, is_active=True).count(),
+        'new_week':         CustomUser.objects.filter(date_joined__gte=week_ago).count(),
+        'new_month':        CustomUser.objects.filter(date_joined__gte=month_ago).count(),
+        # 콘텐츠
+        'total_posts':      Post.objects.filter(is_active=True).count(),
+        'posts_week':       Post.objects.filter(is_active=True, created_at__gte=week_ago).count(),
+        'total_comments':   Comment.objects.filter(is_active=True).count(),
+        # 소모임
+        'total_groups':     Group.objects.filter(is_active=True).count(),
+        'pending_groups':   Group.objects.filter(status='pending').count(),
+        # 봉사/활동
+        'pending_proofs':   ActivityProof.objects.filter(status='pending').count(),
+        'pending_meetups':  Meetup.objects.filter(is_confirmed=False, status='planned').count(),
+        # 캘린더
+        'pending_calendar': CalendarEvent.objects.filter(visibility__in=['pending','group_pending']).count(),
+        # 운영
+        'active_surveys':   Survey.objects.filter(status='active').count(),
+        'unread_noti':      Notification.objects.filter(is_read=False).count(),
+    }
+
+    # 승인 대기 목록
+    pending = {
+        'proofs':   ActivityProof.objects.filter(status='pending').select_related('user','activity').order_by('-submitted_at')[:5],
+        'groups':   Group.objects.filter(status='pending').select_related('creator').order_by('-created_at')[:5],
+        'calendar': CalendarEvent.objects.filter(visibility__in=['pending','group_pending']).select_related('creator','group').order_by('-created_at')[:5],
+        'meetups':  Meetup.objects.filter(is_confirmed=False, status='planned').select_related('creator').order_by('-created_at')[:5],
+    }
+
+    # 최근 가입자
+    recent_users = CustomUser.objects.filter(is_active=True).order_by('-date_joined')[:8]
+
+    # 최근 게시글
+    recent_posts = Post.objects.filter(is_active=True).select_related('author','board').order_by('-created_at')[:5]
+
+    return render(request, 'manage/dashboard.html', {
+        'stats': stats,
+        'pending': pending,
+        'recent_users': recent_users,
+        'recent_posts': recent_posts,
+    })
+
+
+@_manage_required
+def manage_members(request):
+    """회원 관리 - 탭별 통합 관리"""
+    from .models import MemberGrade, Badge, UserBadge, Rating
+    from django.db.models import Q, Avg
+    from django.core.paginator import Paginator
+
+    tab    = request.GET.get('tab', 'list')
+    q      = request.GET.get('q', '').strip()
+    status = request.GET.get('status', '')
+    page   = request.GET.get('page', 1)
+
+    users = CustomUser.objects.order_by('-date_joined')
+    if q:
+        users = users.filter(Q(username__icontains=q)|Q(nickname__icontains=q)|Q(dong__icontains=q)|Q(ho__icontains=q))
+    if status == 'verified':   users = users.filter(is_verified=True)
+    if status == 'unverified': users = users.filter(is_verified=False, is_active=True)
+    if status == 'inactive':   users = users.filter(is_active=False)
+    if status == 'staff':      users = users.filter(is_staff=True)
+
+    paginator   = Paginator(users, 20)
+    users_page  = paginator.get_page(page)
+
+    # 인증 대기
+    pending_verify = CustomUser.objects.filter(is_verified=False, is_active=True).order_by('-date_joined')
+
+    return render(request, 'manage/members.html', {
+        'tab':            tab,
+        'users':          users_page,
+        'pending_verify': pending_verify,
+        'grades':         MemberGrade.objects.filter(is_active=True).order_by('order'),
+        'badges':         Badge.objects.filter(is_active=True),
+        'q':              q,
+        'status':         status,
+        'stats': {
+            'total':      CustomUser.objects.filter(is_active=True).count(),
+            'verified':   CustomUser.objects.filter(is_verified=True).count(),
+            'unverified': CustomUser.objects.filter(is_verified=False, is_active=True).count(),
+            'staff':      CustomUser.objects.filter(is_staff=True).count(),
+        }
+    })
+
+
+@_manage_required
+def manage_content(request):
+    """콘텐츠 관리"""
+    from .models import Board, Post, Comment
+    from django.core.paginator import Paginator
+    from django.db.models import Q
+
+    tab  = request.GET.get('tab', 'posts')
+    q    = request.GET.get('q', '').strip()
+    board_id = request.GET.get('board', '')
+    page = request.GET.get('page', 1)
+
+    posts = Post.objects.select_related('author','board').order_by('-created_at')
+    if q:        posts = posts.filter(Q(title__icontains=q)|Q(author__nickname__icontains=q))
+    if board_id: posts = posts.filter(board_id=board_id)
+    paginator  = Paginator(posts, 20)
+    posts_page = paginator.get_page(page)
+
+    comments = Comment.objects.select_related('author','post').order_by('-created_at')
+    if q: comments = comments.filter(Q(content__icontains=q)|Q(author__nickname__icontains=q))
+    c_paginator  = Paginator(comments, 20)
+    comments_page = c_paginator.get_page(page)
+
+    return render(request, 'manage/content.html', {
+        'tab':      tab,
+        'posts':    posts_page,
+        'comments': comments_page,
+        'boards':   Board.objects.filter(is_active=True).order_by('order'),
+        'q':        q,
+        'board_id': board_id,
+        'stats': {
+            'total_posts':    Post.objects.filter(is_active=True).count(),
+            'hidden_posts':   Post.objects.filter(is_active=False).count(),
+            'total_comments': Comment.objects.filter(is_active=True).count(),
+            'total_boards':   Board.objects.filter(is_active=True).count(),
+        }
+    })
+
+
+@_manage_required
+def manage_groups(request):
+    """소모임 관리"""
+    from .models import Group, GroupMember
+    from django.core.paginator import Paginator
+    from django.db.models import Q
+
+    tab  = request.GET.get('tab', 'list')
+    q    = request.GET.get('q', '').strip()
+    page = request.GET.get('page', 1)
+
+    groups = Group.objects.select_related('creator').order_by('-created_at')
+    if q: groups = groups.filter(Q(name__icontains=q)|Q(creator__nickname__icontains=q))
+
+    pending = Group.objects.filter(status='pending').select_related('creator')
+    paginator   = Paginator(groups, 20)
+    groups_page = paginator.get_page(page)
+
+    return render(request, 'manage/groups.html', {
+        'tab':     tab,
+        'groups':  groups_page,
+        'pending': pending,
+        'q':       q,
+        'stats': {
+            'total':    Group.objects.filter(is_active=True).count(),
+            'pending':  Group.objects.filter(status='pending').count(),
+            'active':   Group.objects.filter(status='active').count(),
+            'members':  GroupMember.objects.filter(join_status='approved').count(),
+        }
+    })
+
+
+@_manage_required
+def manage_activity(request):
+    """봉사/활동 관리"""
+    from .models import Meetup, ActivityProof, Activity, CalendarEvent
+    from django.core.paginator import Paginator
+
+    tab  = request.GET.get('tab', 'proofs')
+    page = request.GET.get('page', 1)
+
+    proofs   = ActivityProof.objects.select_related('user','activity').order_by('-submitted_at')
+    meetups  = Meetup.objects.select_related('creator').order_by('-created_at')
+    calendar = CalendarEvent.objects.select_related('creator','group').order_by('-created_at')
+
+    p_paginator = Paginator(proofs, 20)
+    m_paginator = Paginator(meetups, 20)
+    c_paginator = Paginator(calendar, 20)
+
+    return render(request, 'manage/activity.html', {
+        'tab':      tab,
+        'proofs':   p_paginator.get_page(page),
+        'meetups':  m_paginator.get_page(page),
+        'calendar': c_paginator.get_page(page),
+        'activities': Activity.objects.filter(is_active=True),
+        'stats': {
+            'pending_proofs':  ActivityProof.objects.filter(status='pending').count(),
+            'approved_proofs': ActivityProof.objects.filter(status='approved').count(),
+            'total_meetups':   Meetup.objects.count(),
+            'pending_meetups': Meetup.objects.filter(is_confirmed=False, status='planned').count(),
+            'pending_events':  CalendarEvent.objects.filter(visibility__in=['pending','group_pending']).count(),
+        }
+    })
+
+
+@_manage_required
+def manage_system(request):
+    """시스템 설정"""
+    from .models import SiteConfig, Notification, AdminActionLog, Survey
+    from django.core.paginator import Paginator
+
+    tab  = request.GET.get('tab', 'site')
+    page = request.GET.get('page', 1)
+
+    site_cfg = SiteConfig.objects.first()
+    notis    = Notification.objects.select_related('recipient').order_by('-created_at')
+    logs     = AdminActionLog.objects.select_related('admin','target_user').order_by('-created_at')
+    surveys  = Survey.objects.select_related('creator').order_by('-created_at')
+
+    n_paginator = Paginator(notis, 20)
+    l_paginator = Paginator(logs, 20)
+    s_paginator = Paginator(surveys, 20)
+
+    return render(request, 'manage/system.html', {
+        'tab':      tab,
+        'site_cfg': site_cfg,
+        'notis':    n_paginator.get_page(page),
+        'logs':     l_paginator.get_page(page),
+        'surveys':  s_paginator.get_page(page),
+        'stats': {
+            'unread_noti':  Notification.objects.filter(is_read=False).count(),
+            'total_logs':   AdminActionLog.objects.count(),
+            'active_surveys': Survey.objects.filter(status='active').count(),
+        }
+    })
+
+
+@_manage_required
+def manage_user_action(request):
+    """회원 AJAX 액션"""
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    import json
+    data    = json.loads(request.body)
+    action  = data.get('action')
+    user_id = data.get('user_id')
+    try:
+        target = CustomUser.objects.get(pk=user_id)
+    except CustomUser.DoesNotExist:
+        return JsonResponse({'error': '회원 없음'}, status=404)
+
+    ip = request.META.get('REMOTE_ADDR','')
+    from .models import AdminActionLog
+
+    if action == 'verify':
+        target.is_verified = True; target.save(update_fields=['is_verified'])
+        AdminActionLog.objects.create(admin=request.user, target_user=target, action='verify', detail='인증 승인', ip_address=ip)
+        return JsonResponse({'success': True, 'msg': f'{target.nickname} 인증 승인 완료'})
+
+    elif action == 'unverify':
+        target.is_verified = False; target.save(update_fields=['is_verified'])
+        AdminActionLog.objects.create(admin=request.user, target_user=target, action='verify', detail='인증 취소', ip_address=ip)
+        return JsonResponse({'success': True, 'msg': f'{target.nickname} 인증 취소 완료'})
+
+    elif action == 'toggle_active':
+        if target.is_superuser:
+            return JsonResponse({'error': '최고관리자는 변경 불가'}, status=403)
+        target.is_active = not target.is_active
+        target.save(update_fields=['is_active'])
+        act = 'activate' if target.is_active else 'deactivate'
+        AdminActionLog.objects.create(admin=request.user, target_user=target, action=act, detail='', ip_address=ip)
+        return JsonResponse({'success': True, 'active': target.is_active})
+
+    elif action == 'make_staff':
+        target.is_staff = True; target.save(update_fields=['is_staff'])
+        AdminActionLog.objects.create(admin=request.user, target_user=target, action='admin_change', detail='스태프 권한 부여', ip_address=ip)
+        return JsonResponse({'success': True, 'msg': f'{target.nickname} 스태프 권한 부여'})
+
+    return JsonResponse({'error': '알 수 없는 액션'}, status=400)
+
+
+@_manage_required
+def manage_group_action(request):
+    """소모임 AJAX 액션"""
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    import json
+    from .models import Group
+    from django.utils import timezone
+    data     = json.loads(request.body)
+    action   = data.get('action')
+    group_id = data.get('group_id')
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return JsonResponse({'error': '소모임 없음'}, status=404)
+
+    if action == 'approve':
+        group.status = 'active'; group.approved_by = request.user; group.approved_at = timezone.now(); group.save()
+        return JsonResponse({'success': True, 'msg': f'{group.name} 승인 완료'})
+    elif action == 'reject':
+        group.status = 'dissolved'; group.save()
+        return JsonResponse({'success': True, 'msg': f'{group.name} 거부 완료'})
+    return JsonResponse({'error': '알 수 없는 액션'}, status=400)
+
+
+@_manage_required
+def manage_proof_action(request):
+    """활동 인증 AJAX 액션"""
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    import json
+    from .models import ActivityProof
+    from django.utils import timezone
+    data     = json.loads(request.body)
+    action   = data.get('action')
+    proof_id = data.get('proof_id')
+    try:
+        proof = ActivityProof.objects.get(pk=proof_id)
+    except ActivityProof.DoesNotExist:
+        return JsonResponse({'error': '인증 없음'}, status=404)
+
+    if action == 'approve':
+        points = int(proof.activity.base_points + proof.activity.points_per_hour * proof.duration_hours)
+        proof.status = 'approved'; proof.points_earned = points
+        proof.approved_at = timezone.now(); proof.approved_by = request.user; proof.save()
+        proof.user.mileage_points += points; proof.user.save(update_fields=['mileage_points'])
+        return JsonResponse({'success': True, 'msg': f'승인 완료 (+{points}P)'})
+    elif action == 'reject':
+        proof.status = 'rejected'; proof.save()
+        return JsonResponse({'success': True, 'msg': '반려 완료'})
+    return JsonResponse({'error': '알 수 없는 액션'}, status=400)

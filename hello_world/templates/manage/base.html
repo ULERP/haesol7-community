@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}관리자{% endblock %} — 해솔7 지킴이</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --wine: #7A263A; --gold: #D4B26A; --dark: #1F2937;
+  --sidebar-w: 220px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Pretendard', -apple-system, sans-serif; background: #f4f2ee; color: #1F2937; }
+
+/* ── 사이드바 ── */
+.mg-sidebar {
+  position: fixed; top: 0; left: 0; width: var(--sidebar-w);
+  height: 100vh; background: var(--dark);
+  display: flex; flex-direction: column;
+  z-index: 1000; overflow-y: auto;
+}
+.mg-brand {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid rgba(212,178,106,.2);
+}
+.mg-brand-title {
+  color: var(--gold); font-weight: 800; font-size: 0.95rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.mg-brand-sub { color: rgba(255,255,255,.4); font-size: 0.7rem; margin-top: 2px; }
+.mg-nav { flex: 1; padding: 12px 8px; }
+.mg-nav-section { margin-bottom: 20px; }
+.mg-nav-label {
+  color: rgba(212,178,106,.6); font-size: 0.62rem; font-weight: 800;
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: 0 8px; margin-bottom: 4px;
+}
+.mg-nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 9px;
+  color: rgba(255,255,255,.7); text-decoration: none;
+  font-size: 0.83rem; font-weight: 500;
+  transition: .15s; position: relative;
+}
+.mg-nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+.mg-nav-item.active { background: var(--wine); color: #fff; font-weight: 700; }
+.mg-nav-item i { width: 18px; text-align: center; font-size: 0.85rem; opacity: .8; }
+.mg-nav-item.active i { opacity: 1; }
+.mg-badge {
+  margin-left: auto; background: var(--gold); color: var(--dark);
+  border-radius: 20px; padding: 1px 7px;
+  font-size: 0.65rem; font-weight: 800;
+}
+.mg-nav-item.active .mg-badge { background: rgba(255,255,255,.2); color: #fff; }
+.mg-footer {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.mg-footer a {
+  color: rgba(255,255,255,.4); font-size: 0.75rem;
+  text-decoration: none; display: flex; align-items: center; gap: 6px;
+}
+.mg-footer a:hover { color: var(--gold); }
+
+/* ── 메인 콘텐츠 ── */
+.mg-main { margin-left: var(--sidebar-w); min-height: 100vh; }
+.mg-topbar {
+  background: #fff; border-bottom: 1px solid #e5e7eb;
+  padding: 12px 24px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 100;
+}
+.mg-topbar-title { font-weight: 800; font-size: 1rem; color: var(--dark); }
+.mg-topbar-right { display: flex; align-items: center; gap: 12px; }
+.mg-content { padding: 24px; }
+
+/* ── 통계 카드 ── */
+.mg-stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 12px; margin-bottom: 24px; }
+.mg-stat {
+  background: #fff; border-radius: 12px; padding: 16px;
+  border: 1px solid #e5e7eb; cursor: pointer;
+  transition: .15s; text-decoration: none; color: inherit;
+}
+.mg-stat:hover { border-color: var(--gold); box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-1px); }
+.mg-stat-icon { font-size: 1.3rem; margin-bottom: 8px; }
+.mg-stat-num { font-size: 1.8rem; font-weight: 800; color: var(--dark); line-height: 1; }
+.mg-stat-label { font-size: 0.72rem; color: #6b7280; font-weight: 600; margin-top: 4px; }
+.mg-stat-sub { font-size: 0.68rem; color: #9ca3af; margin-top: 2px; }
+.mg-stat.accent { border-left: 3px solid var(--wine); }
+.mg-stat.warn { border-left: 3px solid var(--gold); }
+.mg-stat.ok { border-left: 3px solid #1a7a4a; }
+.mg-stat.info { border-left: 3px solid #3b82f6; }
+
+/* ── 섹션 ── */
+.mg-section { background: #fff; border-radius: 14px; border: 1px solid #e5e7eb; margin-bottom: 20px; overflow: hidden; }
+.mg-section-head {
+  padding: 14px 20px; border-bottom: 1px solid #f0f0f0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.mg-section-title { font-weight: 800; font-size: 0.88rem; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+.mg-section-body { padding: 0; }
+
+/* ── 테이블 ── */
+.mg-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.mg-table th { background: #f9fafb; color: #6b7280; font-weight: 700; font-size: 0.72rem; padding: 10px 16px; text-align: left; border-bottom: 1px solid #e5e7eb; white-space: nowrap; }
+.mg-table td { padding: 10px 16px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+.mg-table tr:last-child td { border-bottom: none; }
+.mg-table tr:hover td { background: #fafafa; }
+
+/* ── 탭 ── */
+.mg-tabs { display: flex; gap: 4px; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; background: #fafafa; flex-wrap: wrap; }
+.mg-tab {
+  padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+  text-decoration: none; color: #6b7280; border: 1px solid #e5e7eb;
+  background: #fff; transition: .15s; white-space: nowrap;
+}
+.mg-tab:hover { border-color: var(--gold); color: var(--dark); }
+.mg-tab.active { background: var(--wine); color: #fff; border-color: var(--wine); }
+
+/* ── 배지 ── */
+.badge-ok { background: #dcfce7; color: #166534; border-radius: 6px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+.badge-no { background: #fee2e2; color: #991b1b; border-radius: 6px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+.badge-warn { background: #fef3c7; color: #92400e; border-radius: 6px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+.badge-info { background: #dbeafe; color: #1e40af; border-radius: 6px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+.badge-gray { background: #f3f4f6; color: #6b7280; border-radius: 6px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; }
+
+/* ── 액션 버튼 ── */
+.btn-mg { padding: 5px 12px; border-radius: 7px; font-size: 0.76rem; font-weight: 700; border: none; cursor: pointer; transition: .15s; }
+.btn-mg-wine { background: var(--wine); color: #fff; }
+.btn-mg-wine:hover { opacity: .85; }
+.btn-mg-gold { background: var(--gold); color: var(--dark); }
+.btn-mg-gold:hover { opacity: .85; }
+.btn-mg-gray { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+.btn-mg-gray:hover { background: #e5e7eb; }
+.btn-mg-red { background: #fee2e2; color: #991b1b; }
+.btn-mg-red:hover { background: #fecaca; }
+.btn-mg-green { background: #dcfce7; color: #166534; }
+.btn-mg-green:hover { background: #bbf7d0; }
+
+/* ── 알림 배너 ── */
+.mg-alert {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 10px; margin-bottom: 10px;
+  border: 1px solid;
+}
+.mg-alert.danger { background: #fef2f2; border-color: var(--wine); }
+.mg-alert.warn   { background: #fffbeb; border-color: var(--gold); }
+.mg-alert.info   { background: #eff6ff; border-color: #3b82f6; }
+.mg-alert-body   { flex: 1; }
+.mg-alert-title  { font-weight: 700; font-size: 0.84rem; }
+.mg-alert-desc   { font-size: 0.75rem; color: #6b7280; }
+
+/* ── 검색 ── */
+.mg-search { display: flex; gap: 8px; align-items: center; }
+.mg-search input { padding: 7px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; outline: none; }
+.mg-search input:focus { border-color: var(--gold); }
+
+/* 토스트 */
+#mg-toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: var(--dark); color: #fff; padding: 12px 20px;
+  border-radius: 10px; font-size: 0.84rem; font-weight: 600;
+  box-shadow: 0 4px 20px rgba(0,0,0,.2);
+  opacity: 0; transform: translateY(10px);
+  transition: .3s; pointer-events: none;
+}
+#mg-toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- 사이드바 -->
+<nav class="mg-sidebar">
+  <div class="mg-brand">
+    <div class="mg-brand-title">🌿 해솔7 지킴이</div>
+    <div class="mg-brand-sub">관리자 센터</div>
+  </div>
+  <div class="mg-nav">
+    <div class="mg-nav-section">
+      <div class="mg-nav-label">메인</div>
+      <a href="{% url 'manage_dashboard' %}" class="mg-nav-item {% block nav_dashboard %}{% endblock %}">
+        <i class="fas fa-th-large"></i> 대시보드
+      </a>
+    </div>
+    <div class="mg-nav-section">
+      <div class="mg-nav-label">관리</div>
+      <a href="{% url 'manage_members' %}" class="mg-nav-item {% block nav_members %}{% endblock %}">
+        <i class="fas fa-users"></i> 회원 관리
+        {% if pending_verify_count %}<span class="mg-badge">{{ pending_verify_count }}</span>{% endif %}
+      </a>
+      <a href="{% url 'manage_content' %}" class="mg-nav-item {% block nav_content %}{% endblock %}">
+        <i class="fas fa-file-alt"></i> 콘텐츠 관리
+      </a>
+      <a href="{% url 'manage_groups' %}" class="mg-nav-item {% block nav_groups %}{% endblock %}">
+        <i class="fas fa-users-cog"></i> 소모임 관리
+        {% if pending_group_count %}<span class="mg-badge">{{ pending_group_count }}</span>{% endif %}
+      </a>
+      <a href="{% url 'manage_activity' %}" class="mg-nav-item {% block nav_activity %}{% endblock %}">
+        <i class="fas fa-running"></i> 봉사/활동
+        {% if pending_proof_count %}<span class="mg-badge">{{ pending_proof_count }}</span>{% endif %}
+      </a>
+      <a href="{% url 'manage_system' %}" class="mg-nav-item {% block nav_system %}{% endblock %}">
+        <i class="fas fa-cog"></i> 시스템
+      </a>
+    </div>
+    <div class="mg-nav-section">
+      <div class="mg-nav-label">바로가기</div>
+      <a href="/verify/admin/" class="mg-nav-item" target="_blank">
+        <i class="fas fa-id-card"></i> 입주민 인증
+      </a>
+      <a href="/admin/" class="mg-nav-item" target="_blank">
+        <i class="fas fa-tools"></i> Django 관리자
+      </a>
+      <a href="/" class="mg-nav-item" target="_blank">
+        <i class="fas fa-home"></i> 사이트 보기
+      </a>
+    </div>
+  </div>
+  <div class="mg-footer">
+    <a href="/"><i class="fas fa-arrow-left"></i> 사이트로 돌아가기</a>
+  </div>
+</nav>
+
+<!-- 메인 -->
+<div class="mg-main">
+  <div class="mg-topbar">
+    <div class="mg-topbar-title">{% block page_title %}관리자{% endblock %}</div>
+    <div class="mg-topbar-right">
+      <span style="font-size:0.8rem;color:#6b7280;">{{ request.user.nickname|default:request.user.username }} 님</span>
+      <a href="/" style="font-size:0.8rem;color:#7A263A;text-decoration:none;">사이트 →</a>
+    </div>
+  </div>
+  <div class="mg-content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<div id="mg-toast"></div>
+
+<script>
+function mgToast(msg, type='ok') {
+  const t = document.getElementById('mg-toast');
+  t.textContent = msg;
+  t.style.background = type === 'err' ? '#7A263A' : '#1F2937';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function getCsrf() {
+  const m = document.cookie.match(/csrftoken=([^;]+)/);
+  return m ? m[1] : '';
+}
+function mgAction(url, data, onSuccess) {
+  fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken':getCsrf()},
+    body: JSON.stringify(data)
+  }).then(r=>r.json()).then(res=>{
+    if(res.success) { mgToast(res.msg||'완료'); if(onSuccess) onSuccess(res); }
+    else mgToast(res.error||'오류', 'err');
+  });
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

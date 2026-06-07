@@ -1,0 +1,153 @@
+{% extends 'manage/base.html' %}
+{% block title %}대시보드{% endblock %}
+{% block page_title %}📊 관리 대시보드{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<!-- 통계 카드 -->
+<div class="mg-stat-grid">
+  <a href="{% url 'manage_members' %}" class="mg-stat accent">
+    <div class="mg-stat-icon">👥</div>
+    <div class="mg-stat-num">{{ stats.total_users }}</div>
+    <div class="mg-stat-label">전체 회원</div>
+    <div class="mg-stat-sub">이번 주 +{{ stats.new_week }}명</div>
+  </a>
+  <a href="{% url 'manage_members' %}?status=unverified" class="mg-stat warn">
+    <div class="mg-stat-icon">⚠️</div>
+    <div class="mg-stat-num">{{ stats.unverified }}</div>
+    <div class="mg-stat-label">미인증 회원</div>
+    <div class="mg-stat-sub">인증 승인 필요</div>
+  </a>
+  <a href="{% url 'manage_content' %}" class="mg-stat ok">
+    <div class="mg-stat-icon">📋</div>
+    <div class="mg-stat-num">{{ stats.total_posts }}</div>
+    <div class="mg-stat-label">전체 게시글</div>
+    <div class="mg-stat-sub">이번 주 +{{ stats.posts_week }}개</div>
+  </a>
+  <a href="{% url 'manage_groups' %}?tab=pending" class="mg-stat info">
+    <div class="mg-stat-icon">🤝</div>
+    <div class="mg-stat-num">{{ stats.total_groups }}</div>
+    <div class="mg-stat-label">소모임</div>
+    <div class="mg-stat-sub">승인대기 {{ stats.pending_groups }}건</div>
+  </a>
+  <a href="{% url 'manage_activity' %}?tab=proofs" class="mg-stat warn">
+    <div class="mg-stat-icon">📸</div>
+    <div class="mg-stat-num">{{ stats.pending_proofs }}</div>
+    <div class="mg-stat-label">활동인증 대기</div>
+    <div class="mg-stat-sub">포인트 적립 전</div>
+  </a>
+  <a href="{% url 'manage_activity' %}?tab=calendar" class="mg-stat accent">
+    <div class="mg-stat-icon">📅</div>
+    <div class="mg-stat-num">{{ stats.pending_calendar }}</div>
+    <div class="mg-stat-label">일정 승인 대기</div>
+    <div class="mg-stat-sub">캘린더 공개 전</div>
+  </a>
+  <a href="{% url 'manage_system' %}?tab=surveys" class="mg-stat ok">
+    <div class="mg-stat-icon">📊</div>
+    <div class="mg-stat-num">{{ stats.active_surveys }}</div>
+    <div class="mg-stat-label">진행중 설문</div>
+    <div class="mg-stat-sub"></div>
+  </a>
+  <a href="{% url 'manage_system' %}?tab=notis" class="mg-stat info">
+    <div class="mg-stat-icon">🔔</div>
+    <div class="mg-stat-num">{{ stats.unread_noti }}</div>
+    <div class="mg-stat-label">읽지 않은 알림</div>
+    <div class="mg-stat-sub"></div>
+  </a>
+</div>
+
+<!-- 즉시 처리 필요 -->
+{% if stats.unverified > 0 or stats.pending_proofs > 0 or stats.pending_groups > 0 or stats.pending_calendar > 0 %}
+<div style="margin-bottom:20px;">
+  <div style="font-size:0.78rem;font-weight:800;color:#7A263A;border-left:3px solid #D4B26A;padding-left:10px;margin-bottom:12px;letter-spacing:.05em;">🔔 즉시 처리 필요</div>
+  {% if stats.unverified > 0 %}
+  <div class="mg-alert danger">
+    <div style="font-size:1.2rem;">👤</div>
+    <div class="mg-alert-body">
+      <div class="mg-alert-title">미인증 회원 {{ stats.unverified }}명</div>
+      <div class="mg-alert-desc">입주민 인증 승인을 기다리고 있습니다</div>
+    </div>
+    <a href="/verify/admin/" target="_blank" class="btn-mg btn-mg-wine">인증 관리 →</a>
+  </div>
+  {% endif %}
+  {% if stats.pending_proofs > 0 %}
+  <div class="mg-alert warn">
+    <div style="font-size:1.2rem;">📸</div>
+    <div class="mg-alert-body">
+      <div class="mg-alert-title">활동 인증 승인 대기 {{ stats.pending_proofs }}건</div>
+      <div class="mg-alert-desc">포인트 적립 전 관리자 확인이 필요합니다</div>
+    </div>
+    <a href="{% url 'manage_activity' %}?tab=proofs" class="btn-mg btn-mg-gold">승인하기 →</a>
+  </div>
+  {% endif %}
+  {% if stats.pending_groups > 0 %}
+  <div class="mg-alert info">
+    <div style="font-size:1.2rem;">🤝</div>
+    <div class="mg-alert-body">
+      <div class="mg-alert-title">소모임 승인 대기 {{ stats.pending_groups }}건</div>
+      <div class="mg-alert-desc">10인 이상 소모임 승인이 필요합니다</div>
+    </div>
+    <a href="{% url 'manage_groups' %}?tab=pending" class="btn-mg btn-mg-wine">승인하기 →</a>
+  </div>
+  {% endif %}
+  {% if stats.pending_calendar > 0 %}
+  <div class="mg-alert warn">
+    <div style="font-size:1.2rem;">📅</div>
+    <div class="mg-alert-body">
+      <div class="mg-alert-title">캘린더 일정 승인 대기 {{ stats.pending_calendar }}건</div>
+      <div class="mg-alert-desc">전체공개/소모임공개 일정 승인이 필요합니다</div>
+    </div>
+    <a href="{% url 'manage_activity' %}?tab=calendar" class="btn-mg btn-mg-gold">승인하기 →</a>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+<!-- 최근 가입자 -->
+<div class="mg-section">
+  <div class="mg-section-head">
+    <div class="mg-section-title"><i class="fas fa-user-plus" style="color:#7A263A;"></i> 최근 가입자</div>
+    <a href="{% url 'manage_members' %}" style="font-size:0.76rem;color:#7A263A;text-decoration:none;">전체보기 →</a>
+  </div>
+  <div class="mg-section-body">
+    <table class="mg-table">
+      <thead><tr><th>닉네임</th><th>동/호</th><th>인증</th><th>가입일</th></tr></thead>
+      <tbody>
+        {% for u in recent_users %}
+        <tr>
+          <td><strong>{{ u.nickname|default:u.username }}</strong></td>
+          <td>{% if u.dong %}{{ u.dong }}동 {{ u.ho }}호{% else %}-{% endif %}</td>
+          <td>{% if u.is_verified %}<span class="badge-ok">✅</span>{% else %}<span class="badge-no">미인증</span>{% endif %}</td>
+          <td style="color:#9ca3af;">{{ u.date_joined|date:"m/d H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 최근 게시글 -->
+<div class="mg-section">
+  <div class="mg-section-head">
+    <div class="mg-section-title"><i class="fas fa-file-alt" style="color:#7A263A;"></i> 최근 게시글</div>
+    <a href="{% url 'manage_content' %}" style="font-size:0.76rem;color:#7A263A;text-decoration:none;">전체보기 →</a>
+  </div>
+  <div class="mg-section-body">
+    <table class="mg-table">
+      <thead><tr><th>제목</th><th>작성자</th><th>게시판</th><th>날짜</th></tr></thead>
+      <tbody>
+        {% for p in recent_posts %}
+        <tr>
+          <td><a href="/posts/{{ p.pk }}/" style="color:#1F2937;text-decoration:none;">{{ p.title|truncatechars:20 }}</a></td>
+          <td>{{ p.author.nickname|default:"-" }}</td>
+          <td><span class="badge-gray">{{ p.board.name }}</span></td>
+          <td style="color:#9ca3af;">{{ p.created_at|date:"m/d H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+{% endblock %}
