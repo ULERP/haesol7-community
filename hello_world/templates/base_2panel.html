@@ -338,15 +338,12 @@ function toggleSection(id){
   const target=document.getElementById(id);
   if(!target)return;
   const isOpen=!target.classList.contains("folded");
-  // 닫기 전 모든 섹션의 실제 높이 미리 측정
-  SB_SECS.forEach(sid=>{
-    const s=document.getElementById(sid);
-    if(s){
-      s.classList.remove("folded");
-      s.style.maxHeight="none";
-    }
-  });
+  // 높이 측정: 임시로 열어서 scrollHeight 확인
+  target.style.maxHeight="none";
+  target.classList.remove("folded");
   const h=target.scrollHeight;
+  target.classList.add("folded");
+  target.style.maxHeight="0";
   // 모두 닫기
   SB_SECS.forEach(sid=>{
     const s=document.getElementById(sid);
