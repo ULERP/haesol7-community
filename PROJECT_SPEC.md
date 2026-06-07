@@ -346,3 +346,35 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 2. CalendarEvent naive datetime 경고 수정
 3. board.icon 필드 PA DB 확인
 4. rate_user Notification 오류 PA 확인
+
+
+## 16. 업데이트 이력 (2026-06-08 - 7차)
+
+### 완료된 작업
+- feat: 캘린더 공통 위젯 파셜 생성 (partials/calendar_widget.html)
+  - 통합 캘린더 / 소모임 캘린더 동일 UI/UX 통합
+  - 드래그앤드롭, 주간/일간 뷰, 색상선택, 종일, 반복, 승인 모두 포함
+- feat: 소모임 캘린더 API (group_calendar_events) 추가
+  - /groups/<pk>/calendar/events/ → JSON 이벤트 반환
+  - 소모임 일정만 필터링, 소모임장 권한 체크
+- feat: 일정 상세 페이지 (calendar_event_detail.html)
+  - 참석자 관리 (참석/미정/불참)
+  - 댓글 등록/삭제
+- feat: CalendarEventAttendee, CalendarEventComment 모델 추가 (migration 0040)
+- feat: CalendarEvent color, all_day 필드 추가
+- fix: RRule DTSTART KST 명시로 반복일정 요일 오류 수정
+  - DTSTART:20260608T210000 형식으로 한국시간 명시
+  - FullCalendar timeZone: Asia/Seoul 설정
+- fix: group_detail.html 구버전 캘린더 코드 → 파셜로 완전 교체
+
+### 현재 캘린더 시스템 구조
+- partials/calendar_widget.html: 공통 위젯 (모달+JS)
+- integrated_calendar.html: 통합 캘린더 페이지
+- calendar_event_detail.html: 일정 상세 페이지
+- group_detail.html: 파셜 include로 소모임 캘린더
+
+### 잔여 이슈 (다음 작업)
+1. favicon.ico 404 오류 수정
+2. CalendarEvent naive datetime 경고 수정
+3. board.icon 필드 PA DB 확인
+4. rate_user Notification 오류 PA 확인

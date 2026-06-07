@@ -2631,7 +2631,14 @@ def integrated_calendar(request):
         }
         # RRule 반복 설정
         if ce.rrule:
-            ev['rrule']    = ce.rrule
+            # dtstart를 KST 로컬시간으로 명시 (FullCalendar timeZone과 일치)
+            from django.utils import timezone as tz
+            import pytz
+            kst = pytz.timezone('Asia/Seoul')
+            kst_start = ce.start_time.astimezone(kst)
+            dtstart = kst_start.strftime('%Y%m%dT%H%M%S')
+            ev['rrule']    = f'DTSTART:{dtstart}
+{ce.rrule}'
             ev['duration'] = None
             if ce.end_time:
                 delta = ce.end_time - ce.start_time
@@ -2776,8 +2783,9 @@ def calendar_event_create(request):
         recur_end      = data.get('recur_end_date', '')
         freq_map       = {'daily': 'DAILY', 'weekly': 'WEEKLY', 'monthly': 'MONTHLY'}
         freq           = freq_map.get(recur_type, 'WEEKLY')
-        until          = recur_end.replace('-', '') + 'T000000Z' if recur_end else ''
-        rrule          = f'FREQ={freq};INTERVAL={recur_interval}'
+        # UNTIL을 KST 종료일 23:59:59 기준으로 설정 (UTC 변환: -9시간 = 전날 14:59:59)
+        until = recur_end.replace('-', '') + 'T145959Z' if recur_end else ''
+        rrule = f'FREQ={freq};INTERVAL={recur_interval}'
         if until:
             rrule += f';UNTIL={until}'
 
@@ -2891,7 +2899,11 @@ def group_calendar_events(request, pk):
             }
         }
         if ce.rrule:
-            ev['rrule'] = ce.rrule
+            import pytz
+            kst = pytz.timezone('Asia/Seoul')
+            kst_start = ce.start_time.astimezone(kst)
+            dtstart = kst_start.strftime('%Y%m%dT%H%M%S')
+            ev['rrule'] = f'DTSTART:{dtstart}\n{ce.rrule}'
             if ce.end_time:
                 delta = ce.end_time - ce.start_time
                 h, s  = divmod(int(delta.total_seconds()), 3600)
