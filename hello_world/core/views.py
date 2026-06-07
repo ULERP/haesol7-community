@@ -2942,11 +2942,10 @@ def group_calendar_events(request, pk):
             }
         }
         if ce.rrule:
-            import pytz
-            kst = pytz.timezone('Asia/Seoul')
-            kst_start = ce.start_time.astimezone(kst)
+            from django.utils import timezone as _tz
+            kst_start = ce.start_time.astimezone(_tz.get_current_timezone())
             dtstart = kst_start.strftime('%Y%m%dT%H%M%S')
-            ev['rrule'] = f'DTSTART:{dtstart}\n{ce.rrule}'
+            ev['rrule'] = 'DTSTART:' + dtstart + '\n' + ce.rrule
             if ce.end_time:
                 delta = ce.end_time - ce.start_time
                 h, s  = divmod(int(delta.total_seconds()), 3600)
