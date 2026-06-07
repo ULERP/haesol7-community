@@ -1,161 +1,84 @@
 {% extends 'admin/base_site.html' %}
 {% load i18n static %}
-
 {% block content %}
-<style>
-:root { --wine:#7A263A; --gold:#D4B26A; --dark:#1F2937; }
-.dash-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:14px; margin-bottom:24px; }
-.dash-card { border-radius:14px; padding:18px 16px; color:#fff; text-decoration:none; display:flex; flex-direction:column; gap:4px; transition:.15s; box-shadow:0 2px 8px rgba(0,0,0,.15); }
-.dash-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.2); color:#fff; }
-.dash-card .num { font-size:2rem; font-weight:800; line-height:1; }
-.dash-card .label { font-size:0.78rem; opacity:.85; font-weight:600; }
-.dash-card .icon { font-size:1.4rem; margin-bottom:4px; opacity:.8; }
-.dash-card.wine { background:linear-gradient(135deg,#7A263A,#a03050); }
-.dash-card.gold { background:linear-gradient(135deg,#D4B26A,#b8944a); color:#1F2937; }
-.dash-card.dark { background:linear-gradient(135deg,#1F2937,#374151); }
-.dash-card.green { background:linear-gradient(135deg,#1a7a4a,#2d9e64); }
-.dash-card.blue  { background:linear-gradient(135deg,#3b82f6,#2563eb); }
-.dash-card.purple{ background:linear-gradient(135deg,#8b5cf6,#7c3aed); }
-.section-title { font-size:0.85rem; font-weight:800; color:var(--dark); border-left:3px solid var(--gold); padding-left:10px; margin:20px 0 12px; letter-spacing:.03em; }
-.quick-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; margin-bottom:20px; }
-.quick-btn { display:flex; align-items:center; gap:10px; padding:12px 16px; border-radius:10px; border:1.5px solid #e5e7eb; background:#fff; text-decoration:none; color:#374151; font-size:0.84rem; font-weight:600; transition:.15s; }
-.quick-btn:hover { border-color:var(--gold); background:#fffbf0; color:var(--dark); }
-.quick-btn i { width:24px; text-align:center; color:var(--wine); font-size:1rem; }
-.alert-card { border-radius:12px; padding:14px 16px; margin-bottom:10px; border-left:4px solid; }
-.alert-card.warn { background:#fffbeb; border-color:#f59e0b; }
-.alert-card.danger { background:#fef2f2; border-color:var(--wine); }
-.alert-card.info { background:#eff6ff; border-color:#3b82f6; }
-.alert-card .alert-title { font-weight:700; font-size:0.84rem; margin-bottom:4px; }
-.alert-card .alert-desc { font-size:0.78rem; color:#6b7280; }
-.alert-card .alert-link { font-size:0.78rem; font-weight:700; color:var(--wine); text-decoration:none; }
-</style>
+<link rel="stylesheet" href="{% static 'admin/css/custom_admin.css' %}">
 
-<h1 style="font-size:1.4rem;font-weight:800;color:var(--dark);border-bottom:2px solid var(--gold);padding-bottom:10px;margin-bottom:20px;">
+<h1 style="font-size:1.3rem;font-weight:800;color:#1F2937;border-bottom:2px solid #D4B26A;padding-bottom:10px;margin-bottom:20px;">
   🌿 해솔7 지킴이 관리 대시보드
 </h1>
 
-<!-- 핵심 현황 카드 -->
-<div class="section-title">📊 현황 요약</div>
-<div class="dash-grid">
-  <a href="{% url 'admin:core_customuser_changelist' %}" class="dash-card dark">
-    <div class="icon">👥</div>
-    <div class="num">{{ stat_total_users }}</div>
-    <div class="label">전체 회원</div>
+<!-- 현황 카드 -->
+<div class="sec-title">📊 현황 요약</div>
+<div class="dash-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
+  <a href="{% url 'admin:core_customuser_changelist' %}" class="stat-card" style="background:linear-gradient(135deg,#1F2937,#374151);color:#fff;">
+    <div class="s-ico">👥</div><div class="s-num">{{ stat_total_users }}</div><div class="s-lbl">전체 회원</div>
   </a>
-  <a href="{% url 'admin:core_customuser_changelist' %}?is_verified__exact=0" class="dash-card wine">
-    <div class="icon">⚠️</div>
-    <div class="num">{{ stat_unverified }}</div>
-    <div class="label">미인증 회원</div>
+  <a href="{% url 'admin:core_customuser_changelist' %}?is_verified__exact=0" class="stat-card" style="background:linear-gradient(135deg,#7A263A,#a03050);color:#fff;">
+    <div class="s-ico">⚠️</div><div class="s-num">{{ stat_unverified }}</div><div class="s-lbl">미인증 회원</div>
   </a>
-  <a href="{% url 'admin:core_activityproof_changelist' %}?status=pending" class="dash-card gold">
-    <div class="icon">📸</div>
-    <div class="num">{{ stat_pending_proofs }}</div>
-    <div class="label">활동인증 대기</div>
+  <a href="{% url 'admin:core_activityproof_changelist' %}?status=pending" class="stat-card" style="background:linear-gradient(135deg,#D4B26A,#b8944a);color:#1F2937;">
+    <div class="s-ico">📸</div><div class="s-num">{{ stat_pending_proofs }}</div><div class="s-lbl">활동인증 대기</div>
   </a>
-  <a href="{% url 'admin:core_group_changelist' %}?status=pending" class="dash-card purple">
-    <div class="icon">🤝</div>
-    <div class="num">{{ stat_pending_groups }}</div>
-    <div class="label">소모임 승인 대기</div>
+  <a href="{% url 'admin:core_group_changelist' %}?status=pending" class="stat-card" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;">
+    <div class="s-ico">🤝</div><div class="s-num">{{ stat_pending_groups }}</div><div class="s-lbl">소모임 대기</div>
   </a>
-  <a href="{% url 'admin:core_post_changelist' %}" class="dash-card green">
-    <div class="icon">📋</div>
-    <div class="num">{{ stat_total_posts }}</div>
-    <div class="label">전체 게시글</div>
+  <a href="{% url 'admin:core_post_changelist' %}" class="stat-card" style="background:linear-gradient(135deg,#1a7a4a,#2d9e64);color:#fff;">
+    <div class="s-ico">📋</div><div class="s-num">{{ stat_total_posts }}</div><div class="s-lbl">전체 게시글</div>
   </a>
-  <a href="{% url 'admin:core_survey_changelist' %}?status=active" class="dash-card blue">
-    <div class="icon">📊</div>
-    <div class="num">{{ stat_active_surveys }}</div>
-    <div class="label">진행중 설문</div>
+  <a href="{% url 'admin:core_survey_changelist' %}?status=active" class="stat-card" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;">
+    <div class="s-ico">📊</div><div class="s-num">{{ stat_active_surveys }}</div><div class="s-lbl">진행중 설문</div>
   </a>
 </div>
 
-<!-- 승인 대기 알림 -->
+<!-- 즉시 처리 -->
 {% if stat_unverified > 0 or stat_pending_proofs > 0 or stat_pending_groups > 0 %}
-<div class="section-title">🔔 즉시 처리 필요</div>
+<div class="sec-title">🔔 즉시 처리 필요</div>
 {% if stat_unverified > 0 %}
-<div class="alert-card danger">
-  <div class="alert-title">👤 미인증 회원 {{ stat_unverified }}명</div>
-  <div class="alert-desc">입주민 인증 대기 중인 회원이 있습니다.</div>
-  <a href="/verify/admin/" class="alert-link">→ 인증 관리 페이지 바로가기</a>
+<div class="alert-row danger">
+  <div class="ar-icon">👤</div>
+  <div class="ar-text">
+    <div class="ar-title">미인증 회원 {{ stat_unverified }}명</div>
+    <div class="ar-desc">입주민 인증 대기 중인 회원이 있습니다</div>
+  </div>
+  <a href="/verify/admin/" class="ar-btn" target="_blank">인증 관리 →</a>
 </div>
 {% endif %}
 {% if stat_pending_proofs > 0 %}
-<div class="alert-card warn">
-  <div class="alert-title">📸 활동 인증 승인 대기 {{ stat_pending_proofs }}건</div>
-  <div class="alert-desc">승인 대기 중인 활동 인증이 있습니다.</div>
-  <a href="{% url 'admin:core_activityproof_changelist' %}?status=pending" class="alert-link">→ 활동 인증 관리</a>
+<div class="alert-row warn">
+  <div class="ar-icon">📸</div>
+  <div class="ar-text">
+    <div class="ar-title">활동 인증 승인 대기 {{ stat_pending_proofs }}건</div>
+    <div class="ar-desc">승인 대기 중인 활동 인증이 있습니다</div>
+  </div>
+  <a href="{% url 'admin:core_activityproof_changelist' %}?status=pending" class="ar-btn">승인하기 →</a>
 </div>
 {% endif %}
 {% if stat_pending_groups > 0 %}
-<div class="alert-card info">
-  <div class="alert-title">🤝 소모임 승인 대기 {{ stat_pending_groups }}건</div>
-  <div class="alert-desc">10인 이상 소모임 승인이 필요합니다.</div>
-  <a href="{% url 'admin:core_group_changelist' %}?status=pending" class="alert-link">→ 소모임 관리</a>
+<div class="alert-row info">
+  <div class="ar-icon">🤝</div>
+  <div class="ar-text">
+    <div class="ar-title">소모임 승인 대기 {{ stat_pending_groups }}건</div>
+    <div class="ar-desc">10인 이상 소모임 승인이 필요합니다</div>
+  </div>
+  <a href="{% url 'admin:core_group_changelist' %}?status=pending" class="ar-btn">승인하기 →</a>
 </div>
 {% endif %}
 {% endif %}
 
 <!-- 빠른 액션 -->
-<div class="section-title">⚡ 빠른 관리</div>
-<div class="quick-grid">
-  <a href="{% url 'admin:core_customuser_changelist' %}" class="quick-btn">
-    <i class="fas fa-users"></i> 회원 전체 목록
-  </a>
-  <a href="/verify/admin/" class="quick-btn" target="_blank">
-    <i class="fas fa-id-card"></i> 입주민 인증 관리
-  </a>
-  <a href="{% url 'admin:core_post_changelist' %}" class="quick-btn">
-    <i class="fas fa-file-alt"></i> 게시글 관리
-  </a>
-  <a href="{% url 'admin:core_group_changelist' %}" class="quick-btn">
-    <i class="fas fa-users"></i> 소모임 관리
-  </a>
-  <a href="{% url 'admin:core_meetup_changelist' %}" class="quick-btn">
-    <i class="fas fa-hands-helping"></i> 봉사활동 관리
-  </a>
-  <a href="{% url 'admin:core_activityproof_changelist' %}" class="quick-btn">
-    <i class="fas fa-camera"></i> 활동 인증 승인
-  </a>
-  <a href="{% url 'admin:core_calendarevent_changelist' %}" class="quick-btn">
-    <i class="fas fa-calendar-alt"></i> 캘린더 일정 승인
-  </a>
-  <a href="{% url 'admin:core_notification_changelist' %}" class="quick-btn">
-    <i class="fas fa-bell"></i> 알림 관리
-  </a>
-  <a href="{% url 'admin:core_siteconfig_changelist' %}" class="quick-btn">
-    <i class="fas fa-cog"></i> 사이트 설정
-  </a>
-  <a href="{% url 'admin:core_adminactionlog_changelist' %}" class="quick-btn">
-    <i class="fas fa-shield-alt"></i> 관리자 활동 로그
-  </a>
-  <a href="/stats/" class="quick-btn" target="_blank">
-    <i class="fas fa-chart-bar"></i> 단지 통계
-  </a>
-  <a href="/" class="quick-btn" target="_blank">
-    <i class="fas fa-home"></i> 사이트 보기
-  </a>
+<div class="sec-title">⚡ 빠른 관리</div>
+<div class="qa-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:8px;margin-bottom:8px;">
+  <a href="/verify/admin/" class="qa-btn" target="_blank"><i class="fas fa-id-card"></i> 입주민 인증 관리{% if stat_unverified > 0 %}<span class="badge-count">{{ stat_unverified }}</span>{% endif %}</a>
+  <a href="{% url 'admin:core_customuser_changelist' %}" class="qa-btn"><i class="fas fa-users"></i> 전체 회원 목록</a>
+  <a href="{% url 'admin:core_activityproof_changelist' %}?status=pending" class="qa-btn"><i class="fas fa-camera"></i> 활동 인증 승인{% if stat_pending_proofs > 0 %}<span class="badge-count">{{ stat_pending_proofs }}</span>{% endif %}</a>
+  <a href="{% url 'admin:core_group_changelist' %}?status=pending" class="qa-btn"><i class="fas fa-users"></i> 소모임 승인{% if stat_pending_groups > 0 %}<span class="badge-count">{{ stat_pending_groups }}</span>{% endif %}</a>
+  <a href="{% url 'admin:core_post_changelist' %}" class="qa-btn"><i class="fas fa-file-alt"></i> 게시글 관리</a>
+  <a href="{% url 'admin:core_meetup_changelist' %}" class="qa-btn"><i class="fas fa-hands-helping"></i> 봉사활동 관리</a>
+  <a href="{% url 'admin:core_calendarevent_changelist' %}" class="qa-btn"><i class="fas fa-calendar-alt"></i> 캘린더 일정 승인</a>
+  <a href="{% url 'admin:core_notification_changelist' %}" class="qa-btn"><i class="fas fa-bell"></i> 알림 관리</a>
+  <a href="{% url 'admin:core_siteconfig_changelist' %}" class="qa-btn"><i class="fas fa-cog"></i> 사이트 설정</a>
+  <a href="{% url 'admin:core_adminactionlog_changelist' %}" class="qa-btn"><i class="fas fa-shield-alt"></i> 관리 활동 로그</a>
+  <a href="/stats/" class="qa-btn" target="_blank"><i class="fas fa-chart-bar"></i> 단지 통계</a>
+  <a href="/" class="qa-btn" target="_blank"><i class="fas fa-home"></i> 사이트 보기</a>
 </div>
-
-<!-- 기존 앱 목록 -->
-<div class="section-title">📂 전체 관리 메뉴</div>
-{% for app in app_list %}
-<div style="margin-bottom:16px;">
-  <div style="font-size:0.8rem;font-weight:800;color:var(--wine);margin-bottom:8px;padding:6px 10px;background:#fdf5f6;border-radius:8px;">
-    {{ app.name }}
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;">
-    {% for model in app.models %}
-    <a href="{{ model.admin_url }}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;text-decoration:none;color:#374151;font-size:0.82rem;transition:.15s;"
-       onmouseover="this.style.borderColor='#D4B26A';this.style.background='#fffbf0'"
-       onmouseout="this.style.borderColor='#e5e7eb';this.style.background='#fff'">
-      <i class="fas fa-circle" style="color:var(--gold);font-size:0.4rem;"></i>
-      {{ model.name }}
-      {% if model.add_url %}
-      <a href="{{ model.add_url }}" style="margin-left:auto;color:var(--wine);font-size:0.72rem;font-weight:700;" title="추가">+</a>
-      {% endif %}
-    </a>
-    {% endfor %}
-  </div>
-</div>
-{% endfor %}
 {% endblock %}
