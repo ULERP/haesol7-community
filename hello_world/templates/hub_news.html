@@ -202,13 +202,22 @@
       </a>
       {% endfor %}
     {% else %}
-      <div style="grid-column:1/-1;padding:20px;text-align:center;">
-        <div style="font-size:1.8rem;margin-bottom:8px;opacity:.4;">❓</div>
-        <div style="font-size:0.82rem;color:rgba(255,255,255,.4);margin-bottom:12px;">아직 FAQ가 없어요</div>
-        {% if request.user.is_staff %}
-        <a href="/faq/upload-csv/" style="background:#D4B26A;color:#242424;padding:7px 18px;border-radius:20px;font-size:0.78rem;font-weight:700;text-decoration:none;">CSV로 FAQ 등록하기</a>
-        {% endif %}
-      </div>
+      <a href="/faq/?q=관리비" style="background:rgba(255,255,255,.03);padding:10px 12px;text-decoration:none;display:flex;align-items:flex-start;gap:8px;border-radius:8px;" onmouseover="this.style.background='rgba(212,178,106,.08)'" onmouseout="this.style.background='rgba(255,255,255,.03)'">
+        <span style="color:#D4B26A;font-size:0.75rem;font-weight:800;flex-shrink:0;margin-top:1px;">Q.</span>
+        <span style="font-size:0.8rem;color:rgba(255,255,255,.8);line-height:1.4;">관리비는 어떻게 납부하나요?</span>
+      </a>
+      <a href="/faq/?q=주차" style="background:rgba(255,255,255,.03);padding:10px 12px;text-decoration:none;display:flex;align-items:flex-start;gap:8px;border-radius:8px;" onmouseover="this.style.background='rgba(212,178,106,.08)'" onmouseout="this.style.background='rgba(255,255,255,.03)'">
+        <span style="color:#D4B26A;font-size:0.75rem;font-weight:800;flex-shrink:0;margin-top:1px;">Q.</span>
+        <span style="font-size:0.8rem;color:rgba(255,255,255,.8);line-height:1.4;">주차 등록은 어디서 하나요?</span>
+      </a>
+      <a href="/faq/?q=층간소음" style="background:rgba(255,255,255,.03);padding:10px 12px;text-decoration:none;display:flex;align-items:flex-start;gap:8px;border-radius:8px;" onmouseover="this.style.background='rgba(212,178,106,.08)'" onmouseout="this.style.background='rgba(255,255,255,.03)'">
+        <span style="color:#D4B26A;font-size:0.75rem;font-weight:800;flex-shrink:0;margin-top:1px;">Q.</span>
+        <span style="font-size:0.8rem;color:rgba(255,255,255,.8);line-height:1.4;">층간소음 신고는 어떻게 하나요?</span>
+      </a>
+      <a href="/faq/?q=이사" style="background:rgba(255,255,255,.03);padding:10px 12px;text-decoration:none;display:flex;align-items:flex-start;gap:8px;border-radius:8px;" onmouseover="this.style.background='rgba(212,178,106,.08)'" onmouseout="this.style.background='rgba(255,255,255,.03)'">
+        <span style="color:#D4B26A;font-size:0.75rem;font-weight:800;flex-shrink:0;margin-top:1px;">Q.</span>
+        <span style="font-size:0.8rem;color:rgba(255,255,255,.8);line-height:1.4;">이사 시 사전 신고가 필요한가요?</span>
+      </a>
     {% endif %}
   </div>
   <div style="display:flex;gap:8px;padding:0 20px 16px;flex-wrap:wrap;">
