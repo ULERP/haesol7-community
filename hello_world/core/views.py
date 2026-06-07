@@ -2594,13 +2594,13 @@ def integrated_calendar(request):
     }
 
     for ce in ce_qs:
-        color  = color_map.get(ce.event_type, '#6b7280')
+        color  = ce.color if ce.color else color_map.get(ce.event_type, '#6b7280')
         icon   = icon_map.get(ce.event_type, '📌')
         badge  = badge_map.get(ce.visibility, '')
         is_pending = ce.visibility in ('pending', 'group_pending')
         if is_pending:
-            color = '#9ca3af'  # 승인대기는 회색
-        if ce.visibility == 'private':
+            color = '#9ca3af'
+        if ce.visibility == 'private' and not ce.color:
             color = '#6b7280'
 
         ev = {
@@ -2806,6 +2806,8 @@ def calendar_event_create(request):
         approved_at    = approved_at,
         rrule          = rrule,
         recur_interval = recur_interval,
+        color          = data.get('color', ''),
+        all_day        = data.get('all_day', False),
     )
 
     # 승인 요청 알림 발송

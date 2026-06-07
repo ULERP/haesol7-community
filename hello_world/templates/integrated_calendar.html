@@ -1,25 +1,27 @@
 {% extends 'base_2panel.html' %}
 {% block title %}통합 캘린더{% endblock %}
-{% block panel_extra_head %}
-<!-- FullCalendar + RRule 플러그인 -->
+{% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/rrule@2.7.2/dist/es5/rrule.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.11/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/rrule@6.1.11/index.global.min.js"></script>
 <style>
-:root { --wine:#7A263A; --gold:#D4B26A; --dark:#242424; }
+:root{--wine:#7A263A;--gold:#D4B26A;--dark:#242424;}
 .fc { font-size:0.82rem; }
 .fc-toolbar-title { font-size:1rem !important; font-weight:700; }
 .fc-button { font-size:0.78rem !important; padding:4px 10px !important; background:var(--wine) !important; border-color:var(--wine) !important; }
 .fc-button:hover { opacity:.85 !important; }
 .fc-button-active { opacity:.7 !important; }
-.fc-daygrid-event { border-radius:4px; font-size:0.72rem; }
+.fc-daygrid-event, .fc-timegrid-event { border-radius:4px; font-size:0.72rem; cursor:pointer; }
 .fc-daygrid-day:hover { background:#fdf5f6 !important; cursor:pointer; }
-.legend-dot { width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0; }
+.fc-timegrid-slot { height:2rem !important; }
 .filter-btn { border:1.5px solid #ddd;background:#fff;border-radius:20px;padding:4px 12px;font-size:0.78rem;cursor:pointer;transition:.15s; }
 .filter-btn.active { background:var(--wine);color:#fff;border-color:var(--wine); }
-.vis-badge { font-size:0.68rem;padding:2px 6px;border-radius:10px; }
-.pending-card { background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;margin-bottom:6px; }
+.type-btn, .vis-btn { border:1.5px solid #ddd;background:#fff;border-radius:20px;padding:5px 12px;font-size:0.78rem;cursor:pointer;transition:.15s; }
+.type-btn.active { background:var(--dark);color:#fff;border-color:var(--dark); }
+.vis-btn.active  { background:var(--wine);color:#fff;border-color:var(--wine); }
+.color-swatch { width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:.15s; }
+.color-swatch.selected { border-color:#333 !important; transform:scale(1.2); }
 @media(max-width:768px){
   .fc-toolbar{flex-direction:column;gap:6px;}
   .fc-toolbar-title{font-size:0.9rem !important;}
@@ -42,7 +44,7 @@
   </div>
 </div>
 
-<!-- 범례 + 필터 -->
+<!-- 필터 -->
 <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
   <button class="filter-btn active" onclick="filterCal('all',this)">전체</button>
   <button class="filter-btn" onclick="filterCal('봉사활동',this)">🤝 봉사</button>
@@ -53,7 +55,7 @@
   {% endif %}
 </div>
 
-<!-- 승인대기 목록 (관리자/소모임장에게만) -->
+<!-- 승인대기 목록 -->
 <div id="pendingWrap"></div>
 
 <!-- 캘린더 -->
@@ -68,8 +70,9 @@
         <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body py-2" id="evModalBody"></div>
-      <div class="modal-footer py-2 gap-2">
-        <a href="#" id="evModalLink" class="btn btn-sm text-white d-none" style="background:var(--wine);border-radius:20px;">자세히 보기</a>
+      <div class="modal-footer py-2 gap-2 flex-wrap">
+        <a href="#" id="evModalDetail" class="btn btn-sm text-white d-none" style="background:var(--wine);border-radius:20px;">📋 상세보기</a>
+        <a href="#" id="evModalLink" class="btn btn-sm btn-outline-secondary d-none" style="border-radius:20px;">🔗 바로가기</a>
         <button id="evModalApprove" class="btn btn-sm btn-success d-none" onclick="approveEvent()">✅ 승인</button>
         <button id="evModalDelete" class="btn btn-sm btn-danger d-none" onclick="deleteEvent()">🗑 삭제</button>
         <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">닫기</button>
@@ -90,12 +93,12 @@
         <!-- 제목 -->
         <div class="mb-3">
           <label class="form-label small fw-bold">제목 <span class="text-danger">*</span></label>
-          <input type="text" id="newTitle" class="form-control form-control-sm" placeholder="일정 제목을 입력하세요">
+          <input type="text" id="newTitle" class="form-control form-control-sm" placeholder="일정 제목">
         </div>
         <!-- 종류 -->
         <div class="mb-3">
           <label class="form-label small fw-bold">종류 <span class="text-danger">*</span></label>
-          <div class="d-flex gap-2 flex-wrap" id="typeSelect">
+          <div class="d-flex gap-2 flex-wrap">
             <button type="button" class="type-btn active" data-val="personal" onclick="selectType(this)">🙋 개인</button>
             <button type="button" class="type-btn" data-val="event" onclick="selectType(this)">📅 단지행사</button>
             <button type="button" class="type-btn" data-val="volunteer" onclick="selectType(this)">🤝 봉사</button>
@@ -112,7 +115,7 @@
         <!-- 공개범위 -->
         <div class="mb-3">
           <label class="form-label small fw-bold">공개범위 <span class="text-danger">*</span></label>
-          <div class="d-flex gap-2 flex-wrap" id="visSelect">
+          <div class="d-flex gap-2 flex-wrap">
             <button type="button" class="vis-btn active" data-val="private" onclick="selectVis(this)">🔒 나만보기</button>
             <button type="button" class="vis-btn" data-val="group" onclick="selectVis(this)">👥 소모임공개</button>
             <button type="button" class="vis-btn" data-val="public" onclick="selectVis(this)">🏘 전체공개</button>
@@ -120,8 +123,15 @@
         </div>
         <!-- 안내 문구 -->
         <div id="createNote" class="alert py-2 small mb-3" style="border-radius:8px;"></div>
+        <!-- 종일 여부 -->
+        <div class="mb-2">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="allDayToggle" onchange="toggleAllDay()">
+            <label class="form-check-label small fw-bold" for="allDayToggle">🗓 종일 일정</label>
+          </div>
+        </div>
         <!-- 시작/종료 -->
-        <div class="row g-2 mb-3">
+        <div class="row g-2 mb-3" id="datetimeWrap">
           <div class="col-6">
             <label class="form-label small fw-bold">시작 <span class="text-danger">*</span></label>
             <input type="datetime-local" id="newStart" class="form-control form-control-sm">
@@ -129,6 +139,16 @@
           <div class="col-6">
             <label class="form-label small fw-bold">종료</label>
             <input type="datetime-local" id="newEnd" class="form-control form-control-sm">
+          </div>
+        </div>
+        <div class="row g-2 mb-3 d-none" id="dateWrap">
+          <div class="col-6">
+            <label class="form-label small fw-bold">시작일 <span class="text-danger">*</span></label>
+            <input type="date" id="newStartDate" class="form-control form-control-sm">
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-bold">종료일</label>
+            <input type="date" id="newEndDate" class="form-control form-control-sm">
           </div>
         </div>
         <!-- 장소 -->
@@ -140,6 +160,20 @@
         <div class="mb-3">
           <label class="form-label small fw-bold">내용</label>
           <textarea id="newDesc" class="form-control form-control-sm" rows="2" placeholder="내용 (선택)"></textarea>
+        </div>
+        <!-- 색상 -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold">🎨 색상</label>
+          <div class="d-flex gap-2 flex-wrap mt-1" id="colorPicker">
+            <div class="color-swatch selected" data-color="#7A263A" style="background:#7A263A;" onclick="selectColor(this)" title="와인"></div>
+            <div class="color-swatch" data-color="#1a7a4a" style="background:#1a7a4a;" onclick="selectColor(this)" title="초록"></div>
+            <div class="color-swatch" data-color="#D4B26A" style="background:#D4B26A;" onclick="selectColor(this)" title="골드"></div>
+            <div class="color-swatch" data-color="#3b82f6" style="background:#3b82f6;" onclick="selectColor(this)" title="파랑"></div>
+            <div class="color-swatch" data-color="#8b5cf6" style="background:#8b5cf6;" onclick="selectColor(this)" title="보라"></div>
+            <div class="color-swatch" data-color="#f59e0b" style="background:#f59e0b;" onclick="selectColor(this)" title="노랑"></div>
+            <div class="color-swatch" data-color="#ef4444" style="background:#ef4444;" onclick="selectColor(this)" title="빨강"></div>
+            <div class="color-swatch" data-color="#6b7280" style="background:#6b7280;" onclick="selectColor(this)" title="회색"></div>
+          </div>
         </div>
         <!-- 반복 -->
         <div class="mb-2">
@@ -165,14 +199,10 @@
                 <span class="input-group-text" id="recurLabel">주</span>
               </div>
             </div>
-            <div class="col-3 d-flex align-items-end">
-              <small class="text-muted">마다</small>
-            </div>
           </div>
           <div>
             <label class="form-label small fw-bold">반복 종료일 <span class="text-danger">*</span></label>
             <input type="date" id="recurEnd" class="form-control form-control-sm">
-            <div class="form-text small">종료일까지 반복됩니다</div>
           </div>
         </div>
       </div>
@@ -186,17 +216,7 @@
   </div>
 </div>
 
-<style>
-.type-btn, .vis-btn {
-  border:1.5px solid #ddd;background:#fff;border-radius:20px;
-  padding:5px 12px;font-size:0.78rem;cursor:pointer;transition:.15s;
-}
-.type-btn.active { background:var(--dark);color:#fff;border-color:var(--dark); }
-.vis-btn.active  { background:var(--wine);color:#fff;border-color:var(--wine); }
-.type-btn:hover  { background:#f3f4f6; }
-.vis-btn:hover   { background:#fdf5f6; }
-</style>
-
+{% block extra_scripts %}
 <script>
 const allEvents    = {{ events_json|safe }};
 const myGroups     = {{ my_groups_json|safe }};
@@ -205,52 +225,93 @@ const isStaff      = {{ user.is_staff|yesno:"true,false" }};
 const isAuth       = {{ user.is_authenticated|yesno:"true,false" }};
 const userId       = {{ user.pk|default:"null" }};
 let calendar, currentEvId = null;
+let selType='personal', selVis='private', selColor='#7A263A';
 
-// ── 초기화 ──
 document.addEventListener('DOMContentLoaded', () => {
-  // 소모임 셀렉트 채우기
   const grpSel = document.getElementById('newGroup');
   myGroups.forEach(g => {
     const o = document.createElement('option');
-    o.value = g.id; o.textContent = g.name;
-    grpSel.appendChild(o);
+    o.value=g.id; o.textContent=g.name; grpSel.appendChild(o);
   });
 
   calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
     initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
     locale: 'ko',
-    headerToolbar: { left:'prev,next today', center:'title', right:'dayGridMonth,listMonth' },
-    buttonText: { today:'오늘', month:'월', list:'목록' },
+    headerToolbar: {
+      left:   'prev,next today',
+      center: 'title',
+      right:  'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+    },
+    buttonText: { today:'오늘', month:'월', week:'주', day:'일', list:'목록' },
     events: allEvents,
+    editable: isAuth,
+    droppable: true,
+    // 드래그앤드롭으로 일정 이동
+    eventDrop: function(info) {
+      const ev = info.event;
+      const p  = ev.extendedProps;
+      if(!p.cal_id) { info.revert(); return; }
+      if(!p.is_mine && !isStaff) { info.revert(); alert('권한이 없습니다.'); return; }
+      fetch(`/calendar/${p.cal_id}/edit/`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+        body: JSON.stringify({
+          title:      ev.title,
+          start_time: ev.startStr.substring(0,16).replace('T',' ')+':00',
+          end_time:   ev.endStr ? ev.endStr.substring(0,16).replace('T',' ')+':00' : null,
+        })
+      }).then(r=>r.json()).then(res=>{
+        if(!res.success){ info.revert(); alert(res.error||'오류'); }
+      });
+    },
+    // 드래그앤드롭으로 크기 조절
+    eventResize: function(info) {
+      const ev = info.event;
+      const p  = ev.extendedProps;
+      if(!p.cal_id) { info.revert(); return; }
+      fetch(`/calendar/${p.cal_id}/edit/`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+        body: JSON.stringify({
+          title:      ev.title,
+          start_time: ev.startStr.substring(0,16).replace('T',' ')+':00',
+          end_time:   ev.endStr ? ev.endStr.substring(0,16).replace('T',' ')+':00' : null,
+        })
+      }).then(r=>r.json()).then(res=>{
+        if(!res.success){ info.revert(); alert(res.error||'오류'); }
+      });
+    },
     dateClick: info => { if(isAuth) openCreateModal(info.dateStr); },
     eventClick: info => { info.jsEvent.preventDefault(); showEventModal(info.event); },
     eventMouseEnter: i => { i.el.style.opacity='.8'; i.el.style.cursor='pointer'; },
     eventMouseLeave: i => { i.el.style.opacity='1'; },
-    height: 'auto', dayMaxEvents: 3,
+    height: 'auto', dayMaxEvents: 4,
+    nowIndicator: true,
+    weekNumbers: false,
+    slotMinTime: '06:00:00',
+    slotMaxTime: '23:00:00',
   });
   calendar.render();
-
   updateNote();
   loadPending();
 });
 
-// ── 필터 ──
+// 필터
 function filterCal(type, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   calendar.removeAllEvents();
   calendar.addEventSource(
-    type === 'all' ? allEvents :
-    allEvents.filter(e => e.extendedProps && e.extendedProps.type === type)
+    type==='all' ? allEvents :
+    allEvents.filter(e=>e.extendedProps && e.extendedProps.type===type)
   );
 }
 
-// ── 이벤트 상세 모달 ──
+// 이벤트 상세 모달
 function showEventModal(ev) {
   const p = ev.extendedProps;
   currentEvId = p.cal_id || null;
   document.getElementById('evModalTitle').textContent = ev.title.replace(/^[🙋📅🤝👥⏳🔒👥]\s*/,'');
-
   const visBadge = {
     'private':      '<span class="badge bg-secondary">🔒 나만보기</span>',
     'group_pending':'<span class="badge bg-warning text-dark">⏳ 소모임승인대기</span>',
@@ -267,91 +328,77 @@ function showEventModal(ev) {
     ${p.description ? `<div class="small text-muted mb-1">${p.description}</div>` : ''}
     ${p.group ? `<div class="small mb-1"><i class="fas fa-users me-1" style="color:var(--gold);"></i>${p.group}</div>` : ''}
     <div class="small text-muted">작성: ${p.creator||''}</div>
+    ${ev.startStr ? `<div class="small text-muted">${ev.startStr.substring(0,16).replace('T',' ')}</div>` : ''}
   `;
 
+  // 상세보기 버튼
+  const detailBtn = document.getElementById('evModalDetail');
+  if(currentEvId) { detailBtn.href=`/calendar/${currentEvId}/`; detailBtn.classList.remove('d-none'); }
+  else { detailBtn.classList.add('d-none'); }
+
+  // 바로가기 버튼
   const linkEl = document.getElementById('evModalLink');
-  if(ev.url && ev.url !== '#') { linkEl.href=ev.url; linkEl.classList.remove('d-none'); }
+  if(ev.url && ev.url!=='#') { linkEl.href=ev.url; linkEl.classList.remove('d-none'); }
   else { linkEl.classList.add('d-none'); }
 
-  const approveBtn = document.getElementById('evModalApprove');
-  approveBtn.classList.toggle('d-none', !(currentEvId && p.can_approve));
-
-  const deleteBtn = document.getElementById('evModalDelete');
-  deleteBtn.classList.toggle('d-none', !(currentEvId && isAuth && (isStaff || p.creator_id == userId)));
+  document.getElementById('evModalApprove').classList.toggle('d-none', !(currentEvId && p.can_approve));
+  document.getElementById('evModalDelete').classList.toggle('d-none',  !(currentEvId && isAuth && (isStaff || p.creator_id==userId)));
 
   new bootstrap.Modal(document.getElementById('eventModal')).show();
 }
 
-// ── 승인 ──
 function approveEvent() {
   if(!currentEvId) return;
   fetch(`/calendar/${currentEvId}/approve/`, {
     method:'POST', headers:{'X-CSRFToken':getCookie('csrftoken')}
-  }).then(r=>r.json()).then(res => {
-    if(res.success) { bootstrap.Modal.getInstance(document.getElementById('eventModal')).hide(); location.reload(); }
-    else alert(res.error || '오류');
+  }).then(r=>r.json()).then(res=>{
+    if(res.success){ bootstrap.Modal.getInstance(document.getElementById('eventModal')).hide(); location.reload(); }
+    else alert(res.error||'오류');
   });
 }
 
-// ── 삭제 ──
 function deleteEvent() {
   if(!currentEvId || !confirm('일정을 삭제하시겠습니까?')) return;
   fetch(`/calendar/${currentEvId}/delete/`, {
     method:'POST', headers:{'X-CSRFToken':getCookie('csrftoken')}
-  }).then(r=>r.json()).then(res => {
-    if(res.success) { bootstrap.Modal.getInstance(document.getElementById('eventModal')).hide(); location.reload(); }
+  }).then(r=>r.json()).then(res=>{
+    if(res.success){ bootstrap.Modal.getInstance(document.getElementById('eventModal')).hide(); location.reload(); }
   });
 }
 
-// ── 등록 모달 ──
-let selType='personal', selVis='private';
-
+// 등록 모달
 function openCreateModal(dateStr) {
   if(dateStr) {
-    document.getElementById('newStart').value = dateStr+'T09:00';
-    document.getElementById('newEnd').value   = dateStr+'T11:00';
+    document.getElementById('newStart').value     = dateStr+'T09:00';
+    document.getElementById('newEnd').value       = dateStr+'T11:00';
+    document.getElementById('newStartDate').value = dateStr;
+    document.getElementById('newEndDate').value   = dateStr;
   }
   new bootstrap.Modal(document.getElementById('createModal')).show();
 }
 
 function selectType(btn) {
   document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  selType = btn.dataset.val;
-  document.getElementById('groupWrap').classList.toggle('d-none', selType !== 'group');
+  btn.classList.add('active'); selType=btn.dataset.val;
+  document.getElementById('groupWrap').classList.toggle('d-none', selType!=='group');
   updateNote();
 }
 
 function selectVis(btn) {
   document.querySelectorAll('.vis-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  selVis = btn.dataset.val;
+  btn.classList.add('active'); selVis=btn.dataset.val;
   updateNote();
 }
 
-function updateNote() {
-  const note = document.getElementById('createNote');
-  const grpId = parseInt(document.getElementById('newGroup').value) || null;
-  const isLeaderOfSelected = grpId && leaderGroups.includes(grpId);
+function selectColor(el) {
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected'); selColor=el.dataset.color;
+}
 
-  let cls='alert-secondary', msg='';
-  if(selVis === 'private') {
-    cls='alert-secondary'; msg='🔒 나만 볼 수 있는 개인 일정입니다.';
-  } else if(selVis === 'group') {
-    if(isStaff || isLeaderOfSelected) {
-      cls='alert-success'; msg='👥 소모임 멤버에게 즉시 공개됩니다.';
-    } else {
-      cls='alert-warning'; msg='👥 소모임장 승인 후 멤버에게 공개됩니다. 소모임장에게 알림이 발송됩니다.';
-    }
-  } else if(selVis === 'public') {
-    if(isStaff) {
-      cls='alert-success'; msg='🏘 즉시 전체 공개됩니다.';
-    } else {
-      cls='alert-info'; msg='🏘 관리자 승인 후 전체 공개됩니다. 관리자에게 알림이 발송됩니다.';
-    }
-  }
-  note.className = `alert py-2 small mb-3 ${cls}`;
-  note.textContent = msg;
+function toggleAllDay() {
+  const on = document.getElementById('allDayToggle').checked;
+  document.getElementById('datetimeWrap').classList.toggle('d-none', on);
+  document.getElementById('dateWrap').classList.toggle('d-none', !on);
 }
 
 function toggleRecur() {
@@ -359,33 +406,50 @@ function toggleRecur() {
 }
 
 function updateRecurLabel() {
-  const t = document.getElementById('recurType').value;
+  const t=document.getElementById('recurType').value;
   document.getElementById('recurLabel').textContent = t==='daily'?'일':t==='weekly'?'주':'월';
+}
+
+function updateNote() {
+  const note = document.getElementById('createNote');
+  const grpId = parseInt(document.getElementById('newGroup').value)||null;
+  const isLeaderOfSelected = grpId && leaderGroups.includes(grpId);
+  let cls='alert-secondary', msg='';
+  if(selVis==='private')      { cls='alert-secondary'; msg='🔒 나만 볼 수 있는 개인 일정입니다.'; }
+  else if(selVis==='group')   {
+    cls = (isStaff||isLeaderOfSelected)?'alert-success':'alert-warning';
+    msg = (isStaff||isLeaderOfSelected)?'👥 소모임 멤버에게 즉시 공개됩니다.':'👥 소모임장 승인 후 멤버에게 공개됩니다.';
+  }
+  else if(selVis==='public')  {
+    cls = isStaff?'alert-success':'alert-info';
+    msg = isStaff?'🏘 즉시 전체 공개됩니다.':'🏘 관리자 승인 후 전체 공개됩니다.';
+  }
+  note.className=`alert py-2 small mb-3 ${cls}`; note.textContent=msg;
 }
 
 function submitCreate() {
   const title = document.getElementById('newTitle').value.trim();
-  const start = document.getElementById('newStart').value;
-  if(!title) { alert('제목을 입력해주세요.'); return; }
-  if(!start) { alert('시작 시간을 입력해주세요.'); return; }
-
+  const allDay = document.getElementById('allDayToggle').checked;
+  const start  = allDay ? document.getElementById('newStartDate').value : document.getElementById('newStart').value;
+  if(!title)  { alert('제목을 입력해주세요.'); return; }
+  if(!start)  { alert('시작 시간을 입력해주세요.'); return; }
   const isRecur = document.getElementById('recurToggle').checked;
   const recurEnd = document.getElementById('recurEnd').value;
   if(isRecur && !recurEnd) { alert('반복 종료일을 입력해주세요.'); return; }
+  if(selVis==='group' && !document.getElementById('newGroup').value) { alert('소모임을 선택해주세요.'); return; }
 
-  if(selVis === 'group' && !document.getElementById('newGroup').value) {
-    alert('소모임을 선택해주세요.'); return;
-  }
-
+  const endVal = allDay ? document.getElementById('newEndDate').value : document.getElementById('newEnd').value;
   const body = {
     title:          title,
     event_type:     selType,
     visibility:     selVis,
-    start_time:     start.replace('T',' ')+':00',
-    end_time:       document.getElementById('newEnd').value ? document.getElementById('newEnd').value.replace('T',' ')+':00' : null,
+    color:          selColor,
+    all_day:        allDay,
+    start_time:     allDay ? start+' 00:00:00' : start.replace('T',' ')+':00',
+    end_time:       endVal ? (allDay ? endVal+' 23:59:00' : endVal.replace('T',' ')+':00') : null,
     location:       document.getElementById('newLocation').value.trim(),
     description:    document.getElementById('newDesc').value.trim(),
-    group_id:       document.getElementById('newGroup').value || null,
+    group_id:       document.getElementById('newGroup').value||null,
     is_recurring:   isRecur,
     recur_type:     document.getElementById('recurType').value,
     recur_interval: parseInt(document.getElementById('recurInterval').value)||1,
@@ -396,54 +460,51 @@ function submitCreate() {
     method:'POST',
     headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
     body: JSON.stringify(body),
-  }).then(r=>r.json()).then(res => {
-    if(res.success) {
+  }).then(r=>r.json()).then(res=>{
+    if(res.success){
       bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
-      alert(res.approval_note || '일정이 등록됐습니다.');
+      alert(res.approval_note||'일정이 등록됐습니다.');
       location.reload();
-    } else { alert(res.error || '오류가 발생했습니다.'); }
+    } else { alert(res.error||'오류가 발생했습니다.'); }
   });
 }
 
-// ── 승인대기 목록 로드 (관리자/소모임장용) ──
+// 승인대기 목록
 function loadPending() {
-  if(!isStaff && leaderGroups.length === 0) return;
-  const pending = allEvents.filter(e =>
-    e.extendedProps && (e.extendedProps.visibility === 'pending' || e.extendedProps.visibility === 'group_pending')
-  );
-  if(pending.length === 0) return;
-  let html = `<div class="mb-3 p-3 rounded" style="background:#fffbeb;border:1px solid #fcd34d;">
+  if(!isStaff && leaderGroups.length===0) return;
+  const pending = allEvents.filter(e=>e.extendedProps && (e.extendedProps.visibility==='pending'||e.extendedProps.visibility==='group_pending'));
+  if(pending.length===0) return;
+  let html=`<div class="mb-3 p-3 rounded" style="background:#fffbeb;border:1px solid #fcd34d;">
     <div class="fw-bold mb-2">⏳ 승인 대기 중인 일정 ${pending.length}건</div>`;
-  pending.forEach(e => {
-    const p = e.extendedProps;
-    const label = p.visibility==='group_pending' ? '소모임승인' : '전체공개승인';
-    html += `<div class="d-flex justify-content-between align-items-center border-bottom py-2">
+  pending.forEach(e=>{
+    const p=e.extendedProps;
+    const label=p.visibility==='group_pending'?'소모임승인':'전체공개승인';
+    html+=`<div class="d-flex justify-content-between align-items-center border-bottom py-2">
       <div>
         <span class="badge bg-warning text-dark me-1">${label}</span>
         <span class="small fw-bold">${e.title.replace(/^[^\s]+\s/,'')}</span>
         <span class="small text-muted ms-1">${p.creator}</span>
       </div>
-      <button class="btn btn-sm text-white px-3" style="background:var(--wine);border-radius:20px;"
-        onclick="approveDirect(${p.cal_id})">승인</button>
+      <button class="btn btn-sm text-white px-3" style="background:var(--wine);border-radius:20px;" onclick="approveDirect(${p.cal_id})">승인</button>
     </div>`;
   });
-  html += '</div>';
-  document.getElementById('pendingWrap').innerHTML = html;
+  html+='</div>';
+  document.getElementById('pendingWrap').innerHTML=html;
 }
 
 function approveDirect(id) {
   if(!confirm('승인하시겠습니까?')) return;
   fetch(`/calendar/${id}/approve/`, {
     method:'POST', headers:{'X-CSRFToken':getCookie('csrftoken')}
-  }).then(r=>r.json()).then(res => {
-    if(res.success) location.reload();
-    else alert(res.error || '오류');
+  }).then(r=>r.json()).then(res=>{
+    if(res.success) location.reload(); else alert(res.error||'오류');
   });
 }
 
 function getCookie(name) {
-  const v = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
-  return v ? v.pop() : '';
+  const v=document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+  return v?v.pop():'';
 }
 </script>
+{% endblock %}
 {% endblock %}
