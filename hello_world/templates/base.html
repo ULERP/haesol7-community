@@ -140,33 +140,7 @@
   setInterval(updateNotiCount, 30000);
   {% endif %}
 </script>
-<script>
-function toggleSection(id) {
-  const target = document.getElementById(id);
-  if (!target) return;
-  const isOpen = !target.classList.contains('folded');
-  // 모두 닫기
-  document.querySelectorAll('.sb-section').forEach(s => {
-    s.classList.add('folded');
-    s.style.maxHeight = '0';
-  });
-  document.querySelectorAll('.sb-label').forEach(l => l.classList.add('folded'));
-  // 클릭한 것이 닫혀있었으면 열기
-  if (!isOpen) {
-    target.classList.remove('folded');
-    target.style.maxHeight = target.scrollHeight + 'px';
-    const label = target.previousElementSibling;
-    if (label) label.classList.remove('folded');
-  }
-}
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.sb-section').forEach(s => {
-    s.classList.add('folded');
-    s.style.maxHeight = '0';
-  });
-  document.querySelectorAll('.sb-label').forEach(l => l.classList.add('folded'));
-});
-</script>
+<script src="{% static 'js/sidebar.js' %}"></script>
 {% block extra_scripts %}{% endblock %}
 
 {% if user.is_authenticated %}

@@ -312,51 +312,7 @@
   });
 })();
 // 사이드바 섹션 폴딩
-// 사이드바 섹션 폴딩 - 아코디언 방식 (하나만 열림)
-const SB_SECS = ['sec-chat','sec-record','sec-together','sec-news','sec-myact','sec-admin'];
-
-function toggleSection(id) {
-  const target = document.getElementById(id);
-  if (!target) return;
-  const isOpen = !target.classList.contains('folded');
-
-  // 모두 닫기
-  SB_SECS.forEach(sid => {
-    const sec = document.getElementById(sid);
-    const label = sec ? sec.previousElementSibling : null;
-    if (sec) { sec.classList.add('folded'); sec.style.maxHeight = '0'; }
-    if (label) label.classList.add('folded');
-    localStorage.setItem('sb_fold_' + sid, '1');
-  });
-
-  // 클릭한 것이 닫혀있었으면 열기
-  if (isOpen) {
-    target.classList.remove('folded');
-    target.style.maxHeight = target.scrollHeight + 'px';
-    const label = target.previousElementSibling;
-    if (label) label.classList.remove('folded');
-    localStorage.setItem('sb_fold_' + id, '0');
-  }
-}
-
-// 페이지 로드시 상태 복원 (기본: 모두 접힘, 마지막 열었던 1개만 열림)
-(function() {
-  // 2개 이상 열려있으면 모두 초기화
-  let openCount = SB_SECS.filter(id => localStorage.getItem('sb_fold_'+id) === '0').length;
-  if (openCount > 1) SB_SECS.forEach(id => localStorage.removeItem('sb_fold_'+id));
-
-  SB_SECS.forEach(id => {
-    const sec = document.getElementById(id);
-    const label = sec ? sec.previousElementSibling : null;
-    if (localStorage.getItem('sb_fold_'+id) === '0') {
-      if (sec) { sec.classList.remove('folded'); sec.style.maxHeight = sec.scrollHeight+'px'; }
-      if (label) label.classList.remove('folded');
-    } else {
-      if (sec) { sec.classList.add('folded'); sec.style.maxHeight = '0'; }
-      if (label) label.classList.add('folded');
-    }
-  });
-})();
+// 사이드바 JS → sidebar.js
 
 // 우측 패널 탭 전환
 function switchRp(name, btn) {
@@ -377,6 +333,7 @@ function switchRp(name, btn) {
   if(tabEls[tabs.indexOf(r)]) tabEls[tabs.indexOf(r)].classList.add('active');
 })();
 </script>
+<script src="{% static 'js/sidebar.js' %}"></script>
 {% block extra_scripts %}{% endblock %}
 
 {% if user.is_authenticated %}
