@@ -61,6 +61,7 @@ urlpatterns = [
     path('calendar/<int:pk>/delete/', views.calendar_event_delete, name='calendar_event_delete'),
     path('calendar/<int:pk>/approve/', views.calendar_event_approve, name='calendar_event_approve'),
     path('calendar/<int:pk>/', views.calendar_event_detail, name='calendar_event_detail'),
+    path('groups/<int:pk>/calendar/events/', views.group_calendar_events, name='group_calendar_events'),
     path('calendar/<int:pk>/attend/', views.calendar_event_attend, name='calendar_event_attend'),
     path('calendar/<int:pk>/comment/', views.calendar_event_comment, name='calendar_event_comment'),
     path('calendar/<int:pk>/comment/<int:comment_pk>/delete/', views.calendar_event_comment_delete, name='calendar_event_comment_delete'),

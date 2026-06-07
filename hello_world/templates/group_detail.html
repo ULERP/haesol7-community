@@ -1,180 +1,30 @@
 {% extends 'base_2panel.html' %}
 {% block menu_groups %}active{% endblock %}
 {% block extra_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/rrule@6.1.11/index.global.min.js"></script>
+{% include "partials/calendar_widget.html" %}
 <script>
-// ── 달력 초기화
-const fcEvents = {{ group_events_json|safe }};
-
-document.addEventListener('DOMContentLoaded', function() {
-  const calEl = document.getElementById('groupCalendar');
+window.cwConfig = {
+  groupId:      {{ group.pk }},
+  isLeader:     {{ is_leader|yesno:"true,false" }},
+  isStaff:      {{ user.is_staff|yesno:"true,false" }},
+  isAuth:       {{ user.is_authenticated|yesno:"true,false" }},
+  userId:       {{ user.pk|default:"null" }},
+  myGroups:     [],
+  leaderGroups: [],
+};
+document.addEventListener("DOMContentLoaded", function() {
+  const calEl = document.getElementById("groupCalendar");
   if (!calEl) return;
-  const calendar = new FullCalendar.Calendar(calEl, {
-    initialView: 'dayGridMonth',
-    locale: 'ko',
-    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listWeek' },
-    events: fcEvents,
-    eventClick: function(info) {
-      info.jsEvent.preventDefault();
-      showEventDetail(info.event);
-    },
-    height: 'auto',
-  });
+  cwInit(calEl);
   // 일정 탭 클릭 시 렌더
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.textContent.includes('일정')) {
-        setTimeout(() => calendar.render(), 100);
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btn.textContent.includes("일정")) {
+        setTimeout(() => cwCalendar && cwCalendar.render(), 150);
       }
     });
   });
 });
-</script>
-<script>
-// ── 일정 상세/수정/삭제
-let currentEventId = null;
-let currentEventData = {};
-const isGroupLeader = {{ is_leader|yesno:"true,false" }};
-const currentUserId = {{ user.pk|default:"null" }};
-const isStaffUser   = {{ user.is_staff|yesno:"true,false" }};
-
-function showEventDetail(ev) {
-  const p = ev.extendedProps || {};
-  currentEventId = p.cal_id || ev.id;
-  // 수정용 데이터 저장
-  currentEventData = {
-    title:       ev.title.replace(/^[🙋📅🤝👥⏳🔒👥\s]*/,''),
-    start:       ev.startStr ? ev.startStr.substring(0,16) : '',
-    end:         ev.endStr   ? ev.endStr.substring(0,16)   : '',
-    location:    p.location    || '',
-    description: p.description || '',
-  };
-  document.getElementById('evDetailTitle').textContent    = ev.title;
-  document.getElementById('evDetailLocation').textContent = p.location    || '';
-  document.getElementById('evDetailDesc').textContent     = p.description || '';
-  document.getElementById('evDetailStart').textContent    = ev.startStr   || '';
-
-  // 수정/삭제 버튼: 내가 만든 일정이거나 소모임장/관리자
-  const canEdit = isGroupLeader || isStaffUser;
-  document.getElementById('evDetailEditBtn').classList.toggle('d-none', !canEdit);
-  document.getElementById('evDetailDelBtn').classList.toggle('d-none',  !canEdit);
-
-  new bootstrap.Modal(document.getElementById('eventDetailModal')).show();
-}
-
-function deleteCalEvent() {
-  if (!currentEventId || !confirm('일정을 삭제하시겠습니까?')) return;
-  fetch('/calendar/' + currentEventId + '/delete/', {
-    method: 'POST',
-    headers: {'X-CSRFToken': getCsrfToken()}
-  }).then(r => r.json()).then(res => {
-    if (res.success) {
-      bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
-      location.reload();
-    } else { alert(res.error || '오류가 발생했습니다.'); }
-  });
-}
-
-function openEditModal() {
-  bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
-  // 수정 모달에 기존 데이터 채우기
-  document.getElementById('eventTitle').value    = currentEventData.title;
-  document.getElementById('eventStart').value    = currentEventData.start;
-  document.getElementById('eventEnd').value      = currentEventData.end;
-  document.getElementById('eventLocation').value = currentEventData.location;
-  document.getElementById('eventDesc').value     = currentEventData.description;
-  document.getElementById('eventEditId').value   = currentEventId;
-  document.getElementById('addEventModalLabel').textContent = '✏️ 일정 수정';
-  document.getElementById('eventSubmitBtn').textContent     = '수정하기';
-  document.getElementById('eventSubmitBtn').onclick         = submitEditEvent;
-  new bootstrap.Modal(document.getElementById('addEventModal')).show();
-}
-
-function submitEditEvent() {
-  const id    = document.getElementById('eventEditId').value;
-  const title = document.getElementById('eventTitle').value.trim();
-  const start = document.getElementById('eventStart').value;
-  if (!title || !start) { document.getElementById('eventMsg').textContent = '제목과 시작 시간은 필수입니다.'; return; }
-  fetch('/calendar/' + id + '/edit/', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','X-CSRFToken': getCsrfToken()},
-    body: JSON.stringify({
-      title:       title,
-      start_time:  start.replace('T', ' ') + ':00',
-      end_time:    document.getElementById('eventEnd').value ? document.getElementById('eventEnd').value.replace('T', ' ') + ':00' : null,
-      location:    document.getElementById('eventLocation').value.trim(),
-      description: document.getElementById('eventDesc').value.trim(),
-    })
-  }).then(r => r.json()).then(res => {
-    if (res.success) {
-      bootstrap.Modal.getInstance(document.getElementById('addEventModal')).hide();
-      location.reload();
-    } else { document.getElementById('eventMsg').textContent = res.error || '오류'; }
-  });
-}
-
-function getCsrfToken() {
-  const v = document.cookie.match('(^|;)\s*csrftoken\s*=\s*([^;]+)');
-  return v ? v.pop() : '';
-}
-// ── 설문 투표
-function votePoll(pollId, optIdx) {
-  fetch('/polls/' + pollId + '/vote/', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
-    body: JSON.stringify({option_index: optIdx})
-  }).then(r => r.json()).then(data => {
-    if (data.success) updatePollUI(pollId, data.results, data.total);
-  });
-}
-
-function updatePollUI(pollId, results, total) {
-  results.forEach((r, i) => {
-    const pct = document.querySelector('.poll-pct-' + pollId + '-' + i);
-    const bar = document.querySelector('.poll-bar-' + pollId + '-' + i);
-    if (pct) pct.textContent = r.pct + '%';
-    if (bar) bar.style.width = r.pct + '%';
-  });
-  const tot = document.querySelector('.poll-total-' + pollId);
-  if (tot) tot.textContent = '총 ' + total + '표';
-}
-
-// 페이지 로드 시 설문 결과 불러오기
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('[id^="poll-"]').forEach(el => {
-    const pollId = el.id.replace('poll-', '');
-    fetch('/polls/' + pollId + '/results/').then(r => r.json()).then(data => {
-      updatePollUI(pollId, data.results, data.total);
-    });
-  });
-});
-
-// ── 설문 만들기
-function addPollOption() {
-  const cnt = document.querySelectorAll('.poll-opt').length + 1;
-  const inp = document.createElement('input');
-  inp.type = 'text'; inp.className = 'form-control mb-2 poll-opt';
-  inp.placeholder = '옵션 ' + cnt;
-  document.getElementById('pollOptions').appendChild(inp);
-}
-
-function submitPoll() {
-  const question = document.getElementById('pollQuestion').value.trim();
-  const options = [...document.querySelectorAll('.poll-opt')].map(i => i.value.trim()).filter(Boolean);
-  if (!question || options.length < 2) {
-    document.getElementById('pollMsg').textContent = '질문과 옵션 2개 이상 필요';
-    return;
-  }
-  fetch('/polls/create/', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'},
-    body: JSON.stringify({question, options, group_id: {{ group.pk }} })
-  }).then(r => r.json()).then(data => {
-    if (data.success) { bootstrap.Modal.getInstance(document.getElementById('addPollModal')).hide(); location.reload(); }
-    else document.getElementById('pollMsg').textContent = data.error;
-  });
-}
 </script>
 {% endblock %}
 {% block title %}{{ group.name }}{% endblock %}
@@ -386,162 +236,13 @@ function submitPoll() {
     <!-- 캘린더 탭 -->
     <div class="tab-pane" id="tab-calendar">
       {% if is_member %}
-      <button type="button" class="btn btn-wine btn-sm mb-3 w-100" data-bs-toggle="modal" data-bs-target="#addEventModal">
+      <button type="button" class="btn btn-sm text-white fw-bold mb-3 w-100" style="background:#7A263A;border-radius:20px;" onclick="cwOpenCreate()">
         <i class="fas fa-plus me-1"></i>일정 추가
       </button>
-
-<!-- 일정 추가 모달 -->
-<!-- 일정 상세 모달 -->
-<div class="modal fade" id="eventDetailModal" tabindex="-1">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content" style="border-radius:14px;">
-      <div class="modal-header py-2" style="border-bottom:2px solid #D4B26A;">
-        <h6 class="modal-title fw-bold" id="evDetailTitle"></h6>
-        <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body py-2">
-        <div class="small mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i><span id="evDetailLocation"></span></div>
-        <div class="small mb-1"><i class="fas fa-clock text-muted me-1"></i><span id="evDetailStart"></span></div>
-        <div class="small text-muted" id="evDetailDesc"></div>
-      </div>
-      <div class="modal-footer py-2 gap-2">
-        <button id="evDetailEditBtn" class="btn btn-sm btn-outline-secondary d-none" onclick="openEditModal()">✏️ 수정</button>
-        <button id="evDetailDelBtn"  class="btn btn-sm btn-danger d-none" onclick="deleteCalEvent()">🗑 삭제</button>
-        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">닫기</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="addEventModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="addEventModalLabel"><i class="fas fa-calendar-plus me-2"></i>일정 추가</h5>
-        <input type="hidden" id="eventEditId" value="">
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label fw-semibold">제목 <span class="text-danger">*</span></label>
-          <input type="text" id="eventTitle" class="form-control" placeholder="일정 제목">
-        </div>
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label fw-semibold">시작</label>
-            <input type="datetime-local" id="eventStart" class="form-control">
-          </div>
-          <div class="col-6">
-            <label class="form-label fw-semibold">종료</label>
-            <input type="datetime-local" id="eventEnd" class="form-control">
-          </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-semibold">장소</label>
-          <input type="text" id="eventLocation" class="form-control" placeholder="장소 (선택)">
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-semibold">설명</label>
-          <textarea id="eventDesc" class="form-control" rows="3" placeholder="설명 (선택)"></textarea>
-        </div>
-        <!-- 반복 설정 -->
-        <div class="mb-3">
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="grpRecurToggle" onchange="toggleGrpRecur()">
-            <label class="form-check-label fw-semibold" for="grpRecurToggle">🔁 반복 일정</label>
-          </div>
-        </div>
-        <div id="grpRecurWrap" class="d-none mb-3 p-2 bg-light rounded">
-          <div class="row g-2 mb-2">
-            <div class="col-6">
-              <label class="form-label fw-semibold small">반복 주기</label>
-              <select id="grpRecurType" class="form-select form-select-sm" onchange="updateGrpRecurLabel()">
-                <option value="daily">매일</option>
-                <option value="weekly" selected>매주</option>
-                <option value="monthly">매월</option>
-              </select>
-            </div>
-            <div class="col-6">
-              <label class="form-label fw-semibold small">간격</label>
-              <div class="input-group input-group-sm">
-                <input type="number" id="grpRecurInterval" class="form-control" value="1" min="1" max="30">
-                <span class="input-group-text small" id="grpRecurLabel">주</span>
-              </div>
-            </div>
-          </div>
-          <div>
-            <label class="form-label fw-semibold small">반복 종료일 *</label>
-            <input type="date" id="grpRecurEndDate" class="form-control form-control-sm">
-          </div>
-        </div>
-        <div id="eventMsg" class="text-danger small"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-        <button type="button" class="btn btn-wine" id="eventSubmitBtn" onclick="submitEvent()">추가</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-function toggleGrpRecur() {
-  const on = document.getElementById('grpRecurToggle').checked;
-  document.getElementById('grpRecurWrap').classList.toggle('d-none', !on);
-}
-function updateGrpRecurLabel() {
-  const t = document.getElementById('grpRecurType').value;
-  document.getElementById('grpRecurLabel').textContent = t === 'daily' ? '일' : t === 'weekly' ? '주' : '월';
-}
-function submitEvent() {
-  const title = document.getElementById('eventTitle').value.trim();
-  const start = document.getElementById('eventStart').value;
-  if (!title || !start) {
-    document.getElementById('eventMsg').textContent = '제목과 시작 시간은 필수입니다.';
-    return;
-  }
-  const isRecur  = document.getElementById('grpRecurToggle').checked;
-  const recurEnd = document.getElementById('grpRecurEndDate').value;
-  if (isRecur && !recurEnd) {
-    document.getElementById('eventMsg').textContent = '반복 종료일을 입력해주세요.';
-    return;
-  }
-  const endVal = document.getElementById('eventEnd').value;
-  fetch('/calendar/create/', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
-    body: JSON.stringify({
-      title:          title,
-      start_time:     start.replace('T', ' ') + ':00',
-      end_time:       endVal ? endVal.replace('T', ' ') + ':00' : null,
-      location:       document.getElementById('eventLocation').value.trim(),
-      description:    document.getElementById('eventDesc').value.trim(),
-      event_type:     'group',
-      visibility:     'group',
-      group_id:       {{ group.pk }},
-      is_recurring:   isRecur,
-      recur_type:     document.getElementById('grpRecurType').value,
-      recur_interval: parseInt(document.getElementById('grpRecurInterval').value) || 1,
-      recur_end_date: recurEnd || null,
-    })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      bootstrap.Modal.getInstance(document.getElementById('addEventModal')).hide();
-      let msg = '일정이 추가되었습니다.';
-      if (data.recur_count > 0) msg += ` (반복 ${data.recur_count}개 생성)`;
-      alert(msg);
-      location.reload();
-    } else {
-      document.getElementById('eventMsg').textContent = data.error || '오류가 발생했습니다.';
-    }
-  });
-}
-</script>
       {% endif %}
-      <!-- FullCalendar -->
-      <div id="groupCalendar" style="font-size:0.82rem;"></div>
+      <div class="cal-widget">
+        <div id="groupCalendar"></div>
+      </div>
     </div>
 
     <!-- 설문조사 탭 -->

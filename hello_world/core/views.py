@@ -2836,6 +2836,78 @@ def calendar_event_create(request):
 
 
 @login_required
+def group_calendar_events(request, pk):
+    """소모임 캘린더 이벤트 JSON API"""
+    import json
+    from .models import CalendarEvent, Group, GroupMember
+    from django.db.models import Q
+
+    try:
+        group = Group.objects.get(pk=pk)
+    except Group.DoesNotExist:
+        return JsonResponse({'error': '소모임 없음'}, status=404)
+
+    user = request.user
+    my_group_ids = list(GroupMember.objects.filter(user=user, join_status='approved').values_list('group_id', flat=True))
+    is_leader = (
+        group.creator == user or
+        GroupMember.objects.filter(group=group, user=user, role='leader', join_status='approved').exists()
+    )
+
+    events = []
+    ce_qs = CalendarEvent.objects.filter(
+        group=group,
+        visibility__in=['group', 'group_pending', 'public']
+    ).select_related('creator', 'group')
+
+    color_map = {'personal':'#6b7280','volunteer':'#1a7a4a','event':'#7A263A','group':'#D4B26A'}
+    badge_map = {'group_pending':'⏳','group':'','public':'','pending':'⏳','private':'🔒'}
+
+    for ce in ce_qs:
+        color     = ce.color if ce.color else color_map.get(ce.event_type, '#6b7280')
+        is_pending = ce.visibility == 'group_pending'
+        if is_pending: color = '#9ca3af'
+        badge = badge_map.get(ce.visibility, '')
+
+        ev = {
+            'id':              f'ce_{ce.id}',
+            'title':           f'{badge} {ce.title}'.strip(),
+            'start':           ce.start_time.isoformat(),
+            'end':             ce.end_time.isoformat() if ce.end_time else None,
+            'allDay':          ce.all_day,
+            'backgroundColor': color,
+            'borderColor':     color,
+            'extendedProps': {
+                'cal_id':      ce.id,
+                'type':        ce.get_event_type_display(),
+                'visibility':  ce.visibility,
+                'location':    ce.location,
+                'description': ce.description,
+                'creator':     ce.creator.nickname or ce.creator.username,
+                'creator_id':  ce.creator.id,
+                'is_mine':     ce.creator == user,
+                'can_approve': is_pending and is_leader,
+                'can_edit':    ce.creator == user or is_leader or user.is_staff,
+            }
+        }
+        if ce.rrule:
+            ev['rrule'] = ce.rrule
+            if ce.end_time:
+                delta = ce.end_time - ce.start_time
+                h, s  = divmod(int(delta.total_seconds()), 3600)
+                m     = s // 60
+                ev['duration'] = f'{h:02d}:{m:02d}'
+        events.append(ev)
+
+    return JsonResponse({
+        'events':    events,
+        'is_leader': is_leader,
+        'group_id':  pk,
+        'group_name': group.name,
+    })
+
+
+@login_required
 def calendar_event_detail(request, pk):
     from .models import CalendarEvent, CalendarEventAttendee, CalendarEventComment, GroupMember
     from django.db.models import Q
