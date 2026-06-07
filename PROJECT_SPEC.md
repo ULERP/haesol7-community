@@ -291,3 +291,38 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 2. CalendarEvent naive datetime 경고 수정
 3. board.icon 필드 PA DB 확인
 4. rate_user Notification 오류 PA 확인
+
+
+## 13. 업데이트 이력 (2026-06-08 - 4차)
+
+### 캘린더 시스템 전면 재설계
+
+#### 모델 변경 (migration 0039)
+- 제거: is_recurring, recur_type, recur_end_date, recur_parent
+- 추가: rrule (RRule 규칙 저장), group_approved_by, group_approved_at
+- visibility 선택지 재설계:
+  - private: 나만보기 (즉시)
+  - group_pending: 소모임공개 승인대기
+  - group: 소모임공개 (승인완료)
+  - pending: 전체공개 승인대기
+  - public: 전체공개 (승인완료)
+
+#### 뷰 재설계
+- integrated_calendar: @login_required 추가, 권한별 필터링 강화
+- calendar_event_create: 사용자가 공개범위 직접 선택, 권한에 따라 즉시승인 or 승인대기 자동처리, 승인요청 알림 발송
+- calendar_event_approve: 소모임장 승인(group_pending→group) + 관리자 승인(pending→public) 분리, 승인완료 알림 발송
+- RRule 방식: DB에 규칙만 저장, FullCalendar rrule 플러그인으로 프론트 렌더링
+
+#### UI 재설계 (integrated_calendar.html)
+- FullCalendar 6.1.11 + rrule 플러그인
+- 종류/공개범위 버튼식 선택 UI
+- 공개범위별 실시간 안내 문구
+- 승인대기 목록 (관리자/소모임장에게만 표시)
+- 필터 버튼 (전체/봉사/행사/소모임/개인)
+- PA DB 기존 1100개 잘못 생성된 반복 이벤트 전체 삭제
+
+### 잔여 이슈 (다음 작업)
+1. favicon.ico 404 오류 수정
+2. CalendarEvent naive datetime 경고 수정
+3. board.icon 필드 PA DB 확인
+4. rate_user Notification 오류 PA 확인
