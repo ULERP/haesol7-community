@@ -2682,7 +2682,7 @@ def calendar_event_create(request):
     if request.method != 'POST':
         return JsonResponse({'error': '잘못된 요청'}, status=400)
     import json
-    from .models import CalendarEvent, Group, Notification
+    from .models import CalendarEvent, Group, GroupMember, Notification
     from django.utils import timezone
     from django.utils.dateparse import parse_datetime
 
