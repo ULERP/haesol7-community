@@ -59,6 +59,14 @@
   transition:all .12s;border:none;background:none;width:100%;cursor:pointer;}
 .sb-item:hover{background:var(--gl);color:var(--g);}
 .sb-item.active{background:var(--gl);color:var(--g);font-weight:700;}
+    .sb-sec-title{font-size:0.68rem;color:#9ca3af;font-weight:600;padding:6px 4px 3px;letter-spacing:0.04em;}
+    .sb-info-row{display:flex;align-items:center;gap:7px;padding:5px 4px;border-radius:6px;text-decoration:none;color:inherit;}
+    .sb-info-row:hover{background:var(--gl);}
+    .sb-info-icon{width:22px;height:22px;border-radius:5px;background:#6E233218;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .sb-info-icon i{font-size:11px;color:#6E2332;}
+    .sb-info-text{flex:1;min-width:0;}
+    .sb-info-main{font-size:0.78rem;color:#1F2937;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .sb-info-sub{font-size:0.68rem;color:#9ca3af;margin-top:1px;}
 .sb-item i{width:15px;text-align:center;color:var(--g);font-size:0.85rem;flex-shrink:0;}
 .sb-divider{height:1px;background:var(--border);margin:5px 4px;}
 .sb-text{display:inline;}
@@ -230,10 +238,7 @@
           <div class="sb-user-av">{{ user.nickname|default:user.username|first|upper }}</div>
           <div class="sb-user-info">
             <div class="sb-user-name">{{ user.nickname|default:user.username }}</div>
-            <div class="sb-user-sub">
-              {% if user.dong %}{{ user.dong }}동 {{ user.ho }}호 · {% endif %}
-              {% if user.is_verified %}<span style="color:var(--g);">✓ 인증</span>{% else %}<span style="color:#f59e0b;">미인증</span>{% endif %}
-            </div>
+            <div class="sb-user-sub">{% if user.dong %}{{ user.dong }}동 {{ user.ho }}호 · {% endif %}{% if user.is_verified %}<span style="color:var(--g);">✓ 인증</span>{% else %}<span style="color:#f59e0b;">미인증</span>{% endif %}</div>
           </div>
         </div>
         <div class="sb-stats">
@@ -241,102 +246,119 @@
           <div class="sb-stat"><div class="sb-stat-n">{{ user.manners_score|floatformat:0 }}</div><div class="sb-stat-l">❤️ 온기</div></div>
         </div>
       </a>
-      {% else %}
-      <div style="background:linear-gradient(135deg,#1F2937,#6E2332);border-radius:10px;padding:12px;margin-bottom:8px;text-align:center;">
-        <div style="color:#fff;font-weight:700;font-size:0.82rem;margin-bottom:6px;">해솔7단지 이웃이세요?</div>
-        <div style="display:flex;gap:5px;">
-          <a href="/accounts/login/" style="flex:1;background:#fff;color:var(--g);border-radius:7px;padding:5px;font-size:0.73rem;font-weight:700;text-align:center;text-decoration:none;">로그인</a>
-          <a href="/accounts/signup/" style="flex:1;background:rgba(255,255,255,.2);color:#fff;border-radius:7px;padding:5px;font-size:0.73rem;font-weight:600;text-align:center;text-decoration:none;border:1px solid rgba(255,255,255,.3);">회원가입</a>
+
+      <div class="sb-sec-title">이번 달 내 활동</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+        <div style="background:var(--gl);border-radius:6px;padding:6px 8px;text-align:center;">
+          <div style="font-size:14px;font-weight:700;color:var(--g);">{{ user.activity_count|default:"0" }}</div>
+          <div style="font-size:9px;color:#9ca3af;margin-top:1px;">참여 활동</div>
+        </div>
+        <div style="background:var(--gl);border-radius:6px;padding:6px 8px;text-align:center;">
+          <div style="font-size:14px;font-weight:700;color:var(--g);">{{ user.mileage_points }}</div>
+          <div style="font-size:9px;color:#9ca3af;margin-top:1px;">포인트</div>
+        </div>
+        <div style="background:var(--gl);border-radius:6px;padding:6px 8px;text-align:center;">
+          <div style="font-size:14px;font-weight:700;color:var(--g);">{{ user.posts.count }}</div>
+          <div style="font-size:9px;color:#9ca3af;margin-top:1px;">작성 글</div>
+        </div>
+        <div style="background:var(--gl);border-radius:6px;padding:6px 8px;text-align:center;">
+          <div style="font-size:14px;font-weight:700;color:var(--g);">{{ user.manners_score|floatformat:0 }}</div>
+          <div style="font-size:9px;color:#9ca3af;margin-top:1px;">온기</div>
         </div>
       </div>
-      {% endif %}
 
-            <a href="/" class="sb-item active"><i class="fas fa-home"></i><span class="sb-text">홈</span></a>
       <div class="sb-divider"></div>
+      <div class="sb-sec-title">알림 · 쪽지</div>
+      <a href="/notifications/" class="sb-info-row">
+        <div class="sb-info-icon"><i class="fas fa-bell"></i></div>
+        <div class="sb-info-text"><div class="sb-info-main">알림</div></div>
+        <span id="noti-dot" style="display:none;background:#ef4444;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;">새글</span>
+      </a>
+      <a href="/letters/" class="sb-info-row">
+        <div class="sb-info-icon" style="background:#1e40af18;"><i class="fas fa-envelope" style="color:#1e40af;"></i></div>
+        <div class="sb-info-text"><div class="sb-info-main">쪽지함</div></div>
+      </a>
+      <a href="/chat/dm/list/" class="sb-info-row">
+        <div class="sb-info-icon" style="background:#15803d18;"><i class="fas fa-comment-dots" style="color:#15803d;"></i></div>
+        <div class="sb-info-text"><div class="sb-info-main">1:1 채팅</div></div>
+      </a>
 
-      <!-- 💬 대화하기 -->
-      <div class="sb-label" onclick="toggleSection('sec-chat')">
-        <span><i class="fas fa-comments me-1" style="color:#7A263A;font-size:0.8rem;"></i>💬 대화하기</span>
-        <i class="fas fa-chevron-right sb-fold-icon"></i>
-      </div>
-      <div class="sb-section" id="sec-chat">
-        <a href="/chat/public/" class="sb-item"><i class="fas fa-comments" style="color:#7A263A;"></i><span class="sb-text">전체채팅</span></a>
-        <a href="/groups/" class="sb-item"><i class="fas fa-users" style="color:#D4B26A;"></i><span class="sb-text">소모임 채팅</span></a>
-        <a href="/chat/dm/list/" class="sb-item"><i class="fas fa-comment-dots"></i><span class="sb-text">1:1 채팅</span></a>
-        <a href="/letters/" class="sb-item"><i class="fas fa-envelope"></i><span class="sb-text">쪽지함</span></a>
-      </div>
       <div class="sb-divider"></div>
+      <div class="sb-sec-title">내 소모임</div>
+      {% for group in my_groups %}
+      <a href="/groups/{{ group.pk }}/" class="sb-info-row">
+        <div class="sb-info-icon"><i class="fas fa-users"></i></div>
+        <div class="sb-info-text">
+          <div class="sb-info-main">{{ group.name|truncatechars:16 }}</div>
+          <div class="sb-info-sub">멤버 {{ group.member_count }}명</div>
+        </div>
+      </a>
+      {% empty %}
+      <a href="/groups/" class="sb-info-row">
+        <div class="sb-info-icon"><i class="fas fa-plus"></i></div>
+        <div class="sb-info-text"><div class="sb-info-main">소모임 참여하기</div></div>
+      </a>
+      {% endfor %}
 
-      <!-- 📋 기록하기 -->
-      <div class="sb-label" onclick="toggleSection('sec-record')">
-        <span><i class="fas fa-clipboard-list me-1" style="color:#7A263A;font-size:0.8rem;"></i>📋 기록하기</span>
-        <i class="fas fa-chevron-right sb-fold-icon"></i>
-      </div>
-      <div class="sb-section" id="sec-record">
-        <a href="/boards/" class="sb-item"><i class="fas fa-th-large" style="color:#7A263A;"></i><span class="sb-text">전체 게시판</span></a>
-        {% for board in active_boards %}
-        <a href="/board/{{ board.id }}/" class="sb-item"><i class="{{ board.icon }}"></i><span class="sb-text">{{ board.name }}</span></a>
-        {% endfor %}
-      </div>
-      <div class="sb-divider"></div>
-
-      <!-- 🤝 함께하기 -->
-      <div class="sb-label" onclick="toggleSection('sec-together')">
-        <span><i class="fas fa-hands-helping me-1" style="color:#7A263A;font-size:0.8rem;"></i>🤝 함께하기</span>
-        <i class="fas fa-chevron-right sb-fold-icon"></i>
-      </div>
-      <div class="sb-section" id="sec-together">
-        <a href="/hub/together/" class="sb-item"><i class="fas fa-th-large" style="color:#7A263A;"></i><span class="sb-text">함께하기 전체보기</span></a>
-        <a href="/groups/" class="sb-item"><i class="fas fa-users" style="color:#7A263A;"></i><span class="sb-text">소모임</span></a>
-        <a href="/volunteer/" class="sb-item"><i class="fas fa-heart" style="color:#7A263A;"></i><span class="sb-text">봉사활동</span></a>
-        <a href="/calendar/" class="sb-item"><i class="fas fa-calendar-alt" style="color:#D4B26A;"></i><span class="sb-text">캘린더</span></a>
-        <a href="/surveys/" class="sb-item"><i class="fas fa-poll"></i><span class="sb-text">설문조사</span></a>
-        <a href="/activity/submit/" class="sb-item"><i class="fas fa-camera" style="color:#D4B26A;"></i><span class="sb-text">활동 인증</span></a>
-        <a href="/board/14/" class="sb-item"><i class="fas fa-handshake" style="color:#7A263A;"></i><span class="sb-text">나눔/장터</span></a>
-      </div>
-      <div class="sb-divider"></div>
-
-      <!-- 📢 단지소식 -->
-      <div class="sb-label" onclick="toggleSection('sec-news')">
-        <span><i class="fas fa-bell me-1" style="color:#D4B26A;font-size:0.8rem;"></i>📢 단지소식</span>
-        <i class="fas fa-chevron-right sb-fold-icon"></i>
-      </div>
-      <div class="sb-section" id="sec-news">
-        <a href="/hub/news/" class="sb-item"><i class="fas fa-th-large" style="color:#7A263A;"></i><span class="sb-text">단지소식 전체보기</span></a>
-        <a href="/notices/" class="sb-item"><i class="fas fa-bell" style="color:#7A263A;"></i><span class="sb-text">공지사항</span></a>
-        <a href="/complaints/" class="sb-item"><i class="bi bi-megaphone" style="color:#D4B26A;"></i><span class="sb-text">민원/오류</span></a>
-        <a href="/stats/" class="sb-item"><i class="fas fa-chart-bar"></i><span class="sb-text">단지 통계</span></a>
-        <a href="/community/docs/" class="sb-item"><i class="fas fa-file-alt"></i><span class="sb-text">관리 문서</span></a>
-        <a href="/faq/" class="sb-item"><i class="fas fa-question-circle"></i><span class="sb-text">FAQ</span></a>
-      </div>
-
-      {% if user.is_authenticated %}
-      <div class="sb-divider"></div>
-      <div class="sb-label sb-text">내 활동</div>
-      <a href="/mypage/" class="sb-item"><i class="fas fa-user-circle"></i><span class="sb-text">마이페이지</span></a>
-      <a href="/activity/submit/" class="sb-item"><i class="fas fa-camera"></i><span class="sb-text">활동 인증</span></a>
-      <a href="/notifications/" class="sb-item"><i class="fas fa-bell"></i><span class="sb-text">알림</span><span id="noti-dot" style="display:none;width:6px;height:6px;border-radius:50%;background:#ef4444;margin-left:auto;"></span></a>
       {% if user.is_staff %}
       <div class="sb-divider"></div>
-      <a href="/admin/" class="sb-item"><i class="fas fa-cog"></i><span class="sb-text">관리자</span></a>
-      <a href="/verify/admin/" class="sb-item"><i class="fas fa-id-card"></i><span class="sb-text">인증 관리</span></a>
+      <div class="sb-sec-title">관리자</div>
+      <a href="/manage/" class="sb-info-row"><div class="sb-info-icon"><i class="fas fa-cog"></i></div><div class="sb-info-text"><div class="sb-info-main">관리자 페이지</div></div></a>
+      <a href="/verify/admin/" class="sb-info-row"><div class="sb-info-icon"><i class="fas fa-id-card"></i></div><div class="sb-info-text"><div class="sb-info-main">인증 관리</div></div></a>
       {% endif %}
-      <div style="margin-top:auto;padding:8px 0 4px;">
-        <form method="post" action="/accounts/logout/">
-          {% csrf_token %}
-          <button type="submit" class="sb-item" style="color:#ef4444;width:100%;">
-            <i class="fas fa-sign-out-alt" style="color:#ef4444;"></i>
-            <span class="sb-text">로그아웃</span>
-          </button>
-        </form>
+
+      <div class="sb-divider"></div>
+      <form method="post" action="/accounts/logout/">
+        {% csrf_token %}
+        <button type="submit" class="sb-info-row" style="width:100%;background:none;border:none;cursor:pointer;">
+          <div class="sb-info-icon" style="background:#fee2e218;"><i class="fas fa-sign-out-alt" style="color:#ef4444;"></i></div>
+          <div class="sb-info-text"><div class="sb-info-main" style="color:#ef4444;">로그아웃</div></div>
+        </button>
+      </form>
+
+      {% else %}
+      <div style="background:linear-gradient(135deg,#1F2937,#6E2332);border-radius:10px;padding:12px;margin-bottom:8px;text-align:center;">
+        <div style="color:#fff;font-weight:700;font-size:0.82rem;margin-bottom:4px;">해솔7단지 이웃이세요?</div>
+        <div style="color:#ffffff99;font-size:0.72rem;margin-bottom:8px;">가입하고 이웃과 소통해보세요</div>
+        <div style="display:flex;gap:5px;">
+          <a href="/accounts/login/" style="flex:1;background:#fff;color:#1F2937;border-radius:7px;padding:5px;font-size:0.73rem;font-weight:700;text-align:center;text-decoration:none;">로그인</a>
+          <a href="/accounts/signup/" style="flex:1;background:rgba(255,255,255,.2);color:#fff;border-radius:7px;padding:5px;font-size:0.73rem;font-weight:600;text-align:center;text-decoration:none;border:1px solid rgba(255,255,255,.3);">가입</a>
+        </div>
       </div>
+
+      <div style="display:flex;align-items:center;gap:4px;justify-content:center;padding:6px 0;margin-bottom:4px;">
+        <div style="width:6px;height:6px;border-radius:50%;background:#22c55e;"></div>
+        <div style="font-size:11px;color:#6b7280;">지금 <span style="color:#15803d;font-weight:600;">{{ sb_online_count }}</span>명 접속 중</div>
+      </div>
+
+      <div class="sb-divider"></div>
+      <div class="sb-sec-title">단지 소개</div>
+      <a href="/faq/" class="sb-info-row">
+        <div class="sb-info-icon" style="background:#15803d18;"><i class="fas fa-home" style="color:#15803d;"></i></div>
+        <div class="sb-info-text"><div class="sb-info-main">해솔7단지란?</div><div class="sb-info-sub">커뮤니티 소개</div></div>
+      </a>
+      <a href="/accounts/signup/" class="sb-info-row">
+        <div class="sb-info-icon" style="background:#15803d18;"><i class="fas fa-shield-alt" style="color:#15803d;"></i></div>
+        <div class="sb-info-text"><div class="sb-info-main">입주민 인증 방법</div><div class="sb-info-sub">동호수 인증 안내</div></div>
+      </a>
+
+      <div class="sb-divider"></div>
+      <div class="sb-sec-title">최근 공개 활동</div>
+      {% for group in sb_hot_posts %}
+      <a href="/posts/{{ group.pk }}/" class="sb-info-row">
+        <div class="sb-info-icon"><i class="fas fa-fire"></i></div>
+        <div class="sb-info-text">
+          <div class="sb-info-main">{{ group.title|truncatechars:18 }}</div>
+          <div class="sb-info-sub">❤ {{ group.like_count }}</div>
+        </div>
+      </a>
+      {% endfor %}
       {% endif %}
+
     </div>
 
-    <!-- 사이드바 토글 버튼 -->
     <div class="sb-toggle">
-      <button onclick="toggleLeft()" style="background:var(--gl);border:1px solid var(--gb);
-        border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--g);font-size:0.75rem;font-weight:600;">
+      <button onclick="toggleLeft()" style="background:var(--gl);border:1px solid var(--gb);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--g);font-size:0.75rem;font-weight:600;">
         <i class="fas fa-chevron-left" id="sbLIcon"></i>
       </button>
     </div>
