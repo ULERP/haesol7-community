@@ -454,9 +454,13 @@ def post_write(request, board_id):
             for idx, (ext, b64data) in enumerate(b64_imgs[:5]):  # 최대 5개
                 try:
                     img_data = base64.b64decode(b64data)
-                    filename = f'{uuid.uuid4().hex[:8]}.{ext}'
+                    from django.core.files.storage import default_storage
+                    now = post.created_at
+                    save_path = f'posts/{now.year}/{now.month:02d}/{uuid.uuid4().hex[:8]}.{ext}'
+                    saved = default_storage.save(save_path, ContentFile(img_data))
                     pi = PostImage(post=post, order=len(images)+idx)
-                    pi.image.save(filename, ContentFile(img_data), save=True)
+                    pi.image.name = saved
+                    pi.save()
                     # 본문의 base64를 저장된 URL로 교체
                     post_content = post_content.replace(
                         f'data:image/{ext};base64,{b64data}',
@@ -2872,25 +2876,16 @@ def post_image_upload(request):
     image = request.FILES.get('image')
     if not image:
         return JsonResponse({'error': '이미지가 없습니다'}, status=400)
-    from .models import PostImage, Post
     import uuid, os
     from django.core.files.base import ContentFile
-    from django.utils import timezone
-    # 임시 저장 (post 없이) - 나중에 post와 연결
-    ext = os.path.splitext(image.name)[1].lower() or '.jpg'
     from django.core.files.storage import default_storage
-    # upload_to가 'posts/%Y/%m/'이므로 파일명만 지정
-    filename = f'{uuid.uuid4().hex[:12]}{ext}'
-    from hello_world.core.models import PostImage as _PI
-    pi = _PI(post=None)
-    pi.image.save(f'posts/{timezone.now().year}/{timezone.now().month}/{filename}',
-                  ContentFile(image.read()), save=False)
-    # default_storage로 직접 저장 (중복 방지)
-    path = default_storage.save(
-        f'posts/{timezone.now().year}/{timezone.now().month}/{filename}',
-        ContentFile(image.read())
-    )
-    url = default_storage.url(path)
+    from django.utils import timezone
+    now = timezone.now()
+    ext = os.path.splitext(image.name)[1].lower() or '.jpg'
+    # 경로 직접 지정 (upload_to 우회 - 중복 방지)
+    save_path = f'posts/{now.year}/{now.month:02d}/{uuid.uuid4().hex[:12]}{ext}'
+    path = default_storage.save(save_path, ContentFile(image.read()))
+    url  = default_storage.url(path)
     return JsonResponse({'success': True, 'url': url})
 
 
