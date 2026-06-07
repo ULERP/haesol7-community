@@ -2530,7 +2530,11 @@ def integrated_calendar(request):
     my_group_ids = list(GroupMember.objects.filter(
         user=user, join_status='approved'
     ).values_list('group_id', flat=True))
-    my_leader_group_ids = list(Group.objects.filter(leader=user).values_list('id', flat=True))
+    # 소모임장: creator이거나 GroupMember role='leader'
+    my_leader_group_ids = list(set(
+        list(Group.objects.filter(creator=user).values_list('id', flat=True)) +
+        list(GroupMember.objects.filter(user=user, role='leader', join_status='approved').values_list('group_id', flat=True))
+    ))
 
     # CalendarEvent 권한 기반 필터링
     # 볼 수 있는 조건:
@@ -2714,7 +2718,8 @@ def calendar_event_create(request):
 
     elif visibility == 'group':
         # 소모임공개: 소모임장이면 즉시, 아니면 승인대기
-        if group and (user.is_staff or (group.leader == user)):
+        is_group_leader = group and (group.creator == user or GroupMember.objects.filter(group=group, user=user, role='leader', join_status='approved').exists())
+        if is_group_leader or user.is_staff:
             is_approved      = True
             approved_by      = user
             approved_at      = timezone.now()
@@ -2723,8 +2728,14 @@ def calendar_event_create(request):
         else:
             final_visibility = 'group_pending'
             approval_note    = '소모임장 승인 후 멤버에게 공개됩니다.'
-            if group and group.leader:
-                notify_targets.append(('group_leader', group.leader))
+            if group:
+                # 소모임장에게 알림 (creator + role=leader 멤버)
+                leaders = set()
+                leaders.add(group.creator)
+                for lm in GroupMember.objects.filter(group=group, role='leader', join_status='approved').select_related('user'):
+                    leaders.add(lm.user)
+                for leader in leaders:
+                    notify_targets.append(('group_leader', leader))
 
     elif visibility == 'public':
         # 전체공개: 관리자면 즉시, 아니면 승인대기
@@ -2836,7 +2847,11 @@ def calendar_event_approve(request, pk):
 
     # 소모임장 승인
     if event.visibility == 'group_pending':
-        if not (event.group and event.group.leader == user) and not user.is_staff:
+        is_leader = event.group and (
+            event.group.creator == user or
+            GroupMember.objects.filter(group=event.group, user=user, role='leader', join_status='approved').exists()
+        )
+        if not is_leader and not user.is_staff:
             return JsonResponse({'error': '소모임장 권한이 필요합니다'}, status=403)
         event.visibility         = 'group'
         event.is_approved        = True
