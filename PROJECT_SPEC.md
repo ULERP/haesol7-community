@@ -326,3 +326,23 @@ cd ~/haesol7-community && git pull origin main && python manage.py migrate --noi
 2. CalendarEvent naive datetime 경고 수정
 3. board.icon 필드 PA DB 확인
 4. rate_user Notification 오류 PA 확인
+
+
+## 15. 업데이트 이력 (2026-06-08 - 6차)
+
+### 완료된 작업
+- feat: 소모임 일정 상세/수정/삭제 모달 추가
+  - eventDetailModal: 상세보기 + 수정/삭제 버튼 (소모임장/관리자만)
+  - calendar_event_edit 뷰 + URL 추가
+  - submitEditEvent 함수 추가
+- feat: 소모임 캘린더 rrule 반복일정 지원
+  - group_events_json에 rrule/duration/cal_id 필드 추가
+  - FullCalendar rrule 플러그인 추가
+- fix: 일정 등록/수정 시 timezone 문제 수정
+  - toISOString() → 로컬시간 직접 전송 (요일 밀림 방지)
+
+### 잔여 이슈 (다음 작업)
+1. favicon.ico 404 오류 수정
+2. CalendarEvent naive datetime 경고 수정
+3. board.icon 필드 PA DB 확인
+4. rate_user Notification 오류 PA 확인
