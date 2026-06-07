@@ -332,6 +332,26 @@ function switchRp(name, btn) {
   const tabEls = document.querySelectorAll('.rp-tab');
   if(tabEls[tabs.indexOf(r)]) tabEls[tabs.indexOf(r)].classList.add('active');
 })();
+// 사이드바 아코디언 (인라인)
+const SB_SECS=["sec-chat","sec-record","sec-together","sec-news","sec-myact","sec-admin"];
+function toggleSection(id){
+  const target=document.getElementById(id);
+  if(!target)return;
+  const isOpen=!target.classList.contains("folded");
+  const h=target.scrollHeight;
+  SB_SECS.forEach(sid=>{
+    const s=document.getElementById(sid);
+    if(s){s.classList.add("folded");s.style.maxHeight="0";}
+    const l=s?s.previousElementSibling:null;
+    if(l)l.classList.add("folded");
+  });
+  if(isOpen){
+    target.classList.remove("folded");
+    target.style.maxHeight=h+"px";
+    const l=target.previousElementSibling;
+    if(l)l.classList.remove("folded");
+  }
+}
 </script>
 <script src="{% static 'js/sidebar.js' %}"></script>
 {% block extra_scripts %}{% endblock %}
