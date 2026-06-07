@@ -2656,9 +2656,8 @@ def integrated_calendar(request):
         if ce.rrule:
             # dtstart를 KST 로컬시간으로 명시 (FullCalendar timeZone과 일치)
             from django.utils import timezone as tz
-            import pytz
-            kst = pytz.timezone('Asia/Seoul')
-            kst_start = ce.start_time.astimezone(kst)
+            from django.utils import timezone as _tz
+            kst_start = ce.start_time.astimezone(_tz.get_current_timezone())
             dtstart = kst_start.strftime('%Y%m%dT%H%M%S')
             ev['rrule']    = 'DTSTART:' + dtstart + '\n' + ce.rrule
             ev['duration'] = None
