@@ -190,24 +190,13 @@
         </div>
 
         <!-- 모바일 이미지 (768px 이하에서만) -->
-        {% if img_count == 1 %}
+        {% with thumb=post.get_thumbnail %}
+        {% if thumb %}
         <div class="d-block d-md-none">
-          <img src="{{ imgs.first.image.url }}" alt="" class="post-card-mobile-imgs-1">
-        </div>
-        {% elif img_count == 2 %}
-        <div class="post-card-mobile-imgs-2 d-block d-md-none">
-          <img src="{{ imgs.0.image.url }}" alt="">
-          <img src="{{ imgs.1.image.url }}" alt="">
-        </div>
-        {% elif img_count >= 3 %}
-        <div class="post-card-mobile-imgs-3 d-block d-md-none">
-          <img src="{{ imgs.0.image.url }}" alt="" class="img-main">
-          <div class="img-more">
-            <img src="{{ imgs.1.image.url }}" alt="">
-            <div class="img-more-count">+{{ img_count|add:"-1" }}</div>
-          </div>
+          <img src="{{ thumb }}" alt="" class="post-card-mobile-imgs-1">
         </div>
         {% endif %}
+        {% endwith %}
 
         <!-- 메타 -->
         <div style="padding:8px 14px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:auto;">
@@ -257,11 +246,13 @@
   <div class="layout-gallery">
     {% for post in posts %}
     <a href="{% url 'post_detail' post.pk %}" class="post-thumb">
-      {% if post.images.first %}
-      <img src="{{ post.images.first.image.url }}" alt="">
+      {% with thumb=post.get_thumbnail %}
+      {% if thumb %}
+      <img src="{{ thumb }}" alt="">
       {% else %}
       <div class="post-thumb-noimg"><i class="{{ board.icon }}"></i></div>
       {% endif %}
+      {% endwith %}
       <div class="post-thumb-overlay">
         <span class="post-thumb-title">{{ post.title }}</span>
       </div>
@@ -282,11 +273,13 @@
       {% endif %}
       <!-- 이미지 -->
       <div class="market-img" style="position:relative;">
-        {% if post.images.first %}
-        <img src="{{ post.images.first.image.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+        {% with thumb=post.get_thumbnail %}
+        {% if thumb %}
+        <img src="{{ thumb }}" alt="" style="width:100%;height:100%;object-fit:cover;">
         {% else %}
         <i class="fas fa-box-open"></i>
         {% endif %}
+        {% endwith %}
         <!-- 카테고리 배지 -->
         {% if post.trade %}
         <span style="position:absolute;top:8px;left:8px;background:rgba(36,36,36,.75);color:#D4B26A;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:8px;backdrop-filter:blur(4px);">
