@@ -1190,7 +1190,7 @@ def group_detail(request, pk):
         leader_logs = GroupLeaderLog.objects.filter(group=group).select_related('actor','target')[:20]
 
     recent_posts = GroupPost.objects.filter(group=group).order_by('-created_at')[:5]
-    group_events = CalendarEvent.objects.filter(group=group, is_approved=True).order_by('start_time')[:5]
+    group_events = CalendarEvent.objects.filter(group=group, visibility__in=['group','group_pending','public']).order_by('start_time')[:5]
     from .models import Poll
     group_polls = Poll.objects.filter(group=group, is_active=True).order_by('-created_at')
 
