@@ -1212,12 +1212,18 @@ def group_detail(request, pk):
         'invited':         invited,
         'group_polls':     group_polls,
         'group_events_json': json.dumps([{
-            'id': e.id,
-            'title': e.title,
-            'start': e.start_time.isoformat(),
-            'end': e.end_time.isoformat() if e.end_time else None,
-            'location': e.location,
+            'id':          e.id,
+            'title':       e.title,
+            'start':       e.start_time.isoformat(),
+            'end':         e.end_time.isoformat() if e.end_time else None,
+            'location':    e.location,
             'description': e.description,
+            'cal_id':      e.id,
+            'rrule':       e.rrule if e.rrule else None,
+            'duration':    (
+                f'{int((e.end_time - e.start_time).total_seconds() // 3600):02d}:{int(((e.end_time - e.start_time).total_seconds() % 3600) // 60):02d}'
+                if e.end_time else None
+            ),
         } for e in group_events], ensure_ascii=False),
     })
 
