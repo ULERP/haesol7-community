@@ -90,8 +90,8 @@ function submitEditEvent() {
     headers: {'Content-Type':'application/json','X-CSRFToken': getCsrfToken()},
     body: JSON.stringify({
       title:       title,
-      start_time:  new Date(start).toISOString(),
-      end_time:    document.getElementById('eventEnd').value ? new Date(document.getElementById('eventEnd').value).toISOString() : null,
+      start_time:  start.replace('T', ' ') + ':00',
+      end_time:    document.getElementById('eventEnd').value ? document.getElementById('eventEnd').value.replace('T', ' ') + ':00' : null,
       location:    document.getElementById('eventLocation').value.trim(),
       description: document.getElementById('eventDesc').value.trim(),
     })
@@ -501,8 +501,8 @@ function submitEvent() {
     headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
     body: JSON.stringify({
       title:          title,
-      start_time:     new Date(start).toISOString(),
-      end_time:       endVal ? new Date(endVal).toISOString() : null,
+      start_time:     start.replace('T', ' ') + ':00',
+      end_time:       endVal ? endVal.replace('T', ' ') + ':00' : null,
       location:       document.getElementById('eventLocation').value.trim(),
       description:    document.getElementById('eventDesc').value.trim(),
       event_type:     'group',
