@@ -368,6 +368,104 @@ function switchRp(name, btn) {
 })();
 </script>
 {% block extra_scripts %}{% endblock %}
+
+{% if user.is_authenticated %}
+<!-- 온보딩 모달 -->
+<div id="onboardingModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;width:90%;max-width:420px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <!-- 헤더 -->
+    <div style="background:linear-gradient(135deg,#7A263A,#a03050);padding:24px;text-align:center;position:relative;">
+      <button onclick="closeOnboarding()" style="position:absolute;top:12px;right:12px;background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;">×</button>
+      <div style="font-size:2.5rem;margin-bottom:8px;">🌿</div>
+      <div style="color:#fff;font-weight:800;font-size:1.1rem;">해솔7 지킴이에 오신 것을 환영합니다!</div>
+      <div style="color:rgba(255,255,255,.7);font-size:0.8rem;margin-top:4px;">해솔마을 7단지 입주민 전용 커뮤니티</div>
+    </div>
+    <!-- 슬라이드 -->
+    <div style="padding:20px 24px;">
+      <div class="ob-slide" id="ob-0">
+        <div style="text-align:center;margin-bottom:16px;font-size:2rem;">💬</div>
+        <div style="font-weight:800;font-size:0.95rem;margin-bottom:8px;text-align:center;">대화하기</div>
+        <div style="font-size:0.82rem;color:#6b7280;text-align:center;line-height:1.6;">전체채팅, 소모임채팅, 1:1채팅으로<br>이웃과 자유롭게 소통하세요.</div>
+      </div>
+      <div class="ob-slide" id="ob-1" style="display:none;">
+        <div style="text-align:center;margin-bottom:16px;font-size:2rem;">📋</div>
+        <div style="font-weight:800;font-size:0.95rem;margin-bottom:8px;text-align:center;">기록하기</div>
+        <div style="font-size:0.82rem;color:#6b7280;text-align:center;line-height:1.6;">공지사항, 생활정보, 여가활동 등<br>다양한 게시판을 이용해보세요.</div>
+      </div>
+      <div class="ob-slide" id="ob-2" style="display:none;">
+        <div style="text-align:center;margin-bottom:16px;font-size:2rem;">🤝</div>
+        <div style="font-weight:800;font-size:0.95rem;margin-bottom:8px;text-align:center;">함께하기</div>
+        <div style="font-size:0.82rem;color:#6b7280;text-align:center;line-height:1.6;">소모임 가입, 봉사활동 참여,<br>설문조사, 나눔/장터를 이용하세요.</div>
+      </div>
+      <div class="ob-slide" id="ob-3" style="display:none;">
+        <div style="text-align:center;margin-bottom:16px;font-size:2rem;">✅</div>
+        <div style="font-weight:800;font-size:0.95rem;margin-bottom:8px;text-align:center;">입주민 인증</div>
+        <div style="font-size:0.82rem;color:#6b7280;text-align:center;line-height:1.6;">입주민 인증 후 모든 기능을<br>제한 없이 이용할 수 있습니다.</div>
+      </div>
+      <!-- 진행 점 -->
+      <div style="display:flex;justify-content:center;gap:6px;margin:16px 0;" id="ob-dots">
+        <div class="ob-dot active" onclick="goSlide(0)"></div>
+        <div class="ob-dot" onclick="goSlide(1)"></div>
+        <div class="ob-dot" onclick="goSlide(2)"></div>
+        <div class="ob-dot" onclick="goSlide(3)"></div>
+      </div>
+      <!-- 버튼 -->
+      <div style="display:flex;gap:8px;">
+        <button id="ob-prev" onclick="prevSlide()" style="flex:1;padding:10px;border:1px solid #e5e7eb;background:#f9fafb;border-radius:10px;font-size:0.82rem;cursor:pointer;display:none;">◀ 이전</button>
+        <button id="ob-next" onclick="nextSlide()" style="flex:1;padding:10px;background:#7A263A;color:#fff;border:none;border-radius:10px;font-size:0.82rem;font-weight:700;cursor:pointer;">다음 ▶</button>
+      </div>
+      <div style="text-align:center;margin-top:10px;">
+        <label style="font-size:0.75rem;color:#9ca3af;cursor:pointer;">
+          <input type="checkbox" id="ob-no-show" style="margin-right:4px;">다시 보지 않기
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+.ob-dot{width:8px;height:8px;border-radius:50%;background:#e5e7eb;cursor:pointer;transition:.2s;}
+.ob-dot.active{background:#7A263A;width:20px;border-radius:4px;}
+</style>
+<script>
+let obCurrent = 0;
+const obTotal = 4;
+
+function showOnboarding() {
+  const seen = document.cookie.match(/ob_seen=1/);
+  if(!seen) {
+    document.getElementById('onboardingModal').style.display = 'flex';
+  }
+}
+
+function closeOnboarding() {
+  document.getElementById('onboardingModal').style.display = 'none';
+  if(document.getElementById('ob-no-show').checked) {
+    document.cookie = 'ob_seen=1;max-age=' + (365*24*3600) + ';path=/';
+  }
+}
+
+function goSlide(n) {
+  document.getElementById('ob-' + obCurrent).style.display = 'none';
+  document.querySelectorAll('.ob-dot')[obCurrent].classList.remove('active');
+  obCurrent = n;
+  document.getElementById('ob-' + obCurrent).style.display = 'block';
+  document.querySelectorAll('.ob-dot')[obCurrent].classList.add('active');
+  document.getElementById('ob-prev').style.display = obCurrent > 0 ? 'block' : 'none';
+  document.getElementById('ob-next').textContent = obCurrent === obTotal-1 ? '시작하기 🎉' : '다음 ▶';
+}
+
+function nextSlide() {
+  if(obCurrent === obTotal-1) { closeOnboarding(); return; }
+  goSlide(obCurrent + 1);
+}
+
+function prevSlide() {
+  if(obCurrent > 0) goSlide(obCurrent - 1);
+}
+
+document.addEventListener('DOMContentLoaded', showOnboarding);
+</script>
+{% endif %}
 <nav class="mob-tabbar">
   <a href="/" class="mob-tab {% block tab_home %}{% endblock %}"><i class="fas fa-home"></i>홈</a>
   <a href="/chat/public/" class="mob-tab {% block tab_chat %}{% endblock %}"><i class="fas fa-comments"></i>대화하기</a>
