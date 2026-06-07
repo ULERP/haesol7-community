@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
   calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
     initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
     locale: 'ko',
+    timeZone: 'Asia/Seoul',
     headerToolbar: {
       left:   'prev,next today',
       center: 'title',

@@ -188,6 +188,7 @@ function cwInit(calEl) {
   cwCalendar = new FullCalendar.Calendar(calEl, {
     initialView: window.innerWidth<768 ? 'listMonth' : 'dayGridMonth',
     locale: 'ko',
+    timeZone: 'Asia/Seoul',
     headerToolbar: { left:'prev,next today', center:'title', right:'dayGridMonth,timeGridWeek,timeGridDay,listMonth' },
     buttonText: { today:'오늘', month:'월', week:'주', day:'일', list:'목록' },
     editable: cfg.isAuth,
