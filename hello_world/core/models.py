@@ -255,6 +255,20 @@ class Post(models.Model):
         return self.title
 
 
+
+    def get_thumbnail(self):
+        """첫 번째 이미지 URL 반환 (PostImage 또는 본문 img src 추출)"""
+        first = self.images.first()
+        if first:
+            return first.image.url
+        import re
+        m = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', self.content or "")
+        if m:
+            src = m.group(1)
+            if not src.startswith("data:"):
+                return src
+        return None
+
 class PostImage(models.Model):
     post  = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
     image = models.ImageField(upload_to='posts/%Y/%m/')

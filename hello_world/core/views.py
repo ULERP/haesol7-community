@@ -440,11 +440,34 @@ def post_write(request, board_id):
                 extra = extra_form.save(commit=False)
                 extra.post = post
                 extra.save()
-            # 이미지 첨부 처리
+            # 이미지 첨부 처리 (파일 업로드)
             images = request.FILES.getlist('images')
             from .models import PostImage
             for i, image in enumerate(images):
                 PostImage.objects.create(post=post, image=image, order=i)
+
+            # base64 이미지를 파일로 변환해서 PostImage로 저장
+            import re, base64, uuid
+            from django.core.files.base import ContentFile
+            post_content = post.content
+            b64_imgs = re.findall(r'src="data:image/(\w+);base64,([^"]+)"', post_content)
+            for idx, (ext, b64data) in enumerate(b64_imgs[:5]):  # 최대 5개
+                try:
+                    img_data = base64.b64decode(b64data)
+                    filename = f'posts/{post.created_at.year}/{post.created_at.month}/{uuid.uuid4().hex[:8]}.{ext}'
+                    pi = PostImage(post=post, order=len(images)+idx)
+                    pi.image.save(filename, ContentFile(img_data), save=True)
+                    # 본문의 base64를 저장된 URL로 교체
+                    post_content = post_content.replace(
+                        f'data:image/{ext};base64,{b64data}',
+                        pi.image.url
+                    )
+                except Exception:
+                    pass
+            if b64_imgs:
+                post.content = post_content
+                post.save(update_fields=['content'])
+
             return redirect('post_detail', pk=post.pk)
     else:
         post_form  = PostForm(board=board)
@@ -2637,8 +2660,7 @@ def integrated_calendar(request):
             kst = pytz.timezone('Asia/Seoul')
             kst_start = ce.start_time.astimezone(kst)
             dtstart = kst_start.strftime('%Y%m%dT%H%M%S')
-            ev['rrule']    = f'DTSTART:{dtstart}
-{ce.rrule}'
+            ev['rrule']    = 'DTSTART:' + dtstart + '\n' + ce.rrule
             ev['duration'] = None
             if ce.end_time:
                 delta = ce.end_time - ce.start_time
