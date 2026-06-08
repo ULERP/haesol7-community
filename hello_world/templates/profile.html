@@ -73,7 +73,13 @@
     <div style="display:flex;gap:16px;align-items:flex-start;position:relative;z-index:1;">
       <div class="pf-av">{{ profile_user.nickname|default:profile_user.username|first|upper }}</div>
       <div style="flex:1;">
-        <div class="pf-name">{{ profile_user.nickname|default:profile_user.username }}</div>
+        <div class="pf-name" style="display:flex;align-items:center;gap:8px;">
+          {{ profile_user.nickname|default:profile_user.username }}
+          {% now "U" as now_ts %}
+          {% if profile_user.last_login %}
+          <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;" title="최근 접속"></span>
+          {% endif %}
+        </div>
         <div class="pf-sub">{% if profile_user.dong %}{{ profile_user.dong }}동 {{ profile_user.ho }}호 · {% endif %}해솔7단지 입주민</div>
         <span class="pf-badge">{% if profile_user.is_verified %}✓ 입주민 인증{% else %}인증 대기{% endif %}</span>
         {% if profile_user.introduction %}
@@ -84,7 +90,7 @@
 
     {% if user.is_authenticated and user != profile_user %}
     <div class="pf-actions" style="position:relative;z-index:1;">
-      <a href="/letters/write/?to={{ profile_user.pk }}" class="pf-btn pf-btn-primary">
+      <a href="/letters/write/{{ profile_user.pk }}/" class="pf-btn pf-btn-primary">
         <i class="fas fa-envelope"></i> 쪽지 보내기
       </a>
       <a href="/chat/dm/{{ profile_user.pk }}/" class="pf-btn pf-btn-outline">
