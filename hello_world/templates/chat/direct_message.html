@@ -107,7 +107,9 @@ async function sendMsg() {
   const inp = document.getElementById('msg-input');
   const msg = inp.value.trim(); if (!msg) return;
   inp.value = ''; inp.style.height = 'auto';
-  await fetch(URL, { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'}, body:JSON.stringify({message:msg}) });
+  const res = await fetch(URL, { method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':'{{ csrf_token }}'}, body:JSON.stringify({message:msg}) });
+  const d = await res.json();
+  if (d.id) lastId = Math.max(lastId, d.id - 1);
   fetchMsgs();
 }
 fetchMsgs(); setInterval(fetchMsgs, 3000);
