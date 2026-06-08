@@ -4551,18 +4551,17 @@ def manage_system(request):
 def manage_observer_action(request):
     """옵저버 계정 켜기/끄기/비밀번호 변경"""
     from django.contrib.auth import get_user_model
-    User = get_user_model()
+    from django.contrib import messages
     import random, string
+    User = get_user_model()
 
-    if request.method != 'POST': 
-        from django.http import JsonResponse
-        return JsonResponse({'error': 'POST only'}, status=405)
+    if request.method != 'POST':
+        return redirect('/manage/system/?tab=observer')
 
     action = request.POST.get('action')
     observer = User.objects.filter(username='test').first()
 
     if not observer:
-        from django.contrib import messages
         messages.error(request, '옵저버 계정(test)이 없습니다.')
         return redirect('/manage/system/?tab=observer')
 
