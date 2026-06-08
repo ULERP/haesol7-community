@@ -1882,7 +1882,7 @@ def rate_user(request, user_id):
 
 def user_profile(request, user_id):
     """다른 입주민 프로필 + 온기 평가"""
-    from .models import UserFollow
+    from .models import UserFollow, Post, ActivityProof, GroupMember
     profile_user = get_object_or_404(CustomUser, pk=user_id)
     ratings = Rating.objects.filter(rated_user=profile_user).order_by('-created_at')[:10]
     my_rating = None
@@ -1894,15 +1894,32 @@ def user_profile(request, user_id):
         is_friend = UserFollow.is_friend(request.user, profile_user)
     total_activities = ActivityProof.objects.filter(user=profile_user, status='approved').count()
     user_badges = profile_user.user_badges.filter(is_displayed=True).select_related('badge')[:6]
+    # 작성 게시글
+    recent_posts = Post.objects.filter(
+        author=profile_user, is_active=True, is_anonymous=False
+    ).order_by('-created_at')[:5]
+    total_posts = Post.objects.filter(author=profile_user, is_active=True).count()
+    # 봉사활동 내역
+    recent_activities = ActivityProof.objects.filter(
+        user=profile_user, status='approved'
+    ).select_related('activity').order_by('-submitted_at')[:5]
+    # 소모임
+    user_groups = GroupMember.objects.filter(
+        user=profile_user, join_status='approved', is_active=True
+    ).select_related('group')[:5]
     return render(request, 'profile.html', {
-        'profile_user':    profile_user,
-        'ratings':         ratings,
-        'my_rating':       my_rating,
+        'profile_user':     profile_user,
+        'ratings':          ratings,
+        'my_rating':        my_rating,
         'total_activities': total_activities,
-        'user_badges':     user_badges,
-        'can_rate':        request.user.is_authenticated and request.user != profile_user,
-        'is_following':    is_following,
-        'is_friend':       is_friend,
+        'user_badges':      user_badges,
+        'can_rate':         request.user.is_authenticated and request.user != profile_user,
+        'is_following':     is_following,
+        'is_friend':        is_friend,
+        'recent_posts':     recent_posts,
+        'total_posts':      total_posts,
+        'recent_activities': recent_activities,
+        'user_groups':      user_groups,
     })
 
 
