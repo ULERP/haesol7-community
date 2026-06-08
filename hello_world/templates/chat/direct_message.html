@@ -11,7 +11,7 @@
   <div class="av av-sm">{{ u.nickname|default:u.username|first|upper }}</div>
   <div style="flex:1;min-width:0;">
     <div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ u.nickname|default:"u" }}</div>
-    <div style="font-size:0.7rem;color:#999;">{{% if u.is_verified %}}<span style="color:#D4B26A;">✓ 인증</span>{{% else %}}입주민{{% endif %}}</div>
+    <div style="font-size:0.7rem;color:#999;">{% if u.is_verified %}<span style="color:#D4B26A;">✓ 인증</span>{% else %}입주민{% endif %}</div>
   </div>
 </a>
 {% endfor %}
