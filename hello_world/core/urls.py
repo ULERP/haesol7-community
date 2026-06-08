@@ -169,6 +169,8 @@ urlpatterns = [
     path('hub/news/', views.hub_news, name='hub_news'),
     # ── 관리 문서 게시판 ──────────────────────────────────────
     path('docs/', views.management_docs, name='management_docs'),
+    path('community/docs/', views.management_docs, name='community_docs'),
+    path('community/docs/<int:pk>/', views.management_doc_detail, name='community_doc_detail'),
     path('docs/create/', views.management_doc_upload, name='management_doc_create'),
     path('docs/<int:pk>/', views.management_doc_detail, name='management_doc_detail'),
     
