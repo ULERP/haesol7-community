@@ -24,6 +24,7 @@ urlpatterns = [
     path('manage/groups/',                   views.manage_groups,      name='manage_groups'),
     path('manage/activity/',                 views.manage_activity,    name='manage_activity'),
     path('manage/system/',                   views.manage_system,      name='manage_system'),
+    path('manage/observer-action/',          views.manage_observer_action, name='manage_observer_action'),
     # AJAX 액션
     path('manage/ajax/user-action/',         views.manage_user_action, name='manage_user_action'),
     path('manage/ajax/group-action/',        views.manage_group_action,name='manage_group_action'),

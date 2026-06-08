@@ -4514,6 +4514,8 @@ def manage_system(request):
     """시스템 설정"""
     from .models import SiteConfig, Notification, AdminActionLog, Survey
     from django.core.paginator import Paginator
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
 
     tab  = request.GET.get('tab', 'site')
     page = request.GET.get('page', 1)
@@ -4527,18 +4529,60 @@ def manage_system(request):
     l_paginator = Paginator(logs, 20)
     s_paginator = Paginator(surveys, 20)
 
+    # 옵저버 계정 (username=test 또는 nickname=방문자)
+    observer = User.objects.filter(username='test').first()
+
     return render(request, 'manage/system.html', {
         'tab':      tab,
         'site_cfg': site_cfg,
         'notis':    n_paginator.get_page(page),
         'logs':     l_paginator.get_page(page),
         'surveys':  s_paginator.get_page(page),
+        'observer': observer,
         'stats': {
             'unread_noti':  Notification.objects.filter(is_read=False).count(),
             'total_logs':   AdminActionLog.objects.count(),
             'active_surveys': Survey.objects.filter(status='active').count(),
         }
     })
+
+
+@_manage_required
+def manage_observer_action(request):
+    """옵저버 계정 켜기/끄기/비밀번호 변경"""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    import random, string
+
+    if request.method != 'POST': 
+        from django.http import JsonResponse
+        return JsonResponse({'error': 'POST only'}, status=405)
+
+    action = request.POST.get('action')
+    observer = User.objects.filter(username='test').first()
+
+    if not observer:
+        from django.contrib import messages
+        messages.error(request, '옵저버 계정(test)이 없습니다.')
+        return redirect('/manage/system/?tab=observer')
+
+    if action == 'activate':
+        observer.is_active = True
+        observer.save(update_fields=['is_active'])
+        messages.success(request, '옵저버 계정을 활성화했습니다.')
+    elif action == 'deactivate':
+        observer.is_active = False
+        observer.save(update_fields=['is_active'])
+        messages.success(request, '옵저버 계정을 비활성화했습니다.')
+    elif action == 'reset_pw':
+        new_pw = request.POST.get('new_password', '').strip()
+        if not new_pw:
+            new_pw = 'haesol' + ''.join(random.choices(string.digits, k=4))
+        observer.set_password(new_pw)
+        observer.save()
+        messages.success(request, f'비밀번호를 [{new_pw}]로 변경했습니다.')
+
+    return redirect('/manage/system/?tab=observer')
 
 
 @_manage_required

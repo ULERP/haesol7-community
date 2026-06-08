@@ -16,6 +16,7 @@
     <a href="?tab=notis" class="mg-tab {% if tab == 'notis' %}active{% endif %}">🔔 알림 관리</a>
     <a href="?tab=surveys" class="mg-tab {% if tab == 'surveys' %}active{% endif %}">📊 설문조사</a>
     <a href="?tab=logs" class="mg-tab {% if tab == 'logs' %}active{% endif %}">📋 관리자 로그</a>
+    <a href="?tab=observer" class="mg-tab {% if tab == 'observer' %}active{% endif %}">👁️ 옵저버 계정</a>
   </div>
 
   {% if tab == 'site' or not tab %}
@@ -100,6 +101,74 @@
     {% if logs.has_next %}<a href="?tab=logs&page={{ logs.next_page_number }}" class="btn-mg btn-mg-gray">›</a>{% endif %}
   </div>
   {% endif %}
+  {% elif tab == 'observer' %}
+  <div style="padding:20px;">
+    {% if observer %}
+    <div style="background:#f8f6f2;border-radius:12px;padding:16px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:#6E2332;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;flex-shrink:0;">
+        {{ observer.nickname|default:observer.username|first|upper }}
+      </div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:0.95rem;">{{ observer.nickname|default:observer.username }}</div>
+        <div style="font-size:0.75rem;color:#9ca3af;">ID: {{ observer.username }} · 마지막 로그인: {{ observer.last_login|date:"Y-m-d H:i"|default:"없음" }}</div>
+      </div>
+      <div>
+        {% if observer.is_active %}
+        <span style="background:#dcfce7;color:#15803d;padding:4px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;">● 활성</span>
+        {% else %}
+        <span style="background:#fee2e2;color:#991b1b;padding:4px 12px;border-radius:20px;font-size:0.78rem;font-weight:700;">● 비활성</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;">
+      {% if observer.is_active %}
+      <form method="post" action="/manage/observer-action/">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="deactivate">
+        <button type="submit" style="background:#fee2e2;color:#991b1b;border:none;padding:8px 18px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;">
+          🔴 계정 비활성화
+        </button>
+      </form>
+      {% else %}
+      <form method="post" action="/manage/observer-action/">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="activate">
+        <button type="submit" style="background:#dcfce7;color:#15803d;border:none;padding:8px 18px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;">
+          🟢 계정 활성화
+        </button>
+      </form>
+      {% endif %}
+    </div>
+
+    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;">
+      <div style="font-weight:700;font-size:0.85rem;margin-bottom:12px;">🔑 비밀번호 변경</div>
+      <form method="post" action="/manage/observer-action/" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reset_pw">
+        <input type="text" name="new_password" placeholder="새 비밀번호 입력 (비워두면 자동 생성)"
+               style="flex:1;min-width:200px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:0.82rem;">
+        <button type="submit" style="background:#1F2937;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;">
+          변경
+        </button>
+      </form>
+      <div style="font-size:0.72rem;color:#9ca3af;margin-top:8px;">비워두면 haesol+숫자4자리로 자동 생성됩니다.</div>
+    </div>
+
+    <div style="margin-top:16px;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:12px 16px;font-size:0.78rem;color:#92400e;">
+      💡 홍보용 계정입니다. 글쓰기/댓글 등 활동은 불가하며 열람만 가능합니다. 홍보 후 반드시 비활성화하세요.
+    </div>
+
+    {% else %}
+    <div style="text-align:center;padding:40px;color:#9ca3af;">
+      <div style="font-size:2rem;margin-bottom:8px;">👁️</div>
+      <div style="font-weight:700;margin-bottom:4px;">옵저버 계정이 없습니다</div>
+      <div style="font-size:0.8rem;">Django 관리자에서 username=test 계정을 생성해주세요.</div>
+      <a href="/admin/core/customuser/add/" target="_blank" style="display:inline-block;margin-top:12px;background:#1F2937;color:#fff;padding:8px 18px;border-radius:8px;font-size:0.82rem;font-weight:700;text-decoration:none;">관리자에서 생성하기</a>
+    </div>
+    {% endif %}
+  </div>
+
   {% endif %}
 </div>
 {% endblock %}
