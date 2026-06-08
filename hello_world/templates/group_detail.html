@@ -1,32 +1,5 @@
 {% extends 'base_2panel.html' %}
 {% block menu_groups %}active{% endblock %}
-{% block extra_scripts %}
-{% include "partials/calendar_widget.html" %}
-<script>
-window.cwConfig = {
-  groupId:      {{ group.pk }},
-  isLeader:     {{ is_leader|yesno:"true,false" }},
-  isStaff:      {{ user.is_staff|yesno:"true,false" }},
-  isAuth:       {{ user.is_authenticated|yesno:"true,false" }},
-  userId:       {{ user.pk|default:"null" }},
-  myGroups:     [],
-  leaderGroups: [],
-};
-document.addEventListener("DOMContentLoaded", function() {
-  const calEl = document.getElementById("groupCalendar");
-  if (!calEl) return;
-  cwInit(calEl);
-  // 일정 탭 클릭 시 렌더
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      if (btn.textContent.includes("일정")) {
-        setTimeout(() => cwCalendar && cwCalendar.render(), 150);
-      }
-    });
-  });
-});
-</script>
-{% endblock %}
 {% block title %}{{ group.name }}{% endblock %}
 
 {% block extra_head %}
@@ -424,5 +397,32 @@ function switchTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
 }
+</script>
+{% endblock %}
+{% block extra_scripts %}
+{% include "partials/calendar_widget.html" %}
+<script>
+window.cwConfig = {
+  groupId:      {{ group.pk }},
+  isLeader:     {{ is_leader|yesno:"true,false" }},
+  isStaff:      {{ user.is_staff|yesno:"true,false" }},
+  isAuth:       {{ user.is_authenticated|yesno:"true,false" }},
+  userId:       {{ user.pk|default:"null" }},
+  myGroups:     [],
+  leaderGroups: [],
+};
+document.addEventListener("DOMContentLoaded", function() {
+  const calEl = document.getElementById("groupCalendar");
+  if (!calEl) return;
+  cwInit(calEl);
+  // 일정 탭 클릭 시 렌더
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btn.textContent.includes("일정")) {
+        setTimeout(() => cwCalendar && cwCalendar.render(), 150);
+      }
+    });
+  });
+});
 </script>
 {% endblock %}
