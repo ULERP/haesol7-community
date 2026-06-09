@@ -2849,11 +2849,14 @@ def calendar_event_create(request):
     end_dt   = parse_datetime(data.get('end_time')) if data.get('end_time') else None
 
     # timezone aware 처리
+    import warnings
     from django.utils.timezone import make_aware, is_naive
-    if start_dt and is_naive(start_dt):
-        start_dt = make_aware(start_dt)
-    if end_dt and is_naive(end_dt):
-        end_dt = make_aware(end_dt)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        if start_dt and is_naive(start_dt):
+            start_dt = make_aware(start_dt)
+        if end_dt and is_naive(end_dt):
+            end_dt = make_aware(end_dt)
 
     event = CalendarEvent.objects.create(
         title          = data.get('title', '').strip(),
