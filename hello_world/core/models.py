@@ -1025,6 +1025,7 @@ class Complaint(models.Model):
     category    = models.ForeignKey('ComplaintCategory', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='분류')
     title       = models.CharField(max_length=100)
     content     = models.TextField()
+    location    = models.CharField('위치', max_length=100, blank=True)
     is_anonymous = models.BooleanField(default=False)
     status      = models.CharField(max_length=20, choices=STATUS, default='received')
     admin_reply = models.TextField(blank=True)
@@ -1040,6 +1041,16 @@ class Complaint(models.Model):
     def __str__(self):
         return f"[{self.get_category_display()}] {self.title}"
 
+
+class ComplaintImage(models.Model):
+    """민원 첨부 이미지"""
+    complaint = models.ForeignKey('Complaint', on_delete=models.CASCADE, related_name='images')
+    image     = models.ImageField(upload_to='complaints/%Y/%m/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = '민원 이미지'
+        verbose_name_plural = '민원 이미지'
 
 class Notice(models.Model):
     """주차/택배/긴급 빠른 공지"""

@@ -14,20 +14,25 @@ def complaint_list(request):
 
 @login_required
 def complaint_create(request):
+    from .models import ComplaintImage
     categories = ComplaintCategory.objects.filter(is_active=True)
     if request.method == "POST":
         title    = request.POST.get("title", "").strip()
         content  = request.POST.get("content", "").strip()
         cat_id   = request.POST.get("category")
         is_anon  = request.POST.get("is_anonymous") == "on"
+        location = request.POST.get("location", "").strip()
+        images   = request.FILES.getlist("images")
         if not title or not content:
             messages.error(request, "제목과 내용을 입력해주세요.")
         else:
             cat = ComplaintCategory.objects.filter(pk=cat_id).first()
-            Complaint.objects.create(
+            complaint = Complaint.objects.create(
                 author=request.user, title=title, content=content,
-                category=cat, is_anonymous=is_anon
+                category=cat, is_anonymous=is_anon, location=location
             )
+            for img in images[:5]:
+                ComplaintImage.objects.create(complaint=complaint, image=img)
             messages.success(request, "민원/오류가 접수됐어요! 관리자 검토 후 답변드립니다.")
             return redirect("complaint_list")
     return render(request, "complaint/form.html", {"categories": categories})
