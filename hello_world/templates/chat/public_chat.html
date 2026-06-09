@@ -254,7 +254,14 @@ async function sendMsg() {
   }
 
   try {
-    await fetch(MSGS_URL, { method:'POST', body: fd });
+    const res = await fetch(MSGS_URL, { method:'POST', body: fd });
+    const data = await res.json();
+    // 낙관적 임시 메시지 제거 후 fetchMsgs로 실제 메시지 표시
+    if (optimisticMsg) {
+      const temps = document.querySelectorAll('[id^="temp-"]');
+      temps.forEach(t => t.remove());
+    }
+    if (data.id) lastId = Math.max(lastId, data.id - 1);
     fetchMsgs();
   } finally {
     isSending = false;
