@@ -65,6 +65,10 @@ def complaint_reply(request, pk):
         c.replied_at  = timezone.now()
         c.save(update_fields=["admin_reply", "status", "replied_at"])
         messages.success(request, "답변이 등록됐어요.")
+    # Referer 확인해서 manage에서 왔으면 manage로 돌아가기
+    referer = request.META.get("HTTP_REFERER", "")
+    if "manage" in referer:
+        return redirect("/manage/content/?tab=complaints")
     return redirect("complaint_admin")
 
 

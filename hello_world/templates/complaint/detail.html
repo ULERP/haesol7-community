@@ -45,7 +45,7 @@
     <i class="bi bi-reply me-1 text-wine"></i>관리자 답변
     <small class="text-muted ms-2">{{ c.replied_at|date:"Y.m.d H:i" }}</small>
   </div>
-  <div class="card-body" style="white-space:pre-wrap;">{{ c.admin_reply }}</div>
+  <div class="card-body" style="white-space:pre-wrap;color:#1F2937;font-size:0.9rem;line-height:1.7;">{{ c.admin_reply }}</div>
 </div>
 {% else %}
 <div class="alert alert-light text-muted small">아직 관리자 답변이 없습니다.</div>
