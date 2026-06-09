@@ -2979,7 +2979,15 @@ def group_calendar_events(request, pk):
             from django.utils import timezone as _tz
             kst_start = ce.start_time.astimezone(_tz.get_current_timezone())
             dtstart = kst_start.strftime('%Y%m%dT%H%M%S')
-            ev['rrule'] = 'DTSTART:' + dtstart + '\n' + ce.rrule
+            freq_str = 'weekly' if 'WEEKLY' in ce.rrule else 'daily' if 'DAILY' in ce.rrule else 'monthly'
+            until_match = __import__('re').search(r'UNTIL=([\dTZ]+)', ce.rrule)
+            rrule_obj = {'freq': freq_str, 'interval': ce.recur_interval or 1}
+            if until_match:
+                u = until_match.group(1)
+                rrule_obj['until'] = f'{u[:4]}-{u[4:6]}-{u[6:8]}T{u[9:11]}:{u[11:13]}:{u[13:15]}Z' if len(u) > 8 else u
+            ev['rrule'] = rrule_obj
+            ev.pop('start', None)
+            ev['startRecur'] = ce.start_time.isoformat()
             if ce.end_time:
                 delta = ce.end_time - ce.start_time
                 h, s  = divmod(int(delta.total_seconds()), 3600)
