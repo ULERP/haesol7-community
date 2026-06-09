@@ -4450,24 +4450,32 @@ def manage_content(request):
 
     comments = Comment.objects.select_related('author','post').order_by('-created_at')
     if q: comments = comments.filter(Q(content__icontains=q)|Q(author__nickname__icontains=q))
-    c_paginator  = Paginator(comments, 20)
-    comments_page = c_paginator.get_page(page)
-
+    # 민원 관리
+    from .models import Complaint
+    complaints = Complaint.objects.select_related('author','category').order_by('-created_at')
+    comp_status = request.GET.get('comp_status', '')
+    if comp_status: complaints = complaints.filter(status=comp_status)
+    if q: complaints = complaints.filter(Q(title__icontains=q)|Q(author__nickname__icontains=q))
+    comp_paginator = Paginator(complaints, 20)
+    complaints_page = comp_paginator.get_page(page)
     return render(request, 'manage/content.html', {
-        'tab':      tab,
-        'posts':    posts_page,
-        'comments': comments_page,
-        'boards':   Board.objects.filter(is_active=True).order_by('order'),
-        'q':        q,
-        'board_id': board_id,
+        'tab':            tab,
+        'posts':          posts_page,
+        'comments':       comments_page,
+        'complaints':     complaints_page,
+        'comp_status':    comp_status,
+        'boards':         Board.objects.filter(is_active=True).order_by('order'),
+        'q':              q,
+        'board_id':       board_id,
         'stats': {
-            'total_posts':    Post.objects.filter(is_active=True).count(),
-            'hidden_posts':   Post.objects.filter(is_active=False).count(),
-            'total_comments': Comment.objects.filter(is_active=True).count(),
-            'total_boards':   Board.objects.filter(is_active=True).count(),
+            'total_posts':        Post.objects.filter(is_active=True).count(),
+            'hidden_posts':       Post.objects.filter(is_active=False).count(),
+            'total_comments':     Comment.objects.filter(is_active=True).count(),
+            'total_boards':       Board.objects.filter(is_active=True).count(),
+            'total_complaints':   Complaint.objects.count(),
+            'pending_complaints': Complaint.objects.filter(status='received').count(),
         }
     })
-
 
 @_manage_required
 def manage_groups(request):
