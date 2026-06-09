@@ -72,7 +72,7 @@ def sidebar_context(request):
         if api_key:
             r = requests.get(
                 'https://api.openweathermap.org/data/2.5/weather',
-                params={'q': 'Hwaseong,KR', 'appid': api_key, 'units': 'metric', 'lang': 'kr'},
+                params={'q': 'Paju,KR', 'appid': api_key, 'units': 'metric', 'lang': 'kr'},
                 timeout=2
             )
             if r.status_code == 200:
@@ -81,6 +81,8 @@ def sidebar_context(request):
                     'temp': round(d['main']['temp']),
                     'desc': d['weather'][0]['description'],
                     'icon': d['weather'][0]['main'],
+                    'humidity': d['main']['humidity'],
+                    'wind': round(d['wind']['speed']),
                 }
     except:
         pass

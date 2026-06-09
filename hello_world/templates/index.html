@@ -231,6 +231,16 @@
   <!-- ══ 좌측 사이드바 ══ -->
   <aside class="sidebar-l" id="sidebarL">
     <div class="sb-inner" id="sbLInner">
+      {% if sb_weather %}
+      <div style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+        <div style="font-size:26px;">{% if sb_weather.icon == 'Clear' %}☀️{% elif sb_weather.icon == 'Clouds' %}⛅{% elif sb_weather.icon == 'Rain' %}🌧️{% elif sb_weather.icon == 'Snow' %}❄️{% elif sb_weather.icon == 'Thunderstorm' %}⛈️{% else %}🌤️{% endif %}</div>
+        <div>
+          <div style="font-size:18px;font-weight:800;color:#1e3a5f;line-height:1;">{{ sb_weather.temp }}°C</div>
+          <div style="font-size:0.68rem;color:#3b82f6;">{{ sb_weather.desc }} · 파주시</div>
+          <div style="font-size:0.65rem;color:#6b7280;">💧{{ sb_weather.humidity }}% 💨{{ sb_weather.wind }}m/s</div>
+        </div>
+      </div>
+      {% endif %}
 
       {% if user.is_authenticated %}
       <a href="/mypage/" class="sb-user">
