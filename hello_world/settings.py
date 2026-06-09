@@ -178,6 +178,7 @@ EMAIL_BACKEND   = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST      = 'smtp.gmail.com'
 EMAIL_PORT      = 587
 EMAIL_USE_TLS   = True
+OPENWEATHER_API_KEY = os.environ.get('OPENWEATHER_API_KEY', '')
 EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  # Gmail 앱 비밀번호
 DEFAULT_FROM_EMAIL  = config('EMAIL_HOST_USER', default='noreply@haesol7.com')
