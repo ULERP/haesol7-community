@@ -929,6 +929,7 @@ def public_chat_messages(request):
         return {
             'id': m.id,
             'author': m.author.nickname or m.author.username,
+            'author_id': m.author.id,
             'unit': m.author.unit_number,
             'message': m.message,
             'image': request.build_absolute_uri(m.image.url) if m.image and m.image.name else None,
@@ -1079,7 +1080,8 @@ def group_chat_messages(request, group_id):
     def serialize(m):
         return {
             'id': m.id,
-            'author': m.sender.username,
+            'author': m.sender.nickname or m.sender.username,
+            'author_id': m.sender.id,
             'unit': m.sender.unit_number,
             'message': m.message,
             'image': request.build_absolute_uri(m.image.url) if m.image and m.image.name else None,

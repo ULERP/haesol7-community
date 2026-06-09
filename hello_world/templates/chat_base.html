@@ -427,9 +427,12 @@
           </div>`;
       } else {
         d.innerHTML = `
-          <div class="av av-sm" style="${m.is_me ? 'background:#a8d5b8;color:#7A263A;' : ''}">${esc(m.author.charAt(0).toUpperCase())}</div>
+          <div class="av av-sm" style="${m.is_me ? 'background:#a8d5b8;color:#7A263A;' : 'cursor:pointer;'}" onclick="${m.is_me ? '' : 'showUserPopup(event,'+m.author_id+',\''+esc(m.author)+'\')' }">${esc(m.author.charAt(0).toUpperCase())}</div>
           <div class="msg-inner">
-            <div class="msg-name">${esc(m.author)}${m.unit ? ' · ' + esc(m.unit) : ''}</div>
+            <div class="msg-name">
+              ${m.is_me ? esc(m.author) : '<a href="/users/'+m.author_id+'/" style="color:inherit;text-decoration:none;font-weight:600;" onclick="event.stopPropagation()">'+esc(m.author)+'</a>'}
+              ${m.unit ? ' · ' + esc(m.unit) : ''}
+            </div>
             ${imgHtml}${msgHtml}
             <div class="msg-time">${m.time}</div>
           </div>`;
@@ -437,6 +440,51 @@
       box.appendChild(d);
     }
   </script>
+  <!-- 유저 미니 팝업 -->
+  <div id="userPopup" style="display:none;position:fixed;z-index:9999;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.15);border:1px solid #e5e7eb;padding:16px;min-width:200px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;">
+      <div id="popupAv" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1F2937,#6E2332);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;"></div>
+      <div>
+        <div id="popupName" style="font-size:0.88rem;font-weight:700;color:#1F2937;"></div>
+        <div style="font-size:0.7rem;color:#9ca3af;">해솔7단지 입주민</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <a id="popupProfile" href="#" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;color:#1F2937;font-size:0.82rem;background:#f9fafb;">
+        <i class="fas fa-user" style="color:#6E2332;width:14px;"></i> 프로필 보기
+      </a>
+      <a id="popupLetter" href="#" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;color:#1F2937;font-size:0.82rem;background:#f9fafb;">
+        <i class="fas fa-envelope" style="color:#6E2332;width:14px;"></i> 쪽지 보내기
+      </a>
+      <a id="popupDm" href="#" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;color:#1F2937;font-size:0.82rem;background:#f9fafb;">
+        <i class="fas fa-comment-dots" style="color:#6E2332;width:14px;"></i> 1:1 채팅
+      </a>
+      <a id="popupWarmth" href="#" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;color:#1F2937;font-size:0.82rem;background:#f9fafb;">
+        <i class="fas fa-heart" style="color:#ef4444;width:14px;"></i> 온기 보내기
+      </a>
+    </div>
+  </div>
+  <script>
+  function showUserPopup(e, userId, userName) {
+    e.stopPropagation();
+    const popup = document.getElementById('userPopup');
+    document.getElementById('popupAv').textContent = userName.charAt(0).toUpperCase();
+    document.getElementById('popupName').textContent = userName;
+    document.getElementById('popupProfile').href = '/users/' + userId + '/';
+    document.getElementById('popupLetter').href = '/letters/write/' + userId + '/';
+    document.getElementById('popupDm').href = '/chat/dm/' + userId + '/';
+    document.getElementById('popupWarmth').href = '/users/' + userId + '/#warmth';
+    const rect = e.target.getBoundingClientRect();
+    popup.style.display = 'block';
+    popup.style.left = Math.min(rect.left, window.innerWidth - 220) + 'px';
+    popup.style.top = (rect.bottom + 8) + 'px';
+  }
+  document.addEventListener('click', function(e) {
+    const popup = document.getElementById('userPopup');
+    if (!popup.contains(e.target)) popup.style.display = 'none';
+  });
+  </script>
+
   <!-- 투표 생성 모달 -->
 <div class="modal fade" id="pollModal" tabindex="-1">
   <div class="modal-dialog modal-sm">
