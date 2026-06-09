@@ -53,9 +53,9 @@
 
 {% if request.user.is_staff %}
 <div class="card shadow-sm mt-3" id="replyCard">
-  <div class="card-header bg-wine bg-opacity-10 fw-semibold d-flex align-items-center justify-content-between">
+  <div class="card-header fw-semibold d-flex align-items-center justify-content-between" style="background:#6E2332;color:#fff;">
     <span><i class="bi bi-reply me-1 text-wine"></i>관리자 답변
-      {% if c.replied_at %}<small class="text-muted ms-2">{{ c.replied_at|date:"Y.m.d H:i" }}</small>{% endif %}
+      {% if c.replied_at %}<small style="color:rgba(255,255,255,.7);margin-left:8px;">{{ c.replied_at|date:"Y.m.d H:i" }}</small>{% endif %}
     </span>
     {% if c.admin_reply %}
     <button class="btn btn-outline-secondary btn-sm" onclick="toggleEdit()" id="editBtn">✏️ 수정</button>
