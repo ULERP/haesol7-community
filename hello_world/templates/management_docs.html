@@ -1,69 +1,89 @@
 {% extends 'base_2panel.html' %}
-{% block title %}관리 문서 게시판{% endblock %}
+{% block title %}관리 문서 — 해솔7 지킴이{% endblock %}
+{% block extra_head %}
+<style>
+.doc-wrap{max-width:780px;margin:0 auto;}
+.doc-hero{background:linear-gradient(135deg,#1F2937 0%,#2d3748 50%,#1a1a2e 100%);border-radius:18px;padding:24px 28px;margin-bottom:20px;color:#fff;position:relative;overflow:hidden;}
+.doc-hero::before{content:'';position:absolute;top:-40%;right:-5%;width:280px;height:280px;background:radial-gradient(circle,rgba(212,178,106,.15),transparent 65%);pointer-events:none;}
+.doc-hero-title{font-size:1.2rem;font-weight:700;margin-bottom:4px;}
+.doc-hero-sub{font-size:0.8rem;opacity:.7;}
+.doc-btn{background:#C8A86B;color:#1F2937;border:none;padding:9px 20px;border-radius:20px;font-size:0.82rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.doc-btn:hover{background:#b8985b;color:#1F2937;}
+.cat-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+.cat-btn{padding:5px 14px;border-radius:20px;font-size:0.78rem;font-weight:600;text-decoration:none;border:1.5px solid #e5e7eb;color:#6b7280;background:#fff;transition:all .12s;}
+.cat-btn:hover{border-color:#6E2332;color:#6E2332;}
+.cat-btn.active{background:#6E2332;color:#fff;border-color:#6E2332;}
+.doc-item{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;text-decoration:none;color:inherit;transition:all .15s;}
+.doc-item:hover{border-color:#C8A86B;box-shadow:0 4px 16px rgba(110,35,50,.08);transform:translateY(-1px);}
+.doc-icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1F2937,#2d3748);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.doc-cat{font-size:0.68rem;padding:2px 8px;border-radius:10px;background:#f0f4ff;color:#3b5fc0;font-weight:600;}
+.doc-title{font-size:0.9rem;font-weight:600;color:#1F2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.doc-excerpt{font-size:0.75rem;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.doc-meta{font-size:0.72rem;color:#9ca3af;flex-shrink:0;text-align:right;}
+.search-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;gap:8px;}
+.search-input{flex:1;border:none;font-size:0.85rem;outline:none;color:#1F2937;}
+.search-btn{background:#6E2332;color:#fff;border:none;padding:7px 16px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;}
+.empty-wrap{text-align:center;padding:60px 20px;background:#fff;border-radius:16px;border:1px solid #e5e7eb;}
+</style>
+{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0">📂 관리 문서 게시판</h4>
-  {% if user.is_staff or user.grade >= 4 %}
-  <a href="{% url 'management_doc_upload' %}" class="btn btn-primary btn-sm">
-    <i class="bi bi-plus-lg"></i> 문서 등록
+<div class="doc-wrap">
+  <div class="doc-hero">
+    <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
+      <div>
+        <div class="doc-hero-title">📂 관리 문서</div>
+        <div class="doc-hero-sub">단지 운영 관련 공식 문서를 열람하세요</div>
+      </div>
+      {% if user.is_staff %}
+      <a href="{% url 'management_doc_upload' %}" class="doc-btn"><i class="fas fa-plus"></i> 문서 등록</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="get" class="search-wrap">
+    <i class="fas fa-search" style="color:#9ca3af;font-size:0.9rem;"></i>
+    <input type="text" name="q" value="{{ query }}" class="search-input" placeholder="문서 제목 또는 내용 검색...">
+    {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+    <button type="submit" class="search-btn">검색</button>
+  </form>
+
+  <div class="cat-bar">
+    <a href="{% url 'management_docs' %}" class="cat-btn {% if not selected_category %}active{% endif %}">전체</a>
+    {% for cat in categories %}
+    <a href="?category={{ cat }}" class="cat-btn {% if cat == selected_category %}active{% endif %}">{{ cat }}</a>
+    {% endfor %}
+  </div>
+
+  {% if docs %}
+  {% for doc in docs %}
+  <a href="{% url 'management_doc_detail' doc.pk %}" class="doc-item">
+    <div class="doc-icon">
+      <i class="fas fa-file-alt" style="color:#C8A86B;font-size:1rem;"></i>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <span class="doc-cat">{{ doc.category }}</span>
+        {% if doc.file %}<span style="font-size:0.68rem;background:#f0fdf4;color:#15803d;padding:2px 7px;border-radius:10px;"><i class="fas fa-paperclip"></i> 첨부</span>{% endif %}
+      </div>
+      <div class="doc-title">{{ doc.title }}</div>
+      {% if doc.content %}<div class="doc-excerpt">{{ doc.content|truncatechars:60 }}</div>{% endif %}
+    </div>
+    <div class="doc-meta">
+      <div>{{ doc.created_at|date:"Y.m.d" }}</div>
+      <div><i class="fas fa-eye" style="font-size:0.65rem;"></i> {{ doc.view_count }}</div>
+    </div>
   </a>
+  {% endfor %}
+  {% else %}
+  <div class="empty-wrap">
+    <div style="font-size:3rem;margin-bottom:12px;">📁</div>
+    <div style="font-size:1rem;font-weight:700;color:#1F2937;margin-bottom:6px;">
+      {% if query %}검색 결과가 없어요{% else %}등록된 문서가 없어요{% endif %}
+    </div>
+    <div style="font-size:0.82rem;color:#9ca3af;">
+      {% if query %}다른 키워드로 검색해보세요{% else %}관리자가 문서를 등록하면 여기에 표시됩니다{% endif %}
+    </div>
+  </div>
   {% endif %}
 </div>
-
-<!-- 검색/필터 -->
-<form method="get" class="row g-2 mb-4">
-  <div class="col-md-3">
-    <select name="category" class="form-select form-select-sm">
-      <option value="">전체 카테고리</option>
-      {% for cat in categories %}
-      <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
-      {% endfor %}
-    </select>
-  </div>
-  <div class="col-md-7">
-    <input type="text" name="q" value="{{ query }}" class="form-control form-control-sm" placeholder="제목 또는 내용 검색...">
-  </div>
-  <div class="col-md-2">
-    <button type="submit" class="btn btn-outline-primary btn-sm w-100">검색</button>
-  </div>
-</form>
-
-<!-- 카테고리 배지 필터 -->
-<div class="mb-3 d-flex flex-wrap gap-2">
-  <a href="{% url 'management_docs' %}" class="badge {% if not selected_category %}bg-primary{% else %}bg-secondary{% endif %} text-decoration-none fs-6">전체</a>
-  {% for cat in categories %}
-  <a href="?category={{ cat }}" class="badge {% if cat == selected_category %}bg-primary{% else %}bg-secondary{% endif %} text-decoration-none fs-6">{{ cat }}</a>
-  {% endfor %}
-</div>
-
-<!-- 문서 목록 -->
-{% if docs %}
-<div class="list-group">
-  {% for doc in docs %}
-  <a href="{% url 'management_doc_detail' doc.pk %}" class="list-group-item list-group-item-action">
-    <div class="d-flex justify-content-between align-items-start">
-      <div>
-        <span class="badge bg-info text-dark me-2">{{ doc.category }}</span>
-        <strong>{{ doc.title }}</strong>
-        {% if doc.file %}
-        <i class="bi bi-paperclip text-muted ms-1" title="첨부파일 있음"></i>
-        {% endif %}
-      </div>
-      <div class="text-end text-muted small">
-        <div>{{ doc.created_at|date:"Y.m.d" }}</div>
-        <div><i class="bi bi-eye"></i> {{ doc.view_count }}</div>
-      </div>
-    </div>
-    {% if doc.content %}
-    <p class="mb-0 mt-1 text-muted small text-truncate">{{ doc.content|truncatechars:80 }}</p>
-    {% endif %}
-  </a>
-  {% endfor %}
-</div>
-{% else %}
-<div class="text-center text-muted py-5">
-  <i class="bi bi-folder2-open fs-1 d-block mb-2"></i>
-  {% if query %}검색 결과가 없습니다.{% else %}등록된 문서가 없습니다.{% endif %}
-</div>
-{% endif %}
 {% endblock %}
