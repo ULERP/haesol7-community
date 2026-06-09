@@ -4450,6 +4450,8 @@ def manage_content(request):
 
     comments = Comment.objects.select_related('author','post').order_by('-created_at')
     if q: comments = comments.filter(Q(content__icontains=q)|Q(author__nickname__icontains=q))
+    c_paginator   = Paginator(comments, 20)
+    comments_page = c_paginator.get_page(page)
     # 민원 관리
     from .models import Complaint
     complaints = Complaint.objects.select_related('author','category').order_by('-created_at')
