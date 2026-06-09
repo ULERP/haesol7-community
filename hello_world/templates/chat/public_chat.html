@@ -177,6 +177,7 @@ const IS_AUTH = {{ user.is_authenticated|yesno:"true,false" }};
 const IS_STAFF = {{ user.is_staff|yesno:"true,false" }};
 const CSRF = '{{ csrf_token }}';
 let lastId = 0;
+let isFetching = false;
 
 // 이미지
 function removeImg() {
@@ -201,6 +202,8 @@ async function delMsg(id) {
 }
 
 async function fetchMsgs() {
+  if (isFetching) return;
+  isFetching = true;
   if (!IS_AUTH) return;
   try {
     const r = await fetch(MSGS_URL + '?since=' + lastId);
@@ -216,6 +219,7 @@ async function fetchMsgs() {
       box.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><div class="empty-title">아직 대화가 없어요</div><div class="empty-desc">첫 메시지로 이웃에게 인사해보세요!</div></div>';
     }
   } catch(e) { console.error("fetchMsgs 오류:", e); }
+  finally { isFetching = false; }
 }
 
 let isSending = false;
