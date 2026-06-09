@@ -4484,6 +4484,61 @@ def manage_content(request):
         }
     })
 
+
+@_manage_required
+def manage_board_action(request):
+    """게시판 추가/수정/삭제"""
+    from .models import Board
+    from django.http import JsonResponse
+    import json
+    if request.method != 'POST':
+        return JsonResponse({'error': '잘못된 요청'}, status=400)
+    data   = json.loads(request.body)
+    action = data.get('action')
+
+    if action == 'create':
+        board = Board.objects.create(
+            name             = data.get('name', '').strip(),
+            board_type       = data.get('board_type', 'free'),
+            description      = data.get('description', '').strip(),
+            icon             = data.get('icon', 'fas fa-clipboard'),
+            order            = int(data.get('order', 0)),
+            allowed_tags     = data.get('allowed_tags', '').strip(),
+            write_permission = data.get('write_permission', 'all'),
+            layout_type      = data.get('layout_type', 'list'),
+            is_active        = data.get('is_active', True),
+        )
+        return JsonResponse({'status': 'ok', 'id': board.pk, 'msg': f'"{board.name}" 게시판이 추가됐어요.'})
+
+    elif action == 'update':
+        board = get_object_or_404(Board, pk=data.get('board_id'))
+        board.name             = data.get('name', board.name).strip()
+        board.board_type       = data.get('board_type', board.board_type)
+        board.description      = data.get('description', board.description).strip()
+        board.icon             = data.get('icon', board.icon)
+        board.order            = int(data.get('order', board.order))
+        board.allowed_tags     = data.get('allowed_tags', board.allowed_tags).strip()
+        board.write_permission = data.get('write_permission', board.write_permission)
+        board.layout_type      = data.get('layout_type', board.layout_type)
+        board.is_active        = data.get('is_active', board.is_active)
+        board.save()
+        return JsonResponse({'status': 'ok', 'msg': f'"{board.name}" 게시판이 수정됐어요.'})
+
+    elif action == 'delete':
+        board = get_object_or_404(Board, pk=data.get('board_id'))
+        name = board.name
+        board.is_active = False
+        board.save(update_fields=['is_active'])
+        return JsonResponse({'status': 'ok', 'msg': f'"{name}" 게시판이 비활성화됐어요.'})
+
+    elif action == 'toggle':
+        board = get_object_or_404(Board, pk=data.get('board_id'))
+        board.is_active = not board.is_active
+        board.save(update_fields=['is_active'])
+        return JsonResponse({'status': 'ok', 'is_active': board.is_active})
+
+    return JsonResponse({'error': '알 수 없는 액션'}, status=400)
+
 @_manage_required
 def manage_groups(request):
     """소모임 관리"""

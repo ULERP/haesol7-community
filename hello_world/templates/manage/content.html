@@ -78,25 +78,158 @@
   </table>
 
   {% elif tab == 'boards' %}
+  <div style="padding:12px 16px;display:flex;justify-content:flex-end;">
+    <button class="btn-mg btn-mg-wine" onclick="openBoardModal()">➕ 게시판 추가</button>
+  </div>
   <table class="mg-table">
-    <thead><tr><th>게시판명</th><th>유형</th><th>레이아웃</th><th>쓰기권한</th><th>순서</th><th>활성</th><th>액션</th></tr></thead>
+    <thead><tr><th>게시판명</th><th>유형</th><th>레이아웃</th><th>말머리</th><th>쓰기권한</th><th>순서</th><th>활성</th><th>액션</th></tr></thead>
     <tbody>
       {% for b in boards %}
       <tr>
         <td><strong>{{ b.name }}</strong></td>
         <td><span class="badge-info">{{ b.board_type }}</span></td>
         <td><span class="badge-gray">{{ b.layout_type }}</span></td>
+        <td style="font-size:0.75rem;color:#6b7280;">{{ b.allowed_tags|default:"-" }}</td>
         <td>{{ b.write_permission }}</td>
         <td>{{ b.order }}</td>
-        <td>{% if b.is_active %}<span class="badge-ok">활성</span>{% else %}<span class="badge-no">비활성</span>{% endif %}</td>
-        <td><a href="/admin/core/board/{{ b.pk }}/change/" target="_blank" class="btn-mg btn-mg-gray">설정</a></td>
+        <td>
+          <button class="btn-mg {% if b.is_active %}btn-mg-ok{% else %}btn-mg-gray{% endif %}"
+            onclick="toggleBoard({{ b.pk }}, this)">
+            {% if b.is_active %}활성{% else %}비활성{% endif %}
+          </button>
+        </td>
+        <td style="display:flex;gap:4px;">
+          <button class="btn-mg btn-mg-wine" onclick="openBoardModal({{ b.pk }},'{{ b.name }}','{{ b.board_type }}','{{ b.layout_type }}','{{ b.write_permission }}','{{ b.allowed_tags }}',{{ b.order }})">수정</button>
+          <button class="btn-mg btn-mg-gray" onclick="deleteBoard({{ b.pk }},'{{ b.name }}')">삭제</button>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
-  <div style="padding:12px 16px;">
-    <a href="/admin/core/board/add/" target="_blank" class="btn-mg btn-mg-wine">➕ 게시판 추가</a>
+
+  <!-- 게시판 추가/수정 모달 -->
+  <div id="boardModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:24px;width:500px;max-width:90vw;max-height:90vh;overflow-y:auto;">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:16px;" id="boardModalTitle">게시판 추가</div>
+      <input type="hidden" id="boardId" value="">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">게시판명 *</label>
+          <input type="text" id="boardName" class="mg-input" placeholder="예: 자유게시판">
+        </div>
+        <div>
+          <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">순서</label>
+          <input type="number" id="boardOrder" class="mg-input" value="0">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">유형</label>
+          <select id="boardType" class="mg-input">
+            <option value="free">자유게시판</option>
+            <option value="notice">공지사항</option>
+            <option value="volunteer">봉사활동</option>
+            <option value="archive">지킴이 아카이브</option>
+            <option value="event">행사/모임</option>
+            <option value="suggestion">건의/소통</option>
+            <option value="gallery">갤러리</option>
+            <option value="trade">나눔/장터</option>
+            <option value="qna">Q&A</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">레이아웃</label>
+          <select id="boardLayout" class="mg-input">
+            <option value="list">리스트형</option>
+            <option value="gallery">사진형</option>
+            <option value="card">사진설명형</option>
+            <option value="market">중고마켓형</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">쓰기 권한</label>
+          <select id="boardPerm" class="mg-input">
+            <option value="all">전체</option>
+            <option value="member">회원</option>
+            <option value="staff">운영진</option>
+            <option value="admin">관리자</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">말머리 (쉼표로 구분)</label>
+          <input type="text" id="boardTags" class="mg-input" placeholder="예: 공지,질문,잡담">
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">설명</label>
+        <input type="text" id="boardDesc" class="mg-input" placeholder="게시판 설명">
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button class="btn-mg btn-mg-gray" onclick="closeBoardModal()">취소</button>
+        <button class="btn-mg btn-mg-wine" onclick="saveBoard()">저장</button>
+      </div>
+    </div>
   </div>
+  <style>
+  .mg-input{width:100%;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:0.82rem;box-sizing:border-box;}
+  .mg-input:focus{border-color:#6E2332;outline:none;}
+  .btn-mg-ok{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;}
+  </style>
+  <script>
+  const BOARD_URL = '/manage/board/action/';
+  const CSRF = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}';
+
+  function openBoardModal(id='',name='',type='free',layout='list',perm='all',tags='',order=0) {
+    document.getElementById('boardModalTitle').textContent = id ? '게시판 수정' : '게시판 추가';
+    document.getElementById('boardId').value = id;
+    document.getElementById('boardName').value = name;
+    document.getElementById('boardType').value = type;
+    document.getElementById('boardLayout').value = layout;
+    document.getElementById('boardPerm').value = perm;
+    document.getElementById('boardTags').value = tags;
+    document.getElementById('boardOrder').value = order;
+    document.getElementById('boardDesc').value = '';
+    document.getElementById('boardModal').style.display = 'flex';
+  }
+  function closeBoardModal() {
+    document.getElementById('boardModal').style.display = 'none';
+  }
+  async function saveBoard() {
+    const id = document.getElementById('boardId').value;
+    const payload = {
+      action: id ? 'update' : 'create',
+      board_id: id || undefined,
+      name: document.getElementById('boardName').value,
+      board_type: document.getElementById('boardType').value,
+      layout_type: document.getElementById('boardLayout').value,
+      write_permission: document.getElementById('boardPerm').value,
+      allowed_tags: document.getElementById('boardTags').value,
+      order: document.getElementById('boardOrder').value,
+      description: document.getElementById('boardDesc').value,
+    };
+    const res = await fetch(BOARD_URL, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},body:JSON.stringify(payload)});
+    const d = await res.json();
+    alert(d.msg || d.error);
+    if (d.status === 'ok') location.reload();
+  }
+  async function deleteBoard(id, name) {
+    if (!confirm(`"${name}" 게시판을 비활성화할까요?`)) return;
+    const res = await fetch(BOARD_URL, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},body:JSON.stringify({action:'delete',board_id:id})});
+    const d = await res.json();
+    alert(d.msg);
+    if (d.status === 'ok') location.reload();
+  }
+  async function toggleBoard(id, btn) {
+    const res = await fetch(BOARD_URL, {method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},body:JSON.stringify({action:'toggle',board_id:id})});
+    const d = await res.json();
+    if (d.status === 'ok') {
+      btn.textContent = d.is_active ? '활성' : '비활성';
+      btn.className = 'btn-mg ' + (d.is_active ? 'btn-mg-ok' : 'btn-mg-gray');
+    }
+  }
+  </script>
   {% elif tab == 'complaints' %}
   <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;flex-wrap:wrap;">
     <form method="get" style="display:flex;gap:8px;flex-wrap:wrap;flex:1;">
