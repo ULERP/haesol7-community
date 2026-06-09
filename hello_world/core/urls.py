@@ -22,6 +22,7 @@ urlpatterns = [
     path('manage/members/',                  views.manage_members,     name='manage_members'),
     path('manage/content/',                  views.manage_content,     name='manage_content'),
     path('manage/groups/',                   views.manage_groups,      name='manage_groups'),
+    path('manage/board/action/',             views.manage_board_action, name='manage_board_action'),
     path('manage/activity/',                 views.manage_activity,    name='manage_activity'),
     path('manage/system/',                   views.manage_system,      name='manage_system'),
     path('manage/observer-action/',          views.manage_observer_action, name='manage_observer_action'),
