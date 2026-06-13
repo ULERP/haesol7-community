@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /accounts/
+Disallow: /manage/
+Disallow: /admin/
+Disallow: /mypage/
+Disallow: /notifications/
+Disallow: /chat/
+Disallow: /dm/
+
+Sitemap: https://ulerp.pythonanywhere.com/sitemap.xml

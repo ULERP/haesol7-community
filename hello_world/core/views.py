@@ -3906,6 +3906,15 @@ def hub_news(request):
 # ============================================================================
 # 사이트 이용 안내
 # ============================================================================
+# ============================================================================
+# SEO - sitemap / robots.txt
+# ============================================================================
+def sitemap_view(request):
+    return render(request, 'sitemap.xml', {}, content_type='application/xml')
+
+def robots_view(request):
+    return render(request, 'robots.txt', {}, content_type='text/plain')
+
 def guide_page(request, slug):
     pages = {
         'intro': {
