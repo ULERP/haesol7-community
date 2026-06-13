@@ -1,3 +1,4 @@
+from django.db.models import F
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
@@ -814,7 +815,8 @@ def management_docs(request):
 def management_doc_detail(request, pk):
     from .models import ManagementDocument
     doc = get_object_or_404(ManagementDocument, pk=pk, is_active=True)
-    ManagementDocument.objects.filter(pk=pk).update(view_count=models.F('view_count') + 1)
+    from django.db.models import F
+    ManagementDocument.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
     doc.refresh_from_db()
     related = ManagementDocument.objects.filter(
         category=doc.category, is_active=True
