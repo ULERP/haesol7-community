@@ -359,6 +359,10 @@
           <span class="faq-views"><i class="fas fa-eye"></i> {{ post.view_count }}</span>
           {% if request.user.is_staff %}
           <a href="/posts/{{ post.pk }}/edit/" class="faq-edit-link">✏️ 수정</a>
+          <form method="post" action="{% url 'post_delete' post.pk %}" style="display:inline;" onsubmit="return confirm('이 FAQ를 삭제할까요?')">
+            {% csrf_token %}
+            <button type="submit" class="faq-edit-link" style="background:none;border:none;cursor:pointer;color:#ef4444;padding:0;">🗑️ 삭제</button>
+          </form>
           {% endif %}
         </div>
       </div>
