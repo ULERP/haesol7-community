@@ -798,6 +798,7 @@ def notification_list(request):
 # ============================================================================
 # 관리 문서 게시판
 # ============================================================================
+@login_required
 def management_docs(request):
     from .models import ManagementDocument
     category = request.GET.get('category', '')
@@ -820,8 +821,8 @@ def management_docs(request):
         'query': query,
     })
 
+@login_required
 def management_doc_detail(request, pk):
-    from .models import ManagementDocument
     doc = get_object_or_404(ManagementDocument, pk=pk, is_active=True)
     from django.db.models import F
     ManagementDocument.objects.filter(pk=pk).update(view_count=F("view_count") + 1)
@@ -1868,14 +1869,17 @@ def rate_user(request, user_id):
         recalculate_manners_score(rated_user)
         # 평가 알림
         if created:
-            from .models import Notification
-            Notification.objects.create(
-                recipient=rated_user,
-                title='따뜻한 이웃 온기를 받았어요 ❤️',
-                message=f'{request.user.username}님이 온기 점수를 보내줬어요!',
-                notification_type='community',
-                persona='따뜻한 이웃',
-            )
+            try:
+                Notification.objects.create(
+                    recipient=rated_user,
+                    title='따뜻한 이웃 온기를 받았어요 ❤️',
+                    message=f'{request.user.nickname or request.user.username}님이 온기 점수를 보내줬어요!',
+                    notification_type='community',
+                    persona='따뜻한 이웃',
+                    link=f'/profile/{request.user.pk}/',
+                )
+            except Exception:
+                pass
         rated_user.refresh_from_db()
         return JsonResponse({
             'status': 'ok',
