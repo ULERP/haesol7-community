@@ -37,8 +37,9 @@
     .dropdown-item:hover{background:#fdf5f6!important;color:#7A263A!important;}
     /* 레이아웃 */
     .layout-2p{display:grid;grid-template-columns:var(--sidebar-w) 1fr 260px;min-height:calc(100vh - var(--nav-h));}
-    @media(max-width:1200px){.layout-2p{display:grid;grid-template-columns:var(--sidebar-w) 1fr 260px;min-height:calc(100vh - var(--nav-h));}}
-    @media(max-width:1200px){.rp-panel{display:none;}}
+    @media(max-width:1200px){.layout-2p{grid-template-columns:var(--sidebar-w) 1fr;}.rp-panel{display:none;}}
+    @media(max-width:900px){.layout-2p{grid-template-columns:200px 1fr;}}
+    @media(max-width:768px){.layout-2p{grid-template-columns:1fr!important;}.sidebar{display:none!important;}}
     /* 사이드바 */
     .sidebar{position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;overflow-x:hidden;border-right:1px solid var(--border);background:#fff;padding:12px 8px;display:flex;flex-direction:column;}
     .sidebar::-webkit-scrollbar{width:3px;}
