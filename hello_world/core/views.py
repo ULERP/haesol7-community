@@ -1,15 +1,36 @@
-from django.db.models import F
+# ============================================================
+# views.py — 해솔7 지킴이
+# ============================================================
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login as auth_login, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseForbidden
-from django.contrib.auth import authenticate, login as auth_login
+from django.views.decorators.http import require_POST
 from django.contrib import messages
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
+from django.db.models import Count, Q, Avg, Max, F
+from django.utils import timezone
+from django.utils.timezone import make_aware, is_naive
+from django.utils.dateparse import parse_datetime
+from django.core.paginator import Paginator
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import json, csv, io, os, uuid, warnings, random, string
+from collections import defaultdict, OrderedDict
+from datetime import timedelta
 from rest_framework import viewsets
 from rest_framework.response import Response
 from .models import (
     Activity, ActivityProof, Post, Group, Meetup,
     Board, Comment, PostLike, CustomUser,
-    MemberGrade, BoardGradePermission
+    MemberGrade, BoardGradePermission,
+    ManagementDocument, Notification, PublicChat,
+    GroupMember, GroupPost, GroupLeaderLog, GroupComment,
+    CalendarEvent, CalendarEventAttendee, CalendarEventComment,
+    Survey, SurveyResponse, Poll, ChatPoll,
+    Letter, DirectMessage, Complaint,
+    Badge, UserBadge, Rating, UserFollow,
+    AdminActionLog, SiteConfig,
+    Notice, Event, GroupChat,
 )
 from .serializers import PostSerializer, GroupSerializer, MeetupSerializer
 
@@ -638,8 +659,6 @@ class MeetupViewSet(viewsets.ModelViewSet):
 # 프로필 수정
 # ============================================================================
 @login_required
-
-@login_required
 def profile_edit(request):
     user = request.user
     if request.method == 'POST':
@@ -751,17 +770,6 @@ def search(request):
 # 알림 시스템
 # ============================================================================
 @login_required
-def notification_list(request):
-    from .models import Notification
-    notifications = Notification.objects.filter(
-        recipient=request.user
-    ).order_by('-created_at')[:50]
-    # 읽음 처리
-    notifications.filter(is_read=False).update(is_read=True)
-    return render(request, 'notification_list.html', {
-        'notifications': notifications,
-    })
-
 def notification_count(request):
     from .models import Notification
     count = 0
@@ -1137,7 +1145,6 @@ def group_list(request):
     })
 
 
-@login_required
 @login_required
 def group_create(request):
     from .models import Group, GroupMember, GroupLeaderLog
@@ -2220,124 +2227,6 @@ def chat_poll_list(request):
 # 채팅 미니 투표
 # ============================================================================
 from .models import ChatPoll
-
-def chat_poll_create(request):
-    """POST /chat/poll/create/ - /투표 명령어 처리"""
-    from django.http import JsonResponse
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': '로그인 필요'}, status=401)
-    if request.method != 'POST':
-        return JsonResponse({'error': '잘못된 요청'}, status=400)
-
-    import json
-    data = json.loads(request.body)
-    question = data.get('question', '').strip()
-    options = [o.strip() for o in data.get('options', []) if o.strip()]
-    chat_type = data.get('chat_type', 'public')
-    group_id = data.get('group_id')
-
-    if not question or len(options) < 2:
-        return JsonResponse({'error': '질문과 선택지 2개 이상을 입력해주세요'}, status=400)
-
-    group = None
-    if group_id:
-        from .models import Group
-        try:
-            group = Group.objects.get(pk=int(group_id))
-        except: pass
-
-    poll = ChatPoll.objects.create(
-        chat_type=chat_type,
-        group=group,
-        creator=request.user,
-        question=question,
-        options=options,
-        votes={opt: [] for opt in options},
-    )
-
-    # 채팅방에 투표 생성 알림 메시지 자동 전송
-    poll_msg = f"📊 투표가 시작됐어요!\n질문: {question}\n" + "\n".join([f"  {i+1}. {o}" for i,o in enumerate(options)])
-    if chat_type == 'public':
-        PublicChat.objects.create(author=request.user, message=poll_msg)
-    elif chat_type == 'group' and group:
-        from .models import GroupChat
-        GroupChat.objects.create(group=group, sender=request.user, message=poll_msg)
-
-    return JsonResponse({
-        'status': 'ok',
-        'poll_id': poll.id,
-        'question': question,
-        'options': options,
-    })
-
-def chat_poll_vote(request, poll_id):
-    """POST /chat/poll/<id>/vote/"""
-    from django.http import JsonResponse
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': '로그인 필요'}, status=401)
-
-    import json
-    data = json.loads(request.body)
-    option = data.get('option', '').strip()
-
-    poll = get_object_or_404(ChatPoll, pk=poll_id, is_active=True)
-
-    if option not in poll.options:
-        return JsonResponse({'error': '없는 선택지예요'}, status=400)
-
-    # 기존 투표 제거 (한 사람 한 표)
-    user_id = request.user.id
-    votes = poll.votes
-    for opt in votes:
-        if user_id in votes[opt]:
-            votes[opt].remove(user_id)
-
-    # 새 투표 추가
-    if option not in votes:
-        votes[option] = []
-    votes[option].append(user_id)
-    poll.votes = votes
-    poll.save()
-
-    return JsonResponse({
-        'status': 'ok',
-        'results': poll.get_results(),
-        'total': poll.total_votes,
-    })
-
-def chat_poll_list(request):
-    """GET /chat/polls/?type=public&group_id=1"""
-    from django.http import JsonResponse
-    chat_type = request.GET.get('type', 'public')
-    group_id = request.GET.get('group_id')
-
-    polls = ChatPoll.objects.filter(chat_type=chat_type, is_active=True)
-    if group_id:
-        polls = polls.filter(group_id=int(group_id))
-    polls = polls.order_by('-created_at')[:5]
-
-    user_id = request.user.id if request.user.is_authenticated else None
-    result = []
-    for p in polls:
-        my_vote = None
-        for opt, voters in p.votes.items():
-            if user_id in voters:
-                my_vote = opt
-                break
-        result.append({
-            'id': p.id,
-            'question': p.question,
-            'options': p.options,
-            'results': p.get_results(),
-            'total': p.total_votes,
-            'my_vote': my_vote,
-            'creator': p.creator.nickname or p.creator.username,
-            'created_at': p.created_at.strftime('%H:%M'),
-            'is_active': p.is_active,
-        })
-
-    return JsonResponse({'polls': result})
-
 
 def community_stats(request):
     """단지 통계 대시보드"""
