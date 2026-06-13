@@ -141,6 +141,7 @@ urlpatterns = [
     path('letters/<int:pk>/delete/', views_letter.letter_delete, name='letter_delete'),
 
     # 입주민 인증
+    path('guide/<slug:slug>/', views.guide_page, name='guide_page'),
     path('faq/', views.faq_view, name='faq'),
     path('faq/upload/', views.faq_upload_csv, name='faq_upload_csv'),
     path('faq/sample/', views.faq_sample_csv, name='faq_sample_csv'),

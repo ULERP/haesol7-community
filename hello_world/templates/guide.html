@@ -1,0 +1,86 @@
+{% extends 'base_2panel.html' %}
+{% block title %}{{ page.title }} — 해솔7 지킴이{% endblock %}
+{% block extra_head %}
+<style>
+.guide-wrap{max-width:760px;margin:0 auto;padding:8px 0 40px;}
+.guide-nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;}
+.guide-nav-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;font-size:0.82rem;font-weight:600;text-decoration:none;border:1.5px solid #e5e7eb;color:#6b7280;background:#fff;transition:all .15s;}
+.guide-nav-btn:hover{border-color:#7A263A;color:#7A263A;background:#fdf2f4;}
+.guide-nav-btn.active{background:#7A263A;color:#fff;border-color:#7A263A;}
+.guide-hero{background:linear-gradient(135deg,#1F2937,#7A263A);border-radius:16px;padding:28px 24px;margin-bottom:24px;color:#fff;}
+.guide-hero-icon{font-size:2.5rem;margin-bottom:8px;}
+.guide-hero-title{font-size:1.4rem;font-weight:800;margin-bottom:4px;}
+.guide-hero-sub{font-size:0.85rem;opacity:.75;}
+.guide-sections{display:flex;flex-direction:column;gap:12px;}
+.guide-card{background:#fff;border-radius:14px;padding:20px;border:1px solid #f0ece4;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.guide-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.guide-card-icon{font-size:1.4rem;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:#f8f6f2;border-radius:10px;}
+.guide-card-title{font-size:0.95rem;font-weight:700;color:#1F2937;}
+.guide-card-content{font-size:0.85rem;color:#4b5563;line-height:1.75;}
+.guide-footer{margin-top:24px;background:#f8f6f2;border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:12px;}
+.guide-footer-icon{font-size:1.5rem;}
+.guide-footer-text{font-size:0.82rem;color:#6b7280;line-height:1.6;}
+.guide-footer-text a{color:#7A263A;font-weight:600;text-decoration:none;}
+.other-guides{margin-top:24px;}
+.other-guides-title{font-size:0.8rem;font-weight:700;color:#9ca3af;margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em;}
+.other-guide-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.other-guide-card{display:flex;flex-direction:column;align-items:center;padding:14px 8px;background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;text-decoration:none;color:inherit;transition:all .15s;text-align:center;}
+.other-guide-card:hover{border-color:#7A263A;background:#fdf2f4;}
+.other-guide-card.active{border-color:#7A263A;background:#fdf2f4;}
+.other-guide-card .og-icon{font-size:1.4rem;margin-bottom:4px;}
+.other-guide-card .og-title{font-size:0.78rem;font-weight:700;color:#1F2937;}
+.other-guide-card .og-desc{font-size:0.68rem;color:#9ca3af;margin-top:2px;}
+@media(max-width:600px){.other-guide-cards{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="guide-wrap">
+  <div class="guide-nav">
+    <a href="{% url 'guide_page' 'intro' %}" class="guide-nav-btn {% if slug == 'intro' %}active{% endif %}">🏠 서비스 소개</a>
+    <a href="{% url 'guide_page' 'rules' %}" class="guide-nav-btn {% if slug == 'rules' %}active{% endif %}">📋 이용수칙</a>
+    <a href="{% url 'guide_page' 'verify' %}" class="guide-nav-btn {% if slug == 'verify' %}active{% endif %}">🔐 가입 & 인증</a>
+    <a href="{% url 'faq' %}" class="guide-nav-btn">❓ 자주묻는질문</a>
+  </div>
+  <div class="guide-hero">
+    <div class="guide-hero-icon">{{ page.icon }}</div>
+    <div class="guide-hero-title">{{ page.title }}</div>
+    <div class="guide-hero-sub">해솔마을 7단지 입주민 커뮤니티 안내</div>
+  </div>
+  <div class="guide-sections">
+    {% for s in page.sections %}
+    <div class="guide-card">
+      <div class="guide-card-header">
+        <div class="guide-card-icon">{{ s.icon }}</div>
+        <div class="guide-card-title">{{ s.title }}</div>
+      </div>
+      <div class="guide-card-content">{{ s.content }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="guide-footer">
+    <div class="guide-footer-icon">💬</div>
+    <div class="guide-footer-text">
+      궁금한 점이 있으신가요?
+      <a href="/faq/">자주 묻는 질문</a>을 확인하시거나
+      <a href="/complaints/create/">민원을 접수</a>해주세요.
+    </div>
+  </div>
+  <div class="other-guides">
+    <div class="other-guides-title">다른 안내 보기</div>
+    <div class="other-guide-cards">
+      {% for g in all_guides %}
+      <a href="{% url 'guide_page' g.slug %}" class="other-guide-card {% if g.slug == slug %}active{% endif %}">
+        <div class="og-icon">{{ g.icon }}</div>
+        <div class="og-title">{{ g.title }}</div>
+        <div class="og-desc">{{ g.desc }}</div>
+      </a>
+      {% endfor %}
+      <a href="{% url 'faq' %}" class="other-guide-card">
+        <div class="og-icon">❓</div>
+        <div class="og-title">자주묻는질문</div>
+        <div class="og-desc">FAQ 바로가기</div>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
