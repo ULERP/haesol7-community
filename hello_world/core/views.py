@@ -3910,10 +3910,31 @@ def hub_news(request):
 # SEO - sitemap / robots.txt
 # ============================================================================
 def sitemap_view(request):
-    return render(request, 'sitemap.xml', {}, content_type='application/xml')
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/boards/</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/notices/</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/groups/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/calendar/</loc><changefreq>daily</changefreq><priority>0.7</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/faq/</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/guide/intro/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/guide/rules/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/guide/verify/</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/volunteer/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>\n'
+           '  <url><loc>https://ulerp.pythonanywhere.com/surveys/</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>\n'
+           '</urlset>')
+    return HttpResponse(xml, content_type='application/xml')
 
 def robots_view(request):
-    return render(request, 'robots.txt', {}, content_type='text/plain')
+    lines = [
+        'User-agent: *', 'Allow: /',
+        'Disallow: /accounts/', 'Disallow: /manage/', 'Disallow: /admin/',
+        'Disallow: /mypage/', 'Disallow: /notifications/',
+        'Disallow: /chat/', 'Disallow: /dm/', '',
+        'Sitemap: https://ulerp.pythonanywhere.com/sitemap.xml',
+    ]
+    return HttpResponse('\n'.join(lines), content_type='text/plain')
 
 def guide_page(request, slug):
     pages = {
